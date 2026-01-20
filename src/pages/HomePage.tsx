@@ -8,7 +8,7 @@ import { Differentiator } from "@/components/Differentiator";
 import { Services } from "@/components/Services";
 import { Outcomes } from "@/components/Outcomes";
 import { Relief } from "@/components/Relief";
-import { Testimonials } from "@/components/Testimonials";
+// import { Testimonials } from "@/components/Testimonials"; // Hidden until we have real customers
 import { Timeline } from "@/components/Timeline";
 import { TeamSection } from "@/components/TeamSection";
 import { Cta } from "@/components/Cta";
