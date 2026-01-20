@@ -31,18 +31,19 @@ export const Hero = () => {
         {/* Left: Visual */}
         <div className="relative">
           <div className="aspect-video rounded-xl overflow-hidden border border-border/50 bg-muted">
-            {/* Replace with actual video or image */}
+            {/* TODO: Replace with video when available */}
             <img
-              src="https://via.placeholder.com/640x360?text=Video+Thumbnail"
-              alt="Prozessautomatisierung"
-              className="w-full h-full object-cover"
+              src="/claudio.jpg"
+              alt="Claudio Di Franco - Prozessautomatisierung"
+              className="w-full h-full object-cover object-top"
             />
-            {/* Play button overlay for video */}
+            {/* Play button overlay - uncomment when video is ready
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="w-16 h-16 rounded-full bg-primary/90 flex items-center justify-center cursor-pointer hover:bg-primary transition-colors">
                 <div className="w-0 h-0 border-t-8 border-t-transparent border-l-12 border-l-white border-b-8 border-b-transparent ml-1" />
               </div>
             </div>
+            */}
           </div>
         </div>
 
