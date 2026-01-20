@@ -37,7 +37,7 @@ export const siteConfig = {
 export const navLinks = [
   { label: "Leistungen", href: "#services" },
   { label: "Prozess", href: "#process" },
-  { label: "Referenzen", href: "#testimonials" },
+  // { label: "Referenzen", href: "#testimonials" }, // Hidden until we have real customers
   { label: "FAQ", href: "#faq" },
 ];
 

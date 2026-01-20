@@ -45,8 +45,8 @@ export const HomePage = () => {
       <Outcomes />
       <Relief />
 
-      {/* 7. FALLSTUDIEN (Testimonials) */}
-      <Testimonials />
+      {/* 7. FALLSTUDIEN (Testimonials) - Hidden until we have real customers */}
+      {/* <Testimonials /> */}
 
       {/* 8. ABLAUF DER ZUSAMMENARBEIT */}
       <Timeline />
