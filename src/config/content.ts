@@ -492,13 +492,13 @@ export const teamContent = {
     {
       name: "Claudio Di Franco",
       role: "Gründer & Prozessarchitekt",
-      image: "https://via.placeholder.com/400x400?text=Claudio",
+      image: "/claudio.jpg",
       description: "Prozessarchitektur und Systemdesign für B2B-Dienstleister.",
     },
     {
       name: "Anak",
       role: "Automation Engineer",
-      image: "https://via.placeholder.com/400x400?text=Anak",
+      image: "/anak.jpg",
       description: "Technische Implementierung, KI-Integration und Workflow-Automatisierung.",
     },
   ],
