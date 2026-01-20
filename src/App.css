@@ -67,53 +67,53 @@
   }
 } */
 
-/* *=========== Dark Gold theme (jousefmurad.com style) =========== */
+/* *=========== Flowstack B2B Blue-White theme =========== */
 @layer base {
   :root {
-    /* Light theme - kept for reference but dark is primary */
-    --background: 0 0% 100%;
-    --foreground: 0 0% 5.5%;
-    --card: 0 0% 98%;
-    --card-foreground: 0 0% 5.5%;
+    /* Professional B2B Blue-White theme */
+    --background: 210 40% 98%;
+    --foreground: 217 33% 17%;
+    --card: 0 0% 100%;
+    --card-foreground: 217 33% 17%;
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 5.5%;
-    --primary: 38 35% 75%;
-    --primary-foreground: 0 0% 5%;
-    --secondary: 38 20% 90%;
-    --secondary-foreground: 0 0% 5%;
-    --muted: 0 0% 96%;
-    --muted-foreground: 0 0% 45%;
-    --accent: 38 35% 90%;
-    --accent-foreground: 0 0% 5%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 38 20% 85%;
-    --input: 38 20% 85%;
-    --ring: 38 35% 75%;
+    --popover-foreground: 217 33% 17%;
+    --primary: 217 91% 50%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 217 33% 17%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+    --accent: 217 91% 95%;
+    --accent-foreground: 217 91% 40%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 217 91% 50%;
     --radius: 0.5rem;
   }
 
   .dark {
-    /* Primary dark theme - #0E0E0E background with #DAC5A7 gold accents */
-    --background: 0 0% 5.5%;
-    --foreground: 38 25% 90%;
-    --card: 0 0% 8%;
-    --card-foreground: 38 25% 90%;
-    --popover: 0 0% 7%;
-    --popover-foreground: 38 25% 90%;
-    --primary: 38 35% 75%;
-    --primary-foreground: 0 0% 5%;
-    --secondary: 38 20% 20%;
-    --secondary-foreground: 38 25% 90%;
-    --muted: 0 0% 12%;
-    --muted-foreground: 38 15% 65%;
-    --accent: 38 20% 15%;
-    --accent-foreground: 38 25% 90%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 85.7% 97.3%;
-    --border: 38 15% 18%;
-    --input: 38 15% 18%;
-    --ring: 38 35% 75%;
+    /* Dark mode - deep blue variant */
+    --background: 222 47% 11%;
+    --foreground: 210 40% 98%;
+    --card: 217 33% 17%;
+    --card-foreground: 210 40% 98%;
+    --popover: 217 33% 17%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 217 33% 25%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217 33% 25%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 217 33% 25%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217 33% 25%;
+    --input: 217 33% 25%;
+    --ring: 217 91% 60%;
   }
 }
 

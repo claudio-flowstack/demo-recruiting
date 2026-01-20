@@ -2,7 +2,7 @@ import { emotionalReframe } from "@/config/content";
 
 export const EmotionalReframe = () => {
   return (
-    <section className="container py-20 md:py-28">
+    <section className="container py-12 md:py-16">
       <div className="max-w-3xl mx-auto text-center">
         <h2 className="text-3xl md:text-4xl lg:text-5xl font-light tracking-elegant mb-4">
           <span className="font-display italic text-primary">

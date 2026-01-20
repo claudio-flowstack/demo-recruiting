@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import {
   NavigationMenu,
   NavigationMenuItem,
@@ -16,7 +17,11 @@ import { Button, buttonVariants } from "./ui/button";
 import { Menu } from "lucide-react";
 import { siteConfig, navLinks } from "@/config/content";
 
-export const Navbar = () => {
+interface NavbarProps {
+  hideCta?: boolean;
+}
+
+export const Navbar = ({ hideCta = false }: NavbarProps) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
   return (
@@ -25,13 +30,12 @@ export const Navbar = () => {
         <NavigationMenuList className="container h-16 px-4 w-screen flex justify-between items-center">
           {/* Logo - Signature Style */}
           <NavigationMenuItem className="font-bold flex">
-            <a
-              rel="noreferrer noopener"
-              href="/"
+            <Link
+              to="/"
               className="font-display italic text-xl text-primary hover:text-primary/80 transition-colors"
             >
               {siteConfig.name}
-            </a>
+            </Link>
           </NavigationMenuItem>
 
           {/* Mobile Menu */}
@@ -61,15 +65,13 @@ export const Navbar = () => {
                       {label}
                     </a>
                   ))}
-                  <Button asChild className="mt-4 w-full">
-                    <a
-                      href={siteConfig.cta.href}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      {siteConfig.cta.text}
-                    </a>
-                  </Button>
+                  {!hideCta && (
+                    <Button asChild className="mt-4 w-full">
+                      <Link to={siteConfig.cta.href} onClick={() => setIsOpen(false)}>
+                        {siteConfig.cta.text}
+                      </Link>
+                    </Button>
+                  )}
                 </nav>
               </SheetContent>
             </Sheet>
@@ -92,17 +94,15 @@ export const Navbar = () => {
           </nav>
 
           {/* CTA Button */}
-          <div className="hidden md:flex">
-            <Button asChild size="sm" className="px-6">
-              <a
-                href={siteConfig.cta.href}
-                target="_blank"
-                rel="noreferrer"
-              >
-                {siteConfig.cta.text}
-              </a>
-            </Button>
-          </div>
+          {!hideCta && (
+            <div className="hidden md:flex">
+              <Button asChild size="sm" className="px-6">
+                <Link to={siteConfig.cta.href}>
+                  {siteConfig.cta.text}
+                </Link>
+              </Button>
+            </div>
+          )}
         </NavigationMenuList>
       </NavigationMenu>
     </header>

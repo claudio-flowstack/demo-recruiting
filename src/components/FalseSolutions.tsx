@@ -10,7 +10,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
 
 export const FalseSolutions = () => {
   return (
-    <section className="container py-20 md:py-28">
+    <section className="container py-12 md:py-16">
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-light tracking-elegant mb-4">

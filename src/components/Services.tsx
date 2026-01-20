@@ -19,14 +19,14 @@ const iconMap: Record<string, LucideIcon> = {
 
 export const Services = () => {
   return (
-    <section id="services" className="container py-24 sm:py-32">
+    <section id="services" className="container py-16 sm:py-20">
       <div className="text-center mb-16">
         <h2 className="text-3xl md:text-4xl font-light tracking-elegant">
           Wo wir
           <span className="font-display italic text-primary"> ansetzen</span>
         </h2>
         <p className="text-muted-foreground mt-4 max-w-2xl mx-auto">
-          Unsere Prozessarchitektur umfasst alle kritischen Bereiche deines Unternehmens.
+          Unsere Prozessarchitektur umfasst alle kritischen Bereiche deines Unternehmens, in denen operative Reibung entsteht und Marge verloren geht.
         </p>
       </div>
 

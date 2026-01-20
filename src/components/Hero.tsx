@@ -1,56 +1,89 @@
+import { Link } from "react-router-dom";
 import { Button } from "./ui/button";
 import { siteConfig } from "@/config/content";
-import { ArrowDown } from "lucide-react";
+import { ArrowDown, Check } from "lucide-react";
 
 export const Hero = () => {
   return (
-    <section className="container flex flex-col items-center justify-center min-h-[90vh] py-20 md:py-32">
-      {/* Headshot */}
-      <div className="relative mb-8">
-        <div className="w-40 h-40 md:w-48 md:h-48 rounded-full overflow-hidden border-2 border-primary/20 bg-muted">
-          {/* Replace with your actual photo */}
-          <img
-            src="https://via.placeholder.com/200x200?text=Photo"
-            alt={siteConfig.name}
-            className="w-full h-full object-cover"
-          />
-        </div>
-        {/* Decorative ring */}
-        <div className="absolute inset-0 rounded-full border border-primary/10 scale-110" />
-      </div>
+    <section className="container min-h-[90vh] py-16 md:py-24">
+      {/* Headline + Subheadline - zentriert */}
+      <div className="text-center space-y-4 max-w-4xl mx-auto mb-16">
+        {/* Eyebrow / Zielgruppe */}
+        <p className="text-sm md:text-base text-primary font-medium uppercase tracking-widest">
+          {siteConfig.eyebrow}
+        </p>
 
-      {/* Title */}
-      <div className="text-center space-y-4 max-w-3xl">
         <h1 className="text-4xl md:text-5xl lg:text-6xl font-light tracking-elegant">
           <span className="text-foreground">{siteConfig.title}</span>
           <br />
-          <span className="font-display italic text-primary">
+          <span className="font-display italic text-primary text-2xl md:text-3xl lg:text-4xl">
             {siteConfig.titleAccent}
           </span>
         </h1>
 
-        <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+        <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
           {siteConfig.tagline}
         </p>
       </div>
 
-      {/* CTA Button */}
-      <div className="mt-10">
-        <Button
-          asChild
-          size="lg"
-          className="px-8 py-6 text-base font-medium tracking-wide"
-        >
-          <a href={siteConfig.cta.href} target="_blank" rel="noreferrer">
-            {siteConfig.cta.text}
-          </a>
-        </Button>
+      {/* ABTF Layout: Video/Bild links, Bullet Points + CTA rechts */}
+      <div className="grid md:grid-cols-2 gap-12 lg:gap-16 items-center max-w-6xl mx-auto">
+        {/* Left: Visual */}
+        <div className="relative">
+          <div className="aspect-video rounded-xl overflow-hidden border border-border/50 bg-muted">
+            {/* Replace with actual video or image */}
+            <img
+              src="https://via.placeholder.com/640x360?text=Video+Thumbnail"
+              alt="Prozessautomatisierung"
+              className="w-full h-full object-cover"
+            />
+            {/* Play button overlay for video */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-16 h-16 rounded-full bg-primary/90 flex items-center justify-center cursor-pointer hover:bg-primary transition-colors">
+                <div className="w-0 h-0 border-t-8 border-t-transparent border-l-12 border-l-white border-b-8 border-b-transparent ml-1" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right: Bullet Points + CTA */}
+        <div className="space-y-6">
+          <p className="text-sm text-muted-foreground uppercase tracking-widest">
+            Kommt dir das bekannt vor?
+          </p>
+
+          {/* Bullet Points: Symptome & Frustrationen */}
+          <ul className="space-y-4">
+            {siteConfig.bulletPoints?.map((point, index) => (
+              <li key={index} className="flex items-start gap-3">
+                <Check className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+                <span className="text-foreground/90 text-lg">{point}</span>
+              </li>
+            ))}
+          </ul>
+
+          {/* CTA Button */}
+          <div className="pt-4">
+            <Button
+              asChild
+              size="lg"
+              className="px-8 py-6 text-base font-medium tracking-wide w-full md:w-auto"
+            >
+              <Link to={siteConfig.cta.href}>
+                {siteConfig.cta.text}
+              </Link>
+            </Button>
+            <p className="text-sm text-muted-foreground mt-3">
+              Kein Verkaufsgespräch. Nur Klarheit.
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* Scroll Indicator */}
       <div className="mt-16 md:mt-24 flex flex-col items-center gap-2 text-muted-foreground">
         <ArrowDown className="w-4 h-4 animate-bounce" />
-        <span className="text-xs tracking-widest uppercase">My Services</span>
+        <span className="text-xs tracking-widest uppercase">Mehr erfahren</span>
       </div>
 
       {/* Subtle background glow */}

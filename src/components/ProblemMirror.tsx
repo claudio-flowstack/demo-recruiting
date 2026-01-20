@@ -8,15 +8,22 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Flame: Icons.Flame,
   Database: Icons.Database,
   RefreshCw: Icons.RefreshCw,
+  Clock: Icons.Clock,
+  Link: Icons.Link,
 };
 
 export const ProblemMirror = () => {
   return (
-    <section className="container py-20 md:py-28">
+    <section className="container py-12 md:py-16">
       <div className="text-center mb-12">
-        <h2 className="text-3xl md:text-4xl font-light tracking-elegant">
+        <h2 className="text-3xl md:text-4xl font-light tracking-elegant mb-4">
           {problemMirror.headline}
         </h2>
+        {problemMirror.subheadline && (
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            {problemMirror.subheadline}
+          </p>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">

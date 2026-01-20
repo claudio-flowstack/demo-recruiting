@@ -8,15 +8,15 @@ import { faqItems, siteConfig } from "@/config/content";
 
 export const FAQ = () => {
   return (
-    <section id="faq" className="container py-24 sm:py-32">
+    <section id="faq" className="container py-16 sm:py-20">
       {/* Section Header */}
       <div className="text-center mb-16">
         <h2 className="text-3xl md:text-4xl lg:text-5xl font-light tracking-elegant mb-4">
-          Frequently Asked{" "}
-          <span className="font-display italic text-primary">Questions</span>
+          Häufige{" "}
+          <span className="font-display italic text-primary">Fragen</span>
         </h2>
         <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-          Everything you need to know about working with us.
+          Was du wissen solltest, bevor wir sprechen.
         </p>
       </div>
 
@@ -42,12 +42,12 @@ export const FAQ = () => {
         {/* Contact CTA */}
         <div className="text-center mt-12">
           <p className="text-muted-foreground">
-            Still have questions?{" "}
+            Noch Fragen?{" "}
             <a
               href={siteConfig.cta.href}
               className="text-primary hover:underline underline-offset-4 transition-all"
             >
-              Let's talk
+              Lass uns sprechen
             </a>
           </p>
         </div>

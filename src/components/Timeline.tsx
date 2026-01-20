@@ -4,13 +4,13 @@ import { Card, CardContent, CardHeader } from "./ui/card";
 
 export const Timeline = () => {
   return (
-    <section id="process" className="container py-24 sm:py-32">
+    <section id="process" className="container py-16 sm:py-20">
       <div className="text-center mb-16">
         <h2 className="text-3xl md:text-4xl font-light tracking-elegant mb-4">
-          Strategies that leave
+          In 3 Schritten zu deinem
           <br />
           <span className="font-display italic text-primary">
-            a lasting impression!
+            KI-optimierten Unternehmen
           </span>
         </h2>
       </div>
