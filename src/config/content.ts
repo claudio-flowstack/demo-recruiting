@@ -521,13 +521,13 @@ export const teamContent = {
     {
       name: "Claudio Di Franco",
       role: "Gründer & Prozessarchitekt",
-      image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face",
+      image: "/claudio.jpg",
       description: "Ex-Agenturinhaber. Hat selbst erlebt, wie schnell Wachstum zum Chaos wird. Jetzt hilft er anderen, es besser zu machen.",
     },
     {
       name: "Anak",
       role: "Automation Engineer",
-      image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face",
+      image: "/anak.jpg",
       description: "Technische Implementierung, KI-Integration und Workflow-Automatisierung. Macht das Unmögliche möglich.",
     },
   ],
