@@ -48,7 +48,7 @@ export const Differentiator = () => {
         {/* Conclusion */}
         <div className="text-center">
           <p className="text-base text-primary font-display italic">
-            {comparison.costComparison.result}
+            Skalierung entsteht durch Systematisierung, nicht durch mehr Einsatz.
           </p>
         </div>
       </div>

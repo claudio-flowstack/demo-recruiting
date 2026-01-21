@@ -93,7 +93,7 @@ export const Testimonials = () => {
                           src={study.author.image}
                         />
                         <AvatarFallback className="bg-muted text-muted-foreground text-sm">
-                          {study.author.name
+                          {(study.author.name || "")
                             .split(" ")
                             .map((n) => n[0])
                             .join("")}
@@ -126,14 +126,14 @@ export const Testimonials = () => {
                     {study.results.map((result, idx) => (
                       <li key={idx} className="flex items-start gap-3">
                         <Check className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
-                        <span className="text-muted-foreground text-sm">{result}</span>
+                        <span className="text-muted-foreground text-sm">{result.value} {result.label}</span>
                       </li>
                     ))}
                   </ul>
                 </div>
 
                 {/* Column 2 & 3: Big Metrics */}
-                {study.metrics.map((metric, idx) => (
+                {study.metrics?.map((metric, idx) => (
                   <div
                     key={idx}
                     className="text-center md:text-left p-6 rounded-xl bg-primary/5 border border-primary/20"

@@ -1,92 +1,70 @@
-import { processSteps } from "@/config/content";
-import { Badge } from "./ui/badge";
-import { Card, CardContent, CardHeader } from "./ui/card";
+import { timeline } from "@/config/content";
+import * as Icons from "lucide-react";
+import { LucideIcon } from "lucide-react";
+import { ArrowDown } from "lucide-react";
+
+const iconMap: Record<string, LucideIcon> = {
+  Phone: Icons.Phone,
+  Target: Icons.Target,
+  FileText: Icons.FileText,
+  Rocket: Icons.Rocket,
+  TrendingUp: Icons.TrendingUp,
+};
 
 export const Timeline = () => {
   return (
-    <section id="process" className="container py-16 sm:py-20">
-      <div className="text-center mb-16">
-        <h2 className="text-3xl md:text-4xl font-light tracking-elegant mb-4">
-          In 3 Schritten zu deinem
-          <br />
-          <span className="font-display italic text-primary">
-            KI-optimierten Unternehmen
-          </span>
+    <section id="process" className="container py-16 md:py-24">
+      {/* Section Header */}
+      <div className="text-center mb-12 md:mb-16">
+        <h2 className="text-3xl md:text-4xl lg:text-5xl font-light tracking-elegant">
+          {timeline.headline}
         </h2>
       </div>
 
-      <div className="relative max-w-4xl mx-auto">
-        {/* Vertical line */}
-        <div className="absolute left-8 md:left-1/2 top-0 bottom-0 w-px bg-border hidden md:block" />
+      {/* Timeline Steps */}
+      <div className="max-w-3xl mx-auto">
+        <div className="space-y-6">
+          {timeline.steps.map((step, index) => {
+            const Icon = iconMap[step.icon] || Icons.Circle;
+            const isLast = index === timeline.steps.length - 1;
 
-        {processSteps.map((step, index) => (
-          <div
-            key={step.step}
-            className={`relative flex flex-col md:flex-row gap-8 mb-16 last:mb-0 ${
-              index % 2 === 0 ? "md:flex-row" : "md:flex-row-reverse"
-            }`}
-          >
-            {/* Step Number */}
-            <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 w-16 h-16 items-center justify-center">
-              <div className="w-12 h-12 rounded-full bg-background border-2 border-primary flex items-center justify-center">
-                <span className="text-primary font-light text-lg">
-                  {step.step}
-                </span>
-              </div>
-            </div>
+            return (
+              <div key={index} className="relative">
+                {/* Step Card */}
+                <div className="bg-card border border-border/50 rounded-xl p-6 hover:border-primary/30 transition-colors">
+                  <div className="flex items-start gap-4">
+                    {/* Step Number & Icon */}
+                    <div className="flex flex-col items-center">
+                      <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                        <Icon className="w-6 h-6 text-primary" />
+                      </div>
+                      <span className="text-xs font-semibold text-primary mt-2">
+                        SCHRITT {index + 1}
+                      </span>
+                    </div>
 
-            {/* Content Card */}
-            <Card
-              className={`flex-1 ${
-                index % 2 === 0 ? "md:mr-auto md:pr-16" : "md:ml-auto md:pl-16"
-              } md:w-[45%] bg-card/50 border-border/50 hover:border-primary/30 transition-colors`}
-            >
-              <CardHeader className="pb-2">
-                <div className="flex items-center gap-4 mb-2">
-                  {/* Mobile step number */}
-                  <div className="md:hidden w-10 h-10 rounded-full border border-primary flex items-center justify-center">
-                    <span className="text-primary font-light text-sm">
-                      {step.step}
-                    </span>
+                    {/* Content */}
+                    <div className="flex-1 pt-1">
+                      <h3 className="text-lg font-semibold text-foreground mb-2">
+                        {step.title}
+                      </h3>
+                      <p className="text-muted-foreground">
+                        {step.description}
+                      </p>
+                    </div>
                   </div>
-                  {step.duration && (
-                    <Badge
-                      variant="outline"
-                      className="text-xs tracking-wide border-primary/30 text-primary"
-                    >
-                      {step.duration}
-                    </Badge>
-                  )}
                 </div>
-                <p className="text-xs uppercase tracking-widest text-muted-foreground">
-                  {step.subtitle}
-                </p>
-                <h3 className="text-xl font-light tracking-elegant text-foreground">
-                  {step.title}
-                </h3>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground text-sm leading-relaxed mb-4">
-                  {step.description}
-                </p>
-                <ul className="space-y-2">
-                  {step.items.map((item, i) => (
-                    <li
-                      key={i}
-                      className="flex items-start gap-2 text-sm text-muted-foreground"
-                    >
-                      <span className="text-primary mt-1">•</span>
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
 
-            {/* Spacer for alternating layout */}
-            <div className="hidden md:block flex-1 md:w-[45%]" />
-          </div>
-        ))}
+                {/* Arrow (except for last step) */}
+                {!isLast && (
+                  <div className="flex justify-center py-2">
+                    <ArrowDown className="w-5 h-5 text-primary/50" />
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
     </section>
   );

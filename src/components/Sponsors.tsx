@@ -6,25 +6,15 @@ export const Sponsors = () => {
 
   return (
     <section id="sponsors" className="pt-4 pb-12 overflow-hidden">
-      {/* Trust Metrics - Section 2 */}
+      {/* Trust Metrics Strip - 4 Metriken */}
       <div className="container mb-10">
-        <div className="text-center mb-8">
-          <h2 className="text-2xl md:text-3xl font-light tracking-elegant mb-2">
-            {trustMetrics.headline}
-          </h2>
-          {trustMetrics.subheadline && (
-            <p className="text-sm text-muted-foreground">
-              {trustMetrics.subheadline}
-            </p>
-          )}
-        </div>
-        <div className="flex flex-col md:flex-row justify-center items-center gap-8 md:gap-16">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 max-w-4xl mx-auto">
           {trustMetrics.metrics.map((metric, index) => (
-            <div key={index} className="text-center">
-              <p className="text-2xl md:text-3xl font-light text-primary mb-1">
+            <div key={index} className="text-center p-4 md:p-6 bg-card/50 rounded-xl border border-border/30">
+              <p className="text-2xl md:text-3xl lg:text-4xl font-bold text-primary mb-1">
                 {metric.value}
               </p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs md:text-sm text-muted-foreground">
                 {metric.label}
               </p>
             </div>

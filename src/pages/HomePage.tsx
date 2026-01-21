@@ -1,17 +1,18 @@
 import { Navbar } from "@/components/Navbar";
 import { Hero } from "@/components/Hero";
 import { Sponsors } from "@/components/Sponsors";
-import { EmotionalReframe } from "@/components/EmotionalReframe";
+import { EmpathyOpening } from "@/components/EmpathyOpening";
 import { ProblemMirror } from "@/components/ProblemMirror";
-import { TargetAudience } from "@/components/TargetAudience";
-import { Differentiator } from "@/components/Differentiator";
-import { Services } from "@/components/Services";
+import { SolutionPreview } from "@/components/SolutionPreview";
+import { FlowstackSystem } from "@/components/FlowstackSystem";
+// import { CaseStudies } from "@/components/CaseStudies"; // TEMPORÄR AUSGEBLENDET
+import { CtaInline } from "@/components/CtaInline";
 import { Outcomes } from "@/components/Outcomes";
-import { Relief } from "@/components/Relief";
-// import { Testimonials } from "@/components/Testimonials"; // Hidden until we have real customers
+import { TargetAudience } from "@/components/TargetAudience";
+import { Services } from "@/components/Services";
 import { Timeline } from "@/components/Timeline";
 import { TeamSection } from "@/components/TeamSection";
-import { Cta } from "@/components/Cta";
+import { CtaFinal } from "@/components/CtaFinal";
 import { FAQ } from "@/components/FAQ";
 import { Footer } from "@/components/Footer";
 import { ScrollToTop } from "@/components/ScrollToTop";
@@ -22,45 +23,57 @@ export const HomePage = () => {
     <>
       <Navbar />
 
-      {/* 1. HERO (Above the Fold) */}
+      {/* 1. HERO */}
       <Hero />
 
-      {/* Trust Metrics Strip */}
+      {/* 2. TRUST STRIP */}
       <Sponsors />
 
-      {/* 2. PROBLEME DER ZIELGRUPPE */}
-      <EmotionalReframe />
+      {/* 3. EMPATHIE-OPENING */}
+      <EmpathyOpening />
+
+      {/* 4. PROBLEM MIRROR */}
       <ProblemMirror />
 
-      {/* 3. FÜR WEN IST DAS? (Zielgruppe) */}
+      {/* 5. LÖSUNG-PREVIEW */}
+      <SolutionPreview />
+
+      {/* 6. DAS FLOWSTACK-SYSTEM */}
+      <FlowstackSystem />
+
+      {/* 7. FALLSTUDIEN - TEMPORÄR AUSGEBLENDET (keine Kunden noch)
+         Um wieder zu aktivieren: Kommentar entfernen
+      <CaseStudies />
+      */}
+
+      {/* 8. CTA INLINE #1 */}
+      <CtaInline />
+
+      {/* 9. OUTCOMES */}
+      <Outcomes />
+
+      {/* 10. FÜR WEN */}
       <TargetAudience />
 
-      {/* 4. DIE FLOWSTACK-METHODE */}
-      <Differentiator />
-
-      {/* 5. LEISTUNGSBAUSTEINE */}
+      {/* 11. LEISTUNGEN */}
       <Services />
 
-      {/* 6. VORTEILE / OUTCOMES */}
-      <Outcomes />
-      <Relief />
-
-      {/* 7. FALLSTUDIEN (Testimonials) - Hidden until we have real customers */}
-      {/* <Testimonials /> */}
-
-      {/* 8. ABLAUF DER ZUSAMMENARBEIT */}
+      {/* 12. ABLAUF */}
       <Timeline />
 
-      {/* 9. TEAM-SEKTION */}
+      {/* 13. CTA INLINE #2 */}
+      <CtaInline variant="secondary" />
+
+      {/* 14. TEAM */}
       <TeamSection />
 
-      {/* 10. CTA-SECTION */}
-      <Cta />
+      {/* 15. FINALER CTA */}
+      <CtaFinal />
 
-      {/* 11. FAQ */}
+      {/* 16. FAQ */}
       <FAQ />
 
-      {/* 12. FOOTER */}
+      {/* 17. FOOTER */}
       <Footer />
 
       <ScrollToTop />
