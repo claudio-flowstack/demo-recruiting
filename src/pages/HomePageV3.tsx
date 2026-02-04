@@ -253,7 +253,7 @@ const SolutionPreviewGraphic = ({ index }: { index: number }) => {
       {index === 2 && (
         <div className="grid grid-cols-2 gap-4">
           <AnimatedStatCard value={5} suffix="x" label="Mehr Kunden" color="text-purple-400" isVisible={isVisible} />
-          <AnimatedStatCard value={0} label="Neue Mitarbeiter" color="text-emerald-400" isVisible={isVisible} />
+          <AnimatedStatCard value={0} label="Neueinstellungen" color="text-emerald-400" isVisible={isVisible} />
         </div>
       )}
     </div>
@@ -438,187 +438,205 @@ const AnimatedWorkflow = () => {
 const AgencyAutomationFlow = () => {
   const { ref, isVisible } = useScrollAnimation();
 
-  // Tool/Platform Node Component
-  const Node = ({
+  // Tool Node Component with brand colors
+  const ToolNode = ({
     icon,
     label,
-    className = "",
-    size = "md",
+    brandColor,
     delay = 0
   }: {
     icon: React.ReactNode;
-    label?: string;
-    className?: string;
-    size?: "sm" | "md" | "lg";
+    label: string;
+    brandColor: string;
     delay?: number;
-  }) => {
-    const sizeClasses = {
-      sm: "w-10 h-10",
-      md: "w-12 h-12",
-      lg: "w-16 h-16"
-    };
-
-    return (
-      <div
-        className={`flex flex-col items-center gap-1.5 transition-all duration-700 ${isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-75'} ${className}`}
-        style={{ transitionDelay: `${delay}ms` }}
-      >
-        <div className={`${sizeClasses[size]} rounded-xl bg-white/[0.08] backdrop-blur-sm border border-white/[0.12] flex items-center justify-center hover:bg-white/[0.12] hover:border-white/20 transition-all cursor-pointer group`}>
-          <div className="text-gray-400 group-hover:text-white transition-colors">
-            {icon}
-          </div>
-        </div>
-        {label && <span className="text-[10px] text-gray-500 font-medium">{label}</span>}
+  }) => (
+    <div
+      className={`flex flex-col items-center gap-1.5 transition-all duration-700 ${isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-75'}`}
+      style={{ transitionDelay: `${delay}ms` }}
+    >
+      <div className={`w-11 h-11 md:w-12 md:h-12 rounded-xl bg-gray-900/80 border border-gray-700/50 flex items-center justify-center hover:border-gray-600 transition-all cursor-pointer shadow-lg ${brandColor}`}>
+        {icon}
       </div>
-    );
-  };
+      <span className="text-[10px] text-gray-400 font-medium">{label}</span>
+    </div>
+  );
 
   // Central Hub Node
-  const CentralNode = ({ icon, label, sublabel, delay = 0 }: { icon: React.ReactNode; label: string; sublabel?: string; delay?: number }) => (
+  const CentralHub = ({ delay = 0 }: { delay?: number }) => (
     <div
       className={`flex flex-col items-center transition-all duration-700 ${isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-75'}`}
       style={{ transitionDelay: `${delay}ms` }}
     >
       <div className="relative">
-        <div className="absolute inset-0 bg-purple-500/30 rounded-full blur-2xl scale-150" />
-        <div className="relative w-20 h-20 md:w-24 md:h-24 rounded-full bg-gradient-to-br from-purple-500/20 to-purple-600/10 border-2 border-purple-500/40 flex flex-col items-center justify-center backdrop-blur-sm">
-          <div className="text-purple-400 mb-1">{icon}</div>
-          <span className="text-[10px] md:text-xs text-purple-300 font-semibold">{label}</span>
+        <div className="absolute inset-0 bg-purple-500/40 rounded-full blur-2xl scale-150 animate-pulse" />
+        <div className="relative w-20 h-20 md:w-24 md:h-24 rounded-full bg-gradient-to-br from-purple-600 to-purple-800 border-2 border-purple-400/50 flex flex-col items-center justify-center shadow-2xl shadow-purple-500/30">
+          <Zap className="w-7 h-7 md:w-8 md:h-8 text-white mb-0.5" />
+          <span className="text-[10px] md:text-xs text-purple-200 font-bold">Flowstack</span>
         </div>
       </div>
-      {sublabel && <span className="text-[10px] text-gray-500 mt-2">{sublabel}</span>}
     </div>
   );
 
-  // SVG Icons for platforms
+  // Real Tool Icons
   const LinkedInIcon = () => (
-    <svg viewBox="0 0 24 24" className="w-5 h-5" fill="currentColor">
+    <svg viewBox="0 0 24 24" className="w-5 h-5" fill="#0A66C2">
       <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
     </svg>
   );
 
+  const GmailIcon = () => (
+    <svg viewBox="0 0 24 24" className="w-5 h-5">
+      <path fill="#EA4335" d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 0 1 0 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.455 4.64 12 9.548l6.545-4.91 1.528-1.145C21.69 2.28 24 3.434 24 5.457z"/>
+    </svg>
+  );
+
+  const TypeformIcon = () => (
+    <svg viewBox="0 0 24 24" className="w-5 h-5" fill="#262627">
+      <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.568 8.16a.477.477 0 0 1-.073.079l-6.51 5.56-.002.002a.472.472 0 0 1-.326.112.476.476 0 0 1-.334-.15l-3.903-4.073a.476.476 0 0 1 .688-.659l3.561 3.716 6.168-5.27a.476.476 0 1 1 .731.683z" fill="#fff"/>
+    </svg>
+  );
+
+  const CalendlyIcon = () => (
+    <svg viewBox="0 0 24 24" className="w-5 h-5">
+      <path fill="#006BFF" d="M19.655 14.262c0 2.312-1.888 4.201-4.201 4.201h-1.086c-.323 0-.585.262-.585.585v1.086c0 2.312-1.888 4.201-4.201 4.201-2.312 0-4.201-1.888-4.201-4.201v-1.086c0-.323-.262-.585-.585-.585H3.71c-2.312 0-4.201-1.888-4.201-4.201 0-2.312 1.888-4.201 4.201-4.201h1.086c.323 0 .585-.262.585-.585V8.39c0-2.312 1.888-4.201 4.201-4.201 2.312 0 4.201 1.888 4.201 4.201v1.086c0 .323.262.585.585.585h1.086c2.312 0 4.201 1.888 4.201 4.201z"/>
+    </svg>
+  );
+
   const SlackIcon = () => (
-    <svg viewBox="0 0 24 24" className="w-5 h-5" fill="currentColor">
-      <path d="M5.042 15.165a2.528 2.528 0 0 1-2.52 2.523A2.528 2.528 0 0 1 0 15.165a2.527 2.527 0 0 1 2.522-2.52h2.52v2.52zM6.313 15.165a2.527 2.527 0 0 1 2.521-2.52 2.527 2.527 0 0 1 2.521 2.52v6.313A2.528 2.528 0 0 1 8.834 24a2.528 2.528 0 0 1-2.521-2.522v-6.313zM8.834 5.042a2.528 2.528 0 0 1-2.521-2.52A2.528 2.528 0 0 1 8.834 0a2.528 2.528 0 0 1 2.521 2.522v2.52H8.834zM8.834 6.313a2.528 2.528 0 0 1 2.521 2.521 2.528 2.528 0 0 1-2.521 2.521H2.522A2.528 2.528 0 0 1 0 8.834a2.528 2.528 0 0 1 2.522-2.521h6.312z"/>
+    <svg viewBox="0 0 24 24" className="w-5 h-5">
+      <path fill="#E01E5A" d="M5.042 15.165a2.528 2.528 0 0 1-2.52 2.523A2.528 2.528 0 0 1 0 15.165a2.527 2.527 0 0 1 2.522-2.52h2.52v2.52z"/>
+      <path fill="#36C5F0" d="M6.313 15.165a2.527 2.527 0 0 1 2.521-2.52 2.527 2.527 0 0 1 2.521 2.52v6.313A2.528 2.528 0 0 1 8.834 24a2.528 2.528 0 0 1-2.521-2.522v-6.313z"/>
+      <path fill="#2EB67D" d="M8.834 5.042a2.528 2.528 0 0 1-2.521-2.52A2.528 2.528 0 0 1 8.834 0a2.528 2.528 0 0 1 2.521 2.522v2.52H8.834z"/>
+      <path fill="#ECB22E" d="M8.834 6.313a2.528 2.528 0 0 1 2.521 2.521 2.528 2.528 0 0 1-2.521 2.521H2.522A2.528 2.528 0 0 1 0 8.834a2.528 2.528 0 0 1 2.522-2.521h6.312z"/>
     </svg>
   );
 
   const HubSpotIcon = () => (
-    <svg viewBox="0 0 24 24" className="w-5 h-5" fill="currentColor">
+    <svg viewBox="0 0 24 24" className="w-5 h-5" fill="#FF7A59">
       <path d="M18.164 7.93V5.084a2.198 2.198 0 001.267-1.984v-.066A2.2 2.2 0 0017.235.838h-.066a2.2 2.2 0 00-2.196 2.196v.066c0 .873.52 1.626 1.267 1.984V7.93a6.154 6.154 0 00-3.024 1.465l-8.02-6.239a2.078 2.078 0 00.069-.509A2.118 2.118 0 103.118 4.77c0 .593.25 1.128.65 1.51L3.14 7.142a6.103 6.103 0 00-1.854 4.38c0 1.685.683 3.21 1.787 4.32l-.64.84a2.105 2.105 0 00-.84-.178A2.118 2.118 0 00.477 18.62a2.118 2.118 0 002.116 2.117c.737 0 1.399-.38 1.78-.96l.74-.01a6.17 6.17 0 003.606 1.168 6.17 6.17 0 006.168-6.168 6.126 6.126 0 00-1.36-3.85l5.06 3.92a2.08 2.08 0 00-.07.532 2.118 2.118 0 102.117-2.117 2.09 2.09 0 00-.69.118l-4.827-3.75a6.126 6.126 0 003.046-1.702z"/>
     </svg>
   );
 
   const NotionIcon = () => (
-    <svg viewBox="0 0 24 24" className="w-5 h-5" fill="currentColor">
-      <path d="M4.459 4.208c.746.606 1.026.56 2.428.466l13.215-.793c.28 0 .047-.28-.046-.326L17.86 1.968c-.42-.326-.98-.7-2.055-.607L3.01 2.295c-.466.046-.56.28-.374.466zm.793 3.08v13.904c0 .747.373 1.027 1.214.98l14.523-.84c.841-.046.935-.56.935-1.167V6.354c0-.606-.233-.933-.748-.886l-15.177.887c-.56.047-.747.327-.747.933zm14.337.745c.093.42 0 .84-.42.888l-.7.14v10.264c-.608.327-1.168.514-1.635.514-.748 0-.935-.234-1.495-.933l-4.577-7.186v6.952L12.21 19s0 .84-1.168.84l-3.222.186c-.093-.186 0-.653.327-.746l.84-.233V9.854L7.822 9.76c-.094-.42.14-1.026.793-1.073l3.456-.233 4.764 7.279v-6.44l-1.215-.139c-.093-.514.28-.887.747-.933zM1.936 1.035l13.31-.98c1.634-.14 2.055-.047 3.082.7l4.249 2.986c.7.513.934.653.934 1.213v16.378c0 1.026-.373 1.634-1.68 1.726l-15.458.934c-.98.047-1.448-.093-1.962-.747l-3.129-4.06c-.56-.747-.793-1.306-.793-1.96V2.667c0-.839.374-1.54 1.447-1.632z"/>
+    <svg viewBox="0 0 24 24" className="w-5 h-5" fill="#fff">
+      <path d="M4.459 4.208c.746.606 1.026.56 2.428.466l13.215-.793c.28 0 .047-.28-.046-.326L17.86 1.968c-.42-.326-.98-.7-2.055-.607L3.01 2.295c-.466.046-.56.28-.374.466zm.793 3.08v13.904c0 .747.373 1.027 1.214.98l14.523-.84c.841-.046.935-.56.935-1.167V6.354c0-.606-.233-.933-.748-.886l-15.177.887c-.56.047-.747.327-.747.933z"/>
     </svg>
   );
 
-  const CalendarIcon = () => (
-    <div className="relative">
-      <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2">
-        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-        <line x1="16" y1="2" x2="16" y2="6"/>
-        <line x1="8" y1="2" x2="8" y2="6"/>
-        <line x1="3" y1="10" x2="21" y2="10"/>
-      </svg>
-      <span className="absolute inset-0 flex items-center justify-center text-[8px] font-bold mt-1.5">31</span>
-    </div>
+  const GoogleCalIcon = () => (
+    <svg viewBox="0 0 24 24" className="w-5 h-5">
+      <path fill="#4285F4" d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12s4.48 10 10 10 10-4.48 10-10z"/>
+      <path fill="#fff" d="M12 6v6l4 2"/>
+      <rect fill="#fff" x="7" y="7" width="10" height="10" rx="1"/>
+      <text x="12" y="14" textAnchor="middle" fill="#4285F4" fontSize="6" fontWeight="bold">31</text>
+    </svg>
   );
 
   return (
     <div ref={ref} className="relative">
       {/* Container */}
-      <div className="relative p-6 md:p-10 overflow-hidden">
+      <div className="relative p-4 md:p-8 overflow-hidden">
 
         {/* Soft Glows */}
-        <div className="absolute top-1/3 left-1/4 w-40 h-40 bg-purple-500/10 rounded-full blur-[80px]" />
-        <div className="absolute bottom-1/3 right-1/4 w-40 h-40 bg-blue-500/10 rounded-full blur-[80px]" />
+        <div className="absolute top-1/3 left-1/4 w-48 h-48 bg-purple-500/15 rounded-full blur-[100px]" />
+        <div className="absolute bottom-1/3 right-1/4 w-48 h-48 bg-blue-500/15 rounded-full blur-[100px]" />
 
         {/* Main Workflow Diagram */}
-        <div className="relative min-h-[300px] md:min-h-[320px]">
+        <div className="relative min-h-[320px] md:min-h-[360px]">
 
-          {/* SVG Connection Lines */}
-          <svg className="absolute inset-0 w-full h-full pointer-events-none" preserveAspectRatio="xMidYMid meet">
+          {/* SVG Connection Lines with animated data flow */}
+          <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
             <defs>
-              <linearGradient id="flowGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#8b5cf6" stopOpacity="0.5" />
-                <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.5" />
+              <linearGradient id="lineGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#8b5cf6" stopOpacity="0.6" />
+                <stop offset="100%" stopColor="#a855f7" stopOpacity="0.3" />
+              </linearGradient>
+              <linearGradient id="lineGrad2" x1="100%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#a855f7" stopOpacity="0.6" />
+                <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.3" />
               </linearGradient>
             </defs>
 
-            {/* Lines from inputs to center - using percentages for responsiveness */}
-            {/* Top row to center */}
-            <line x1="15%" y1="15%" x2="50%" y2="45%" stroke="url(#flowGradient)" strokeWidth="1.5"
-              className={`transition-all duration-1000 ${isVisible ? 'opacity-100' : 'opacity-0'}`} style={{transitionDelay: '300ms'}} />
-            <line x1="35%" y1="15%" x2="50%" y2="45%" stroke="url(#flowGradient)" strokeWidth="1.5"
-              className={`transition-all duration-1000 ${isVisible ? 'opacity-100' : 'opacity-0'}`} style={{transitionDelay: '400ms'}} />
-            <line x1="65%" y1="15%" x2="50%" y2="45%" stroke="url(#flowGradient)" strokeWidth="1.5"
-              className={`transition-all duration-1000 ${isVisible ? 'opacity-100' : 'opacity-0'}`} style={{transitionDelay: '500ms'}} />
-            <line x1="85%" y1="15%" x2="50%" y2="45%" stroke="url(#flowGradient)" strokeWidth="1.5"
-              className={`transition-all duration-1000 ${isVisible ? 'opacity-100' : 'opacity-0'}`} style={{transitionDelay: '600ms'}} />
+            {/* Input paths - from top tools to center */}
+            <path id="path-in-0" d="M 12 8 L 50 42" fill="none" stroke="url(#lineGrad1)" strokeWidth="0.4" strokeLinecap="round" className={`transition-all duration-1000 ${isVisible ? 'opacity-100' : 'opacity-0'}`} />
+            <path id="path-in-1" d="M 37 8 L 50 42" fill="none" stroke="url(#lineGrad1)" strokeWidth="0.4" strokeLinecap="round" className={`transition-all duration-1000 ${isVisible ? 'opacity-100' : 'opacity-0'}`} style={{transitionDelay: '150ms'}} />
+            <path id="path-in-2" d="M 63 8 L 50 42" fill="none" stroke="url(#lineGrad1)" strokeWidth="0.4" strokeLinecap="round" className={`transition-all duration-1000 ${isVisible ? 'opacity-100' : 'opacity-0'}`} style={{transitionDelay: '300ms'}} />
+            <path id="path-in-3" d="M 88 8 L 50 42" fill="none" stroke="url(#lineGrad1)" strokeWidth="0.4" strokeLinecap="round" className={`transition-all duration-1000 ${isVisible ? 'opacity-100' : 'opacity-0'}`} style={{transitionDelay: '450ms'}} />
 
-            {/* Center to bottom row */}
-            <line x1="50%" y1="55%" x2="20%" y2="88%" stroke="url(#flowGradient)" strokeWidth="1.5"
-              className={`transition-all duration-1000 ${isVisible ? 'opacity-100' : 'opacity-0'}`} style={{transitionDelay: '900ms'}} />
-            <line x1="50%" y1="55%" x2="40%" y2="88%" stroke="url(#flowGradient)" strokeWidth="1.5"
-              className={`transition-all duration-1000 ${isVisible ? 'opacity-100' : 'opacity-0'}`} style={{transitionDelay: '1000ms'}} />
-            <line x1="50%" y1="55%" x2="60%" y2="88%" stroke="url(#flowGradient)" strokeWidth="1.5"
-              className={`transition-all duration-1000 ${isVisible ? 'opacity-100' : 'opacity-0'}`} style={{transitionDelay: '1100ms'}} />
-            <line x1="50%" y1="55%" x2="80%" y2="88%" stroke="url(#flowGradient)" strokeWidth="1.5"
-              className={`transition-all duration-1000 ${isVisible ? 'opacity-100' : 'opacity-0'}`} style={{transitionDelay: '1200ms'}} />
+            {/* Output paths - from center to bottom tools */}
+            <path id="path-out-0" d="M 50 58 L 12 92" fill="none" stroke="url(#lineGrad2)" strokeWidth="0.4" strokeLinecap="round" className={`transition-all duration-1000 ${isVisible ? 'opacity-100' : 'opacity-0'}`} style={{transitionDelay: '800ms'}} />
+            <path id="path-out-1" d="M 50 58 L 37 92" fill="none" stroke="url(#lineGrad2)" strokeWidth="0.4" strokeLinecap="round" className={`transition-all duration-1000 ${isVisible ? 'opacity-100' : 'opacity-0'}`} style={{transitionDelay: '950ms'}} />
+            <path id="path-out-2" d="M 50 58 L 63 92" fill="none" stroke="url(#lineGrad2)" strokeWidth="0.4" strokeLinecap="round" className={`transition-all duration-1000 ${isVisible ? 'opacity-100' : 'opacity-0'}`} style={{transitionDelay: '1100ms'}} />
+            <path id="path-out-3" d="M 50 58 L 88 92" fill="none" stroke="url(#lineGrad2)" strokeWidth="0.4" strokeLinecap="round" className={`transition-all duration-1000 ${isVisible ? 'opacity-100' : 'opacity-0'}`} style={{transitionDelay: '1250ms'}} />
+
+            {/* Animated dots flowing along input paths */}
+            <circle r="1" fill="#a855f7" opacity="0.9">
+              <animateMotion dur="2.5s" repeatCount="indefinite" begin="0s">
+                <mpath href="#path-in-0" />
+              </animateMotion>
+            </circle>
+            <circle r="1" fill="#a855f7" opacity="0.9">
+              <animateMotion dur="2.5s" repeatCount="indefinite" begin="0.4s">
+                <mpath href="#path-in-1" />
+              </animateMotion>
+            </circle>
+            <circle r="1" fill="#a855f7" opacity="0.9">
+              <animateMotion dur="2.5s" repeatCount="indefinite" begin="0.8s">
+                <mpath href="#path-in-2" />
+              </animateMotion>
+            </circle>
+            <circle r="1" fill="#a855f7" opacity="0.9">
+              <animateMotion dur="2.5s" repeatCount="indefinite" begin="1.2s">
+                <mpath href="#path-in-3" />
+              </animateMotion>
+            </circle>
+
+            {/* Animated dots flowing along output paths */}
+            <circle r="1" fill="#3b82f6" opacity="0.9">
+              <animateMotion dur="2.5s" repeatCount="indefinite" begin="1.5s">
+                <mpath href="#path-out-0" />
+              </animateMotion>
+            </circle>
+            <circle r="1" fill="#3b82f6" opacity="0.9">
+              <animateMotion dur="2.5s" repeatCount="indefinite" begin="1.9s">
+                <mpath href="#path-out-1" />
+              </animateMotion>
+            </circle>
+            <circle r="1" fill="#3b82f6" opacity="0.9">
+              <animateMotion dur="2.5s" repeatCount="indefinite" begin="2.3s">
+                <mpath href="#path-out-2" />
+              </animateMotion>
+            </circle>
+            <circle r="1" fill="#3b82f6" opacity="0.9">
+              <animateMotion dur="2.5s" repeatCount="indefinite" begin="2.7s">
+                <mpath href="#path-out-3" />
+              </animateMotion>
+            </circle>
           </svg>
 
           {/* Input Sources - Top Row */}
-          <div className="absolute top-0 left-0 right-0 flex justify-around px-4 md:px-8">
-            <Node icon={<LinkedInIcon />} label="LinkedIn" delay={0} />
-            <Node icon={<Mail className="w-5 h-5" />} label="E-Mail" delay={100} />
-            <Node icon={<MousePointer className="w-5 h-5" />} label="Website" delay={200} />
-            <Node icon={<Users className="w-5 h-5" />} label="Empfehlung" delay={300} />
-          </div>
-
-          {/* Label: Leads */}
-          <div
-            className={`absolute top-14 left-2 md:left-4 transition-all duration-700 ${isVisible ? 'opacity-100' : 'opacity-0'}`}
-            style={{ transitionDelay: '500ms' }}
-          >
-            <span className="text-[9px] text-gray-600 bg-gray-800/50 px-2 py-0.5 rounded">Leads</span>
+          <div className="absolute top-0 left-0 right-0 flex justify-around px-2 md:px-6">
+            <ToolNode icon={<LinkedInIcon />} label="LinkedIn" brandColor="" delay={0} />
+            <ToolNode icon={<GmailIcon />} label="Gmail" brandColor="" delay={100} />
+            <ToolNode icon={<TypeformIcon />} label="Typeform" brandColor="bg-gray-800" delay={200} />
+            <ToolNode icon={<CalendlyIcon />} label="Calendly" brandColor="" delay={300} />
           </div>
 
           {/* Center - Flowstack Hub */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-            <CentralNode
-              icon={<Zap className="w-6 h-6 md:w-7 md:h-7" />}
-              label="Flowstack"
-              delay={700}
-            />
+            <CentralHub delay={600} />
           </div>
 
           {/* Output Actions - Bottom Row */}
-          <div className="absolute bottom-0 left-0 right-0 flex justify-around px-4 md:px-8">
-            <Node icon={<HubSpotIcon />} label="CRM" delay={900} />
-            <Node icon={<CalendarIcon />} label="Kalender" delay={1000} />
-            <Node icon={<SlackIcon />} label="Team" delay={1100} />
-            <Node icon={<NotionIcon />} label="Docs" delay={1200} />
-          </div>
-
-          {/* Label: Automatisch */}
-          <div
-            className={`absolute bottom-14 right-2 md:right-4 transition-all duration-700 ${isVisible ? 'opacity-100' : 'opacity-0'}`}
-            style={{ transitionDelay: '1300ms' }}
-          >
-            <span className="text-[9px] text-gray-600 bg-gray-800/50 px-2 py-0.5 rounded flex items-center gap-1">
-              <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full" />
-              Auto
-            </span>
+          <div className="absolute bottom-0 left-0 right-0 flex justify-around px-2 md:px-6">
+            <ToolNode icon={<HubSpotIcon />} label="HubSpot" brandColor="" delay={900} />
+            <ToolNode icon={<GoogleCalIcon />} label="Calendar" brandColor="" delay={1000} />
+            <ToolNode icon={<SlackIcon />} label="Slack" brandColor="" delay={1100} />
+            <ToolNode icon={<NotionIcon />} label="Notion" brandColor="bg-gray-800" delay={1200} />
           </div>
         </div>
 
       </div>
-
-      {/* Outer Glow */}
-      <div className="absolute -inset-4 bg-purple-600/10 blur-[60px] -z-10 rounded-full" />
     </div>
   );
 };
@@ -748,19 +766,10 @@ export const HomePageV3 = () => {
                 </Link>
               </div>
 
-              <div className="flex items-center gap-6 flex-wrap">
-                <div className="flex items-center gap-2">
-                  <div className="flex -space-x-2">
-                    {[1,2,3,4].map((i) => (
-                      <div key={i} className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-700 to-gray-800 border-2 border-gray-900" />
-                    ))}
-                  </div>
-                  <span className="text-sm text-gray-400"><span className="font-semibold text-white">47+</span> Agenturen</span>
-                </div>
-                <div className="h-6 w-px bg-gray-700" />
-                <div className="flex items-center gap-1.5">
-                  {[1,2,3,4,5].map((i) => (<Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />))}
-                  <span className="text-sm text-gray-400 ml-1"><span className="font-semibold text-white">4.9</span>/5</span>
+              <div className="flex items-center gap-4 flex-wrap">
+                <div className="flex items-center gap-2 text-sm text-gray-400">
+                  <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                  <span>Kostenlose Erstberatung verfügbar</span>
                 </div>
               </div>
             </div>
@@ -1303,69 +1312,54 @@ export const HomePageV3 = () => {
       </section>
 
       {/* ============================================ */}
-      {/* ABOUT / TEAM - LP Style */}
+      {/* ABOUT / TEAM - Baulig Style */}
       {/* ============================================ */}
-      <section id="team" className="py-24">
+      <section id="team" className="py-24 bg-gray-900/30">
         <div className="max-w-5xl mx-auto px-6">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            {/* Left: Text + Stats */}
-            <AnimatedSection>
-              <h2 className="text-2xl md:text-4xl font-bold mb-6 leading-tight text-white">WER SIND WIR, UM SO ETWAS ANZUBIETEN?</h2>
-              <p className="text-gray-400 text-lg leading-relaxed mb-10">
-                Wir sind keine Theoretiker. Wir sind Praktiker, die selbst Agenturen aufgebaut und die typischen Wachstumsschmerzen am eigenen Leib erfahren haben. Diese Systeme nutzen wir selbst jeden Tag — und jetzt bauen wir sie für dich.
-              </p>
+          {/* Header */}
+          <AnimatedSection className="text-center mb-16">
+            <span className="inline-block px-4 py-2 bg-purple-500/10 text-purple-400 rounded-full text-sm font-semibold mb-4 border border-purple-500/20">
+              Über uns
+            </span>
+            <h2 className="text-3xl md:text-4xl font-bold text-white">
+              Die Köpfe hinter Flowstack
+            </h2>
+          </AnimatedSection>
 
-              {/* Stats */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="group bg-gradient-to-br from-purple-500/10 to-transparent border border-purple-500/20 rounded-2xl p-6 hover:border-purple-500/40 transition-all">
-                  <div className="text-4xl font-bold bg-gradient-to-r from-purple-400 to-purple-300 bg-clip-text text-transparent mb-1">80%</div>
-                  <div className="text-gray-400 text-sm">weniger Routinearbeit möglich</div>
-                </div>
-                <div className="group bg-gradient-to-br from-purple-500/10 to-transparent border border-purple-500/20 rounded-2xl p-6 hover:border-purple-500/40 transition-all">
-                  <div className="text-4xl font-bold bg-gradient-to-r from-purple-400 to-purple-300 bg-clip-text text-transparent mb-1">2-4</div>
-                  <div className="text-gray-400 text-sm">Wochen bis dein System live ist</div>
-                </div>
-                <div className="group bg-gradient-to-br from-purple-500/10 to-transparent border border-purple-500/20 rounded-2xl p-6 hover:border-purple-500/40 transition-all">
-                  <div className="text-4xl font-bold bg-gradient-to-r from-purple-400 to-purple-300 bg-clip-text text-transparent mb-1">30-50%</div>
-                  <div className="text-gray-400 text-sm">mehr Umsatzrendite durch Automation</div>
-                </div>
-                <div className="group bg-gradient-to-br from-purple-500/10 to-transparent border border-purple-500/20 rounded-2xl p-6 hover:border-purple-500/40 transition-all">
-                  <div className="text-4xl font-bold bg-gradient-to-r from-purple-400 to-purple-300 bg-clip-text text-transparent mb-1">0</div>
-                  <div className="text-gray-400 text-sm">zusätzliche Mitarbeiter nötig</div>
-                </div>
-              </div>
-            </AnimatedSection>
-
-            {/* Right: Team Photos */}
-            <AnimatedSection delay={200}>
-              <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-purple-500/20 to-purple-600/10 rounded-2xl blur-xl" />
-                <div className="relative bg-gradient-to-br from-purple-900/30 to-gray-900 rounded-2xl border border-gray-800/50 p-6 md:p-8">
-                  <div className="space-y-6">
-                    {teamContent.members.map((member, index) => (
-                      <div key={index} className="flex gap-4 md:gap-5">
-                        {/* Photo */}
-                        <div className="flex-shrink-0">
+          {/* Team Members - Baulig Style */}
+          <div className="space-y-12">
+            {teamContent.members.map((member, index) => (
+              <AnimatedSection key={index} delay={index * 150}>
+                <div className="relative">
+                  <div className="absolute -inset-1 bg-gradient-to-r from-purple-500/20 to-purple-600/10 rounded-3xl blur-xl opacity-50" />
+                  <div className="relative bg-[#0a0a0e] rounded-2xl border border-gray-800/50 p-8 md:p-10">
+                    <div className="flex flex-col md:flex-row gap-8">
+                      {/* Photo */}
+                      <div className="flex-shrink-0">
+                        <div className="relative">
+                          <div className="absolute -inset-2 bg-gradient-to-br from-purple-500/30 to-purple-600/10 rounded-2xl blur-lg" />
                           <img
                             src={member.image}
                             alt={member.name}
-                            className="w-20 h-20 md:w-24 md:h-24 rounded-xl object-cover object-top ring-2 ring-purple-500/30"
+                            className="relative w-32 h-32 md:w-40 md:h-40 rounded-2xl object-cover object-top ring-2 ring-purple-500/30"
                           />
                         </div>
-                        {/* Info */}
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-white text-sm md:text-base">{member.name}</h3>
-                          <p className="text-purple-400 text-xs md:text-sm mb-2">{member.role}</p>
-                          <p className="text-gray-500 text-xs leading-relaxed whitespace-pre-line line-clamp-3 md:line-clamp-4">
-                            {member.description}
-                          </p>
+                      </div>
+                      {/* Content */}
+                      <div className="flex-1">
+                        <h3 className="text-2xl md:text-3xl font-bold text-white mb-1">{member.name}</h3>
+                        <p className="text-purple-400 font-medium mb-6">{member.role}</p>
+                        <div className="text-gray-400 leading-relaxed space-y-4">
+                          {member.bio?.split('\n\n').map((paragraph, pIndex) => (
+                            <p key={pIndex}>{paragraph}</p>
+                          ))}
                         </div>
                       </div>
-                    ))}
+                    </div>
                   </div>
                 </div>
-              </div>
-            </AnimatedSection>
+              </AnimatedSection>
+            ))}
           </div>
         </div>
       </section>
@@ -1493,10 +1487,6 @@ export const HomePageV3 = () => {
                 <span className="text-xl font-bold">{siteConfig.name}</span>
               </div>
               <p className="text-gray-400 mb-8 max-w-sm leading-relaxed">Wir automatisieren operative Prozesse in B2B-Unternehmen und Agenturen mit KI-gestützten Systemen.</p>
-              <div className="inline-flex items-center gap-3 bg-gray-900/50 rounded-xl px-4 py-3 border border-gray-800">
-                <div className="flex gap-0.5">{[1,2,3,4,5].map((i) => (<Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />))}</div>
-                <span className="text-sm font-medium text-gray-300">4.9/5 Rating</span>
-              </div>
             </div>
             <div>
               <h4 className="font-semibold mb-6">Produkt</h4>
@@ -1512,6 +1502,7 @@ export const HomePageV3 = () => {
                 <li><a href="#faq" className="hover:text-white transition-colors">FAQ</a></li>
                 <li><Link to="/impressum" className="hover:text-white transition-colors">Impressum</Link></li>
                 <li><Link to="/datenschutz" className="hover:text-white transition-colors">Datenschutz</Link></li>
+                <li><button onClick={() => window.dispatchEvent(new CustomEvent('openCookieSettings'))} className="hover:text-white transition-colors">Cookie-Einstellungen</button></li>
               </ul>
             </div>
             <div>
@@ -1538,6 +1529,15 @@ export const HomePageV3 = () => {
           </div>
         </div>
       </footer>
+
+      {/* Meta Disclaimer */}
+      <div className="bg-[#050508] py-6 border-t border-gray-800/30">
+        <div className="max-w-4xl mx-auto px-6">
+          <p className="text-[11px] text-gray-600 text-center leading-relaxed">
+            Diese Website ist kein Teil der Facebook-Website oder von Facebook Inc. Darüber hinaus wird diese Website in keiner Weise von Facebook unterstützt. Facebook ist eine Marke von Facebook, Inc. Wir verwenden auf dieser Website Remarketing-Pixel/Cookies von Google, um erneut mit den Besuchern unserer Website zu kommunizieren und sicherzustellen, dass wir sie in Zukunft mit relevanten Nachrichten und Informationen erreichen können. Google schaltet unsere Anzeigen auf Websites Dritter im Internet, um unsere Botschaft zu kommunizieren und die richtigen Personen zu erreichen, die in der Vergangenheit Interesse an unseren Informationen gezeigt haben.
+          </p>
+        </div>
+      </div>
 
       {/* Custom Animations */}
       <style>{`

@@ -99,24 +99,24 @@ const CookieBanner = () => {
       {/* Cookie Banner */}
       {!showSettings && (
         <div className="fixed bottom-4 left-4 right-4 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 sm:w-full sm:max-w-2xl z-50">
-          <div className="bg-card border border-border shadow-2xl rounded-2xl p-6 flex flex-col gap-4">
+          <div className="bg-[#0a0a0e]/95 backdrop-blur-xl border border-gray-800/50 shadow-2xl rounded-2xl p-6 flex flex-col gap-4">
             {/* Header */}
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                <Cookie className="w-5 h-5 text-primary" />
+              <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center">
+                <Cookie className="w-5 h-5 text-purple-400" />
               </div>
-              <h3 className="text-foreground font-semibold text-lg">
+              <h3 className="text-white font-semibold text-lg">
                 Cookie-Einstellungen
               </h3>
             </div>
 
             {/* Description */}
-            <p className="text-muted-foreground text-sm leading-relaxed">
+            <p className="text-gray-400 text-sm leading-relaxed">
               Wir verwenden Cookies, um Inhalte zu personalisieren und die Zugriffe auf unsere Website zu analysieren.
               Du kannst selbst entscheiden, welche Kategorien du zulassen möchtest. Weitere Infos findest du in unserer{" "}
               <Link
                 to="/datenschutz"
-                className="text-primary hover:underline"
+                className="text-purple-400 hover:underline"
               >
                 Datenschutzerklärung
               </Link>.
@@ -126,19 +126,19 @@ const CookieBanner = () => {
             <div className="flex flex-col sm:flex-row gap-3">
               <button
                 onClick={() => handleConsent("accepted")}
-                className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg px-5 py-2.5 text-sm font-semibold transition-colors"
+                className="flex-1 bg-gradient-to-r from-purple-500 to-purple-600 hover:shadow-lg hover:shadow-purple-500/25 text-white rounded-xl px-5 py-2.5 text-sm font-semibold transition-all"
               >
                 Alle akzeptieren
               </button>
               <button
                 onClick={() => handleConsent("rejected")}
-                className="flex-1 bg-card hover:bg-accent border border-border text-foreground rounded-lg px-5 py-2.5 text-sm font-semibold transition-colors"
+                className="flex-1 bg-gray-900/80 hover:bg-gray-800/80 border border-gray-700/50 text-white rounded-xl px-5 py-2.5 text-sm font-semibold transition-colors"
               >
                 Nur notwendige
               </button>
               <button
                 onClick={() => setShowSettings(true)}
-                className="text-sm text-muted-foreground hover:text-foreground underline transition-colors px-2 py-1"
+                className="text-sm text-gray-500 hover:text-white underline transition-colors px-2 py-1"
               >
                 Einstellungen
               </button>
@@ -149,21 +149,21 @@ const CookieBanner = () => {
 
       {/* Settings Modal */}
       {showSettings && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-card border border-border rounded-2xl shadow-2xl max-w-lg w-full p-6 sm:p-8 relative max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-[#0a0a0e] border border-gray-800/50 rounded-2xl shadow-2xl max-w-lg w-full p-6 sm:p-8 relative max-h-[90vh] overflow-y-auto">
             {/* Modal Header */}
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Cookie className="w-5 h-5 text-primary" />
+                <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center">
+                  <Cookie className="w-5 h-5 text-purple-400" />
                 </div>
-                <h3 className="text-xl font-semibold text-foreground">
+                <h3 className="text-xl font-semibold text-white">
                   Cookie-Einstellungen
                 </h3>
               </div>
               <button
                 onClick={() => setShowSettings(false)}
-                className="text-muted-foreground hover:text-foreground transition-colors"
+                className="text-gray-500 hover:text-white transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -171,39 +171,39 @@ const CookieBanner = () => {
 
             {/* Modal Content */}
             <div className="space-y-4 mb-6">
-              <p className="text-muted-foreground text-sm">
+              <p className="text-gray-400 text-sm">
                 Wähle aus, welche Arten von Cookies du zulassen möchtest.
               </p>
 
               {/* Cookie Categories */}
               <div className="space-y-3">
                 {/* Notwendig - immer aktiv */}
-                <div className="flex items-center justify-between p-4 bg-primary/5 border border-primary/20 rounded-xl">
+                <div className="flex items-center justify-between p-4 bg-purple-500/10 border border-purple-500/20 rounded-xl">
                   <div className="flex items-center gap-3">
-                    <Shield className="w-5 h-5 text-primary" />
+                    <Shield className="w-5 h-5 text-purple-400" />
                     <div>
-                      <h4 className="font-medium text-foreground">Notwendig</h4>
-                      <p className="text-xs text-muted-foreground">Erforderlich für den Betrieb</p>
+                      <h4 className="font-medium text-white">Notwendig</h4>
+                      <p className="text-xs text-gray-500">Erforderlich für den Betrieb</p>
                     </div>
                   </div>
-                  <div className="w-11 h-6 bg-primary rounded-full flex items-center justify-end px-1">
+                  <div className="w-11 h-6 bg-purple-500 rounded-full flex items-center justify-end px-1">
                     <div className="w-4 h-4 bg-white rounded-full"></div>
                   </div>
                 </div>
 
                 {/* Statistik */}
-                <div className="flex items-center justify-between p-4 border border-border rounded-xl hover:bg-accent/50 transition-colors">
+                <div className="flex items-center justify-between p-4 border border-gray-800/50 rounded-xl hover:bg-gray-900/50 transition-colors">
                   <div className="flex items-center gap-3">
-                    <BarChart3 className="w-5 h-5 text-muted-foreground" />
+                    <BarChart3 className="w-5 h-5 text-gray-500" />
                     <div>
-                      <h4 className="font-medium text-foreground">Statistik</h4>
-                      <p className="text-xs text-muted-foreground">Für Website-Analysen</p>
+                      <h4 className="font-medium text-white">Statistik</h4>
+                      <p className="text-xs text-gray-500">Für Website-Analysen</p>
                     </div>
                   </div>
                   <button
                     onClick={() => setCookieSettings(prev => ({ ...prev, statistik: !prev.statistik }))}
                     className={`w-11 h-6 rounded-full flex items-center transition-colors duration-300 ${
-                      cookieSettings.statistik ? 'bg-primary justify-end' : 'bg-muted justify-start'
+                      cookieSettings.statistik ? 'bg-purple-500 justify-end' : 'bg-gray-700 justify-start'
                     }`}
                   >
                     <div className="w-4 h-4 bg-white rounded-full mx-1 shadow-sm"></div>
@@ -211,18 +211,18 @@ const CookieBanner = () => {
                 </div>
 
                 {/* Marketing */}
-                <div className="flex items-center justify-between p-4 border border-border rounded-xl hover:bg-accent/50 transition-colors">
+                <div className="flex items-center justify-between p-4 border border-gray-800/50 rounded-xl hover:bg-gray-900/50 transition-colors">
                   <div className="flex items-center gap-3">
-                    <Megaphone className="w-5 h-5 text-muted-foreground" />
+                    <Megaphone className="w-5 h-5 text-gray-500" />
                     <div>
-                      <h4 className="font-medium text-foreground">Marketing</h4>
-                      <p className="text-xs text-muted-foreground">Für personalisierte Werbung</p>
+                      <h4 className="font-medium text-white">Marketing</h4>
+                      <p className="text-xs text-gray-500">Für personalisierte Werbung</p>
                     </div>
                   </div>
                   <button
                     onClick={() => setCookieSettings(prev => ({ ...prev, marketing: !prev.marketing }))}
                     className={`w-11 h-6 rounded-full flex items-center transition-colors duration-300 ${
-                      cookieSettings.marketing ? 'bg-primary justify-end' : 'bg-muted justify-start'
+                      cookieSettings.marketing ? 'bg-purple-500 justify-end' : 'bg-gray-700 justify-start'
                     }`}
                   >
                     <div className="w-4 h-4 bg-white rounded-full mx-1 shadow-sm"></div>
@@ -230,18 +230,18 @@ const CookieBanner = () => {
                 </div>
 
                 {/* Komfort */}
-                <div className="flex items-center justify-between p-4 border border-border rounded-xl hover:bg-accent/50 transition-colors">
+                <div className="flex items-center justify-between p-4 border border-gray-800/50 rounded-xl hover:bg-gray-900/50 transition-colors">
                   <div className="flex items-center gap-3">
-                    <Sparkles className="w-5 h-5 text-muted-foreground" />
+                    <Sparkles className="w-5 h-5 text-gray-500" />
                     <div>
-                      <h4 className="font-medium text-foreground">Komfort</h4>
-                      <p className="text-xs text-muted-foreground">Für bessere Benutzerfreundlichkeit</p>
+                      <h4 className="font-medium text-white">Komfort</h4>
+                      <p className="text-xs text-gray-500">Für bessere Benutzerfreundlichkeit</p>
                     </div>
                   </div>
                   <button
                     onClick={() => setCookieSettings(prev => ({ ...prev, komfort: !prev.komfort }))}
                     className={`w-11 h-6 rounded-full flex items-center transition-colors duration-300 ${
-                      cookieSettings.komfort ? 'bg-primary justify-end' : 'bg-muted justify-start'
+                      cookieSettings.komfort ? 'bg-purple-500 justify-end' : 'bg-gray-700 justify-start'
                     }`}
                   >
                     <div className="w-4 h-4 bg-white rounded-full mx-1 shadow-sm"></div>
@@ -254,13 +254,13 @@ const CookieBanner = () => {
             <div className="flex flex-col sm:flex-row gap-3">
               <button
                 onClick={saveCustomSettings}
-                className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg px-5 py-3 text-sm font-semibold transition-colors"
+                className="flex-1 bg-gradient-to-r from-purple-500 to-purple-600 hover:shadow-lg hover:shadow-purple-500/25 text-white rounded-xl px-5 py-3 text-sm font-semibold transition-all"
               >
                 Auswahl speichern
               </button>
               <button
                 onClick={() => setShowSettings(false)}
-                className="flex-1 bg-card hover:bg-accent border border-border text-foreground rounded-lg px-5 py-3 text-sm font-semibold transition-colors"
+                className="flex-1 bg-gray-900/80 hover:bg-gray-800/80 border border-gray-700/50 text-white rounded-xl px-5 py-3 text-sm font-semibold transition-colors"
               >
                 Abbrechen
               </button>

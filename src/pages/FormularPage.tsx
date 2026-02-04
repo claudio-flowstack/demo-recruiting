@@ -8,6 +8,7 @@ const FormularPage = () => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
+    telefon: "",
     firma: "",
     nachricht: "",
   });
@@ -18,15 +19,34 @@ const FormularPage = () => {
     window.scrollTo(0, 0);
   }, []);
 
+  const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwuWXRv4p1s62FUBNIuAE7-O5E2qWZZRsWgqsOZbHxfCkDB9yP8mWY9EUCKlXGk5Df5ow/exec";
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Simulate form submission delay
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    try {
+      // Formulardaten als URL-encoded senden (Google Apps Script erwartet dieses Format)
+      const params = new URLSearchParams();
+      params.append("name", formData.name);
+      params.append("email", formData.email);
+      params.append("telefon", formData.telefon);
+      params.append("firma", formData.firma);
+      params.append("nachricht", formData.nachricht);
 
-    // TODO: Add actual form submission logic here
-    navigate("/danke");
+      await fetch(GOOGLE_SCRIPT_URL, {
+        method: "POST",
+        body: params,
+        mode: "no-cors",
+      });
+
+      // Bei Erfolg zur Danke-Seite navigieren
+      navigate("/danke");
+    } catch (error) {
+      console.error("Fehler beim Senden:", error);
+      // Bei Fehler trotzdem zur Danke-Seite (no-cors gibt keinen Response)
+      navigate("/danke");
+    }
   };
 
   const handleChange = (
@@ -157,6 +177,19 @@ const FormularPage = () => {
                   </div>
 
                   <div>
+                    <label className="block text-sm text-gray-400 mb-2">Telefon *</label>
+                    <input
+                      type="tel"
+                      name="telefon"
+                      required
+                      value={formData.telefon}
+                      onChange={handleChange}
+                      placeholder="+49 123 456789"
+                      className="w-full px-4 py-3 bg-gray-800/50 border border-gray-700/50 rounded-xl text-white placeholder:text-gray-600 focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500 transition-colors"
+                    />
+                  </div>
+
+                  <div>
                     <label className="block text-sm text-gray-400 mb-2">Firma</label>
                     <input
                       type="text"
@@ -222,6 +255,15 @@ const FormularPage = () => {
           </div>
         </div>
       </footer>
+
+      {/* Meta Disclaimer */}
+      <div className="bg-[#0a0a0e] py-6 border-t border-gray-800/30">
+        <div className="max-w-4xl mx-auto px-6">
+          <p className="text-[11px] text-gray-600 text-center leading-relaxed">
+            Diese Website ist kein Teil der Facebook-Website oder von Facebook Inc. Darüber hinaus wird diese Website in keiner Weise von Facebook unterstützt. Facebook ist eine Marke von Facebook, Inc. Wir verwenden auf dieser Website Remarketing-Pixel/Cookies von Google, um erneut mit den Besuchern unserer Website zu kommunizieren und sicherzustellen, dass wir sie in Zukunft mit relevanten Nachrichten und Informationen erreichen können. Google schaltet unsere Anzeigen auf Websites Dritter im Internet, um unsere Botschaft zu kommunizieren und die richtigen Personen zu erreichen, die in der Vergangenheit Interesse an unseren Informationen gezeigt haben.
+          </p>
+        </div>
+      </div>
     </div>
   );
 };

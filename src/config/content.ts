@@ -49,7 +49,7 @@ export const trustMetrics = {
     { value: "80%", label: "weniger Routinearbeit möglich" },
     { value: "2-4 Wochen", label: "bis dein System live ist" },
     { value: "30-50%", label: "mehr Umsatzrendite durch Automation" },
-    { value: "0", label: "zusätzliche Mitarbeiter nötig" },
+    { value: "0", label: "zusätzliche Einstellungen nötig" },
   ],
 };
 
@@ -80,7 +80,7 @@ export const empathyOpening = {
     "Die Frage: \"Wann arbeite ich endlich AM statt IM Business?\"",
   ],
   empathy: "DU BIST NICHT ALLEIN.",
-  closing: "47+ Agenturinhaber standen genau da, wo du jetzt stehst. Sie haben einen anderen Weg gefunden.\n\nUnd du kannst das auch.",
+  closing: "Viele Agenturinhaber stehen genau da, wo du jetzt stehst. Es gibt einen anderen Weg.\n\nUnd wir zeigen dir, wie.",
 };
 
 // ============================================
@@ -435,7 +435,7 @@ export const services = {
       items: [
         "Komplette technische Umsetzung",
         "n8n/Make Workflow-Entwicklung",
-        "KI-Integration (ChatGPT, Claude, etc.)",
+        "KI-Integration & Automatisierung",
         "API-Anbindungen & Tool-Verknüpfungen",
       ],
     },
@@ -505,15 +505,15 @@ export const teamContent = {
   members: [
     {
       name: "Claudio Di Franco",
-      role: "Gründer & Systemarchitekt",
+      role: "Gründer, Vertrieb & Systemarchitekt",
       image: "/claudio.jpg",
-      description: "→ Selbst Agentur aufgebaut und skaliert\n→ Hat den \"Mehr Kunden = Mehr Chaos\"-Albtraum am eigenen Leib erlebt\n→ Spezialisiert auf Prozessanalyse und Workflow-Architektur\n→ Baut Systeme, die ohne ihn funktionieren. Genau wie deins funktionieren wird.",
+      bio: "Claudio hat selbst eine Agentur aufgebaut und dabei am eigenen Leib erfahren, wie schnell \"mehr Kunden\" zu \"mehr Chaos\" wird. Statt weitere Mitarbeiter einzustellen, hat er angefangen, Prozesse zu automatisieren — und dabei festgestellt, dass die meisten Agenturen an denselben Stellen kämpfen.\n\nHeute hilft er anderen Agenturinhabern dabei, ihre operativen Prozesse so aufzubauen, dass sie auch ohne ständiges Micromanagement funktionieren. Sein Fokus: Systeme, die skalieren — nicht Systeme, die von einer Person abhängen.",
     },
     {
       name: "Anak Wannaphaschaiyong",
       role: "Automation & AI Engineer",
       image: "/anak.jpg",
-      description: "→ Master in Machine Learning & Deep Learning (Florida Atlantic University)\n→ AWS-Architekt: Kinesis, Lambda, DynamoDB, S3, API Gateway, Terraform\n→ Hat Cloud-basierte Streaming-Plattform für COVID-19 Datenerfassung gebaut\n→ Publizierter Forscher im Bereich KI\n→ Python, n8n, Make, MLOps. Baut Systeme die unter Last performen.",
+      bio: "Anak ist studierter Machine Learning Spezialist mit einem Master der Florida Atlantic University. Er hat Cloud-basierte Systeme für Fortune-500-Unternehmen gebaut und ist publizierter Forscher im Bereich künstlicher Intelligenz.\n\nBei Flowstack ist er der technische Kopf hinter jeder Automation. Von AWS-Architekturen über Python-Skripte bis hin zu n8n und Make — Anak baut die Systeme, die unter Last performen und zuverlässig laufen.",
     },
   ],
 };

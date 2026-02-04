@@ -308,6 +308,15 @@ const DatenschutzPage = () => {
           </div>
         </div>
       </footer>
+
+      {/* Meta Disclaimer */}
+      <div className="bg-[#0a0a0e] py-6 border-t border-gray-800/30">
+        <div className="max-w-4xl mx-auto px-6">
+          <p className="text-[11px] text-gray-600 text-center leading-relaxed">
+            Diese Website ist kein Teil der Facebook-Website oder von Facebook Inc. Darüber hinaus wird diese Website in keiner Weise von Facebook unterstützt. Facebook ist eine Marke von Facebook, Inc. Wir verwenden auf dieser Website Remarketing-Pixel/Cookies von Google, um erneut mit den Besuchern unserer Website zu kommunizieren und sicherzustellen, dass wir sie in Zukunft mit relevanten Nachrichten und Informationen erreichen können. Google schaltet unsere Anzeigen auf Websites Dritter im Internet, um unsere Botschaft zu kommunizieren und die richtigen Personen zu erreichen, die in der Vergangenheit Interesse an unseren Informationen gezeigt haben.
+          </p>
+        </div>
+      </div>
     </div>
   );
 };
