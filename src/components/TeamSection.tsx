@@ -46,7 +46,7 @@ export const TeamSection = () => {
 
               {/* Description */}
               <p className="text-muted-foreground text-base leading-relaxed">
-                {member.description}
+                {member.bio}
               </p>
             </div>
           ))}

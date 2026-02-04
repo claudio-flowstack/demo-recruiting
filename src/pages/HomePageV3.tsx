@@ -25,7 +25,6 @@ import {
   ArrowRight,
   ArrowUpRight,
   ArrowDown,
-  Star,
   Mail,
   MapPin,
   ChevronDown,
