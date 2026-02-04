@@ -433,6 +433,104 @@ const AnimatedWorkflow = () => {
 };
 
 // ============================================
+// AGENCY AUTOMATION FLOW - For Final CTA
+// ============================================
+const AgencyAutomationFlow = () => {
+  const { ref, isVisible } = useScrollAnimation();
+
+  const steps = [
+    { id: 1, label: 'Anfrage', sublabel: 'Eingang', icon: 'mail', color: 'from-blue-500 to-cyan-500' },
+    { id: 2, label: 'Onboarding', sublabel: 'Automatisch', icon: 'zap', color: 'from-purple-500 to-violet-500' },
+    { id: 3, label: 'KI-Prozess', sublabel: 'Verarbeitung', icon: 'bot', color: 'from-emerald-500 to-teal-500' },
+    { id: 4, label: 'Delivery', sublabel: 'Fertig', icon: 'check', color: 'from-green-500 to-emerald-500' },
+  ];
+
+  return (
+    <div ref={ref} className="relative">
+      {/* Container */}
+      <div className="bg-[#0f0f14] rounded-2xl border border-gray-800/50 p-6 md:p-8">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-purple-500/20 rounded-lg flex items-center justify-center">
+              <Workflow className="w-4 h-4 text-purple-400" />
+            </div>
+            <div>
+              <p className="text-white font-medium text-sm">Flowstack Automation</p>
+              <p className="text-gray-500 text-xs">Live-Workflow</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+            <span className="text-emerald-400 text-xs font-medium">Aktiv</span>
+          </div>
+        </div>
+
+        {/* Workflow Steps */}
+        <div className="relative">
+          {/* Connection Lines */}
+          <div className="absolute top-8 left-0 right-0 h-0.5 bg-gray-800 hidden md:block">
+            <div
+              className={`h-full bg-gradient-to-r from-purple-500 via-purple-400 to-emerald-500 transition-all duration-2000 ease-out ${isVisible ? 'w-full' : 'w-0'}`}
+              style={{ transitionDelay: '500ms' }}
+            />
+          </div>
+
+          {/* Steps Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+            {steps.map((step, index) => (
+              <div
+                key={step.id}
+                className={`relative transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+                style={{ transitionDelay: `${index * 200 + 300}ms` }}
+              >
+                {/* Node */}
+                <div className="flex flex-col items-center">
+                  <div className="relative mb-3">
+                    <div className={`absolute inset-0 bg-gradient-to-br ${step.color} rounded-xl blur-lg opacity-40`} />
+                    <div className={`relative w-16 h-16 bg-gradient-to-br ${step.color} rounded-xl flex items-center justify-center shadow-lg`}>
+                      {step.icon === 'mail' && <Mail className="w-7 h-7 text-white" />}
+                      {step.icon === 'zap' && <Zap className="w-7 h-7 text-white" />}
+                      {step.icon === 'bot' && <Bot className="w-7 h-7 text-white" />}
+                      {step.icon === 'check' && <Check className="w-7 h-7 text-white" />}
+                    </div>
+                    {/* Step Number */}
+                    <div className="absolute -top-2 -right-2 w-6 h-6 bg-gray-900 border border-gray-700 rounded-full flex items-center justify-center">
+                      <span className="text-xs font-bold text-white">{step.id}</span>
+                    </div>
+                  </div>
+                  <p className="text-white font-semibold text-sm">{step.label}</p>
+                  <p className="text-gray-500 text-xs">{step.sublabel}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Stats Bar */}
+        <div className="mt-8 pt-6 border-t border-gray-800/50 grid grid-cols-3 gap-4">
+          <div className="text-center">
+            <p className="text-2xl font-bold text-purple-400">10 Min</p>
+            <p className="text-gray-500 text-xs">Durchlaufzeit</p>
+          </div>
+          <div className="text-center">
+            <p className="text-2xl font-bold text-emerald-400">98%</p>
+            <p className="text-gray-500 text-xs">Automatisiert</p>
+          </div>
+          <div className="text-center">
+            <p className="text-2xl font-bold text-white">24/7</p>
+            <p className="text-gray-500 text-xs">Verfügbar</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Glow Effect */}
+      <div className="absolute -inset-4 bg-purple-600/10 blur-[60px] -z-10 rounded-full" />
+    </div>
+  );
+};
+
+// ============================================
 // ICON MAPPER
 // ============================================
 const getIcon = (iconName: string, className: string = "w-6 h-6") => {
@@ -1230,54 +1328,9 @@ export const HomePageV3 = () => {
           {/* Two Column Layout */}
           <AnimatedSection>
             <div className="grid lg:grid-cols-2 gap-8 items-center">
-              {/* Left: Visual Dashboard Preview */}
-              <div className="relative order-2 lg:order-1">
-                <div className="relative">
-                  {/* Laptop Frame */}
-                  <div className="bg-[#1a1a20] rounded-t-xl p-2 border border-gray-800">
-                    <div className="bg-[#0f0f14] rounded-lg overflow-hidden">
-                      {/* Browser Bar */}
-                      <div className="flex items-center gap-2 px-4 py-2 bg-[#1a1a20] border-b border-gray-800">
-                        <div className="w-3 h-3 rounded-full bg-red-500/80"></div>
-                        <div className="w-3 h-3 rounded-full bg-yellow-500/80"></div>
-                        <div className="w-3 h-3 rounded-full bg-green-500/80"></div>
-                        <div className="flex-1 mx-4">
-                          <div className="h-5 bg-gray-800 rounded-full max-w-[200px]"></div>
-                        </div>
-                      </div>
-                      {/* Dashboard Content */}
-                      <div className="aspect-[16/10] p-4 bg-[#0f0f14]">
-                        <div className="grid grid-cols-3 gap-3 mb-3">
-                          <div className="bg-purple-600/20 border border-purple-500/30 rounded-lg p-3">
-                            <div className="h-2 bg-purple-500/40 rounded w-1/2 mb-2"></div>
-                            <div className="h-5 bg-white/20 rounded w-3/4"></div>
-                          </div>
-                          <div className="bg-[#1a1a24] rounded-lg p-3">
-                            <div className="h-2 bg-gray-600/40 rounded w-1/2 mb-2"></div>
-                            <div className="h-5 bg-white/10 rounded w-2/3"></div>
-                          </div>
-                          <div className="bg-[#1a1a24] rounded-lg p-3">
-                            <div className="h-2 bg-gray-600/40 rounded w-1/2 mb-2"></div>
-                            <div className="h-5 bg-white/10 rounded w-3/4"></div>
-                          </div>
-                        </div>
-                        <div className="bg-[#1a1a24] rounded-lg p-3">
-                          <div className="h-2 bg-gray-700/30 rounded w-1/4 mb-3"></div>
-                          <div className="flex items-end gap-1 h-20">
-                            {[40, 65, 45, 80, 55, 90, 70, 85, 60, 75, 95, 80].map((h, i) => (
-                              <div key={i} className="flex-1 bg-gradient-to-t from-purple-600 to-purple-400 rounded-t" style={{ height: `${h}%` }}></div>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  {/* Laptop Base */}
-                  <div className="h-4 bg-gradient-to-b from-[#2a2a30] to-[#1a1a20] rounded-b-xl mx-12"></div>
-                  <div className="h-2 bg-[#0f0f14] rounded-b-xl mx-6"></div>
-                </div>
-                {/* Glow */}
-                <div className="absolute -inset-10 bg-purple-600/15 blur-[80px] -z-10 rounded-full"></div>
+              {/* Left: Agency Automation Flow */}
+              <div className="order-2 lg:order-1">
+                <AgencyAutomationFlow />
               </div>
 
               {/* Right: Content + CTA */}
