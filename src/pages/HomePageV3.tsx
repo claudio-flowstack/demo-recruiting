@@ -530,15 +530,7 @@ const AgencyAutomationFlow = () => {
   return (
     <div ref={ref} className="relative">
       {/* Container */}
-      <div className="bg-gradient-to-br from-[#0d0d12] to-[#08080c] rounded-2xl border border-white/[0.06] p-6 md:p-10 overflow-hidden">
-
-        {/* Background Grid */}
-        <div className="absolute inset-0 opacity-[0.03]">
-          <div className="w-full h-full" style={{
-            backgroundImage: 'radial-gradient(circle, #fff 1px, transparent 1px)',
-            backgroundSize: '32px 32px'
-          }} />
-        </div>
+      <div className="relative p-6 md:p-10 overflow-hidden">
 
         {/* Soft Glows */}
         <div className="absolute top-1/3 left-1/4 w-40 h-40 bg-purple-500/10 rounded-full blur-[80px]" />
