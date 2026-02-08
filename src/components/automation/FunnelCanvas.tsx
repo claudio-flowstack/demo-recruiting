@@ -12,7 +12,7 @@ import {
   Download, GitBranch, Maximize2, Minimize2, X, Image as ImageIcon,
   Type, Monitor, Smartphone, Tablet, Target,
   LayoutGrid, Copy, Eye, BarChart3, ArrowRight,
-  SlidersHorizontal, Check,
+  SlidersHorizontal, Check, Grid3X3, History, Map as MapIcon,
 } from 'lucide-react';
 import { useTheme } from '@/components/theme-provider';
 import type { PortDirection } from '@/types/automation';
@@ -30,6 +30,14 @@ import { saveFunnelBoards, getAllFunnelBoards, deleteFunnelBoard, duplicateFunne
 const SNAP_THRESHOLD = 8;
 const PAN_DRAG_THRESHOLD = 4;
 const MAX_LABEL = 40;
+
+// CSS for element creation animation
+const ANIM_STYLE = document.createElement('style');
+ANIM_STYLE.textContent = `
+@keyframes funnelNodeAppear { 0% { opacity:0; transform: scale(0.85); } 100% { opacity:1; transform: scale(1); } }
+.funnel-node-appear { animation: funnelNodeAppear 0.25s cubic-bezier(0.34,1.56,0.64,1) both; }
+`;
+if (!document.getElementById('funnel-anim-style')) { ANIM_STYLE.id = 'funnel-anim-style'; document.head.appendChild(ANIM_STYLE); }
 
 const GROUP_COLORS: Record<string, { bg: string; border: string; text: string; name: string }> = {
   blue:   { bg: 'rgba(59,130,246,0.05)',  border: 'rgba(59,130,246,0.18)',  text: 'rgba(59,130,246,0.55)',  name: 'Blau' },
@@ -207,6 +215,70 @@ const TEXT_ITEMS: FunnelPaletteItem[] = [
 const MEDIA_ITEMS: FunnelPaletteItem[] = [
   { type: 'media', label: 'Bild', icon: 'image', mediaType: 'image' },
   { type: 'media', label: 'Video', icon: 'video', mediaType: 'video' },
+];
+
+// ─── Funnel Templates ──────────────────────────────────────────────────────────
+
+interface FunnelTemplate { name: string; description: string; elements: Partial<FunnelElement>[]; connections: [number, number, PortDirection, PortDirection][] }
+
+const FUNNEL_TEMPLATES: FunnelTemplate[] = [
+  {
+    name: 'Facebook → LP → Formular → CRM',
+    description: 'Klassischer Lead-Gen Funnel mit Facebook Ads',
+    elements: [
+      { type: 'platform', platformKind: 'facebook-ads', label: 'Facebook Ads', icon: 'logo-meta', x: 60, y: 120 },
+      { type: 'platform', platformKind: 'landingpage', label: 'Landing Page', icon: 'globe', x: 320, y: 120 },
+      { type: 'platform', platformKind: 'formular', label: 'Formular', icon: 'file-text', x: 580, y: 120 },
+      { type: 'platform', platformKind: 'crm', label: 'CRM', icon: 'logo-hubspot', x: 840, y: 120 },
+    ],
+    connections: [[0, 1, 'right', 'left'], [1, 2, 'right', 'left'], [2, 3, 'right', 'left']],
+  },
+  {
+    name: 'Google Ads → Website → Checkout',
+    description: 'E-Commerce Funnel mit Google Ads',
+    elements: [
+      { type: 'platform', platformKind: 'google-ads', label: 'Google Ads', icon: 'logo-google-ads', x: 60, y: 120 },
+      { type: 'platform', platformKind: 'website', label: 'Website', icon: 'globe', x: 320, y: 120 },
+      { type: 'platform', platformKind: 'checkout', label: 'Checkout', icon: 'logo-stripe', x: 580, y: 120 },
+      { type: 'platform', platformKind: 'email', label: 'Follow-up E-Mail', icon: 'mail', x: 580, y: 260 },
+    ],
+    connections: [[0, 1, 'right', 'left'], [1, 2, 'right', 'left'], [2, 3, 'bottom', 'top']],
+  },
+  {
+    name: 'Multi-Channel → Kalender → CRM',
+    description: 'Termin-Buchungs-Funnel mit mehreren Kanälen',
+    elements: [
+      { type: 'platform', platformKind: 'facebook-ads', label: 'Facebook Ads', icon: 'logo-meta', x: 60, y: 60 },
+      { type: 'platform', platformKind: 'instagram-ads', label: 'Instagram Ads', icon: 'logo-instagram', x: 60, y: 200 },
+      { type: 'platform', platformKind: 'landingpage', label: 'Landing Page', icon: 'globe', x: 320, y: 130 },
+      { type: 'platform', platformKind: 'kalender', label: 'Kalender', icon: 'logo-calendly', x: 580, y: 130 },
+      { type: 'platform', platformKind: 'crm', label: 'CRM', icon: 'logo-hubspot', x: 840, y: 60 },
+      { type: 'platform', platformKind: 'whatsapp-sms', label: 'WhatsApp Follow-up', icon: 'logo-whatsapp', x: 840, y: 200 },
+    ],
+    connections: [[0, 2, 'right', 'left'], [1, 2, 'right', 'left'], [2, 3, 'right', 'left'], [3, 4, 'right', 'left'], [3, 5, 'right', 'left']],
+  },
+  {
+    name: 'SEO → Website → Webinar → CRM',
+    description: 'Content-Marketing Funnel',
+    elements: [
+      { type: 'platform', platformKind: 'seo', label: 'SEO', icon: 'search', x: 60, y: 120 },
+      { type: 'platform', platformKind: 'website', label: 'Blog / Website', icon: 'globe', x: 320, y: 120 },
+      { type: 'platform', platformKind: 'webinar', label: 'Webinar', icon: 'video', x: 580, y: 120 },
+      { type: 'platform', platformKind: 'crm', label: 'CRM', icon: 'logo-hubspot', x: 840, y: 120 },
+    ],
+    connections: [[0, 1, 'right', 'left'], [1, 2, 'right', 'left'], [2, 3, 'right', 'left']],
+  },
+  {
+    name: 'LinkedIn → Formular → E-Mail → Kalender',
+    description: 'B2B Lead-Gen mit LinkedIn',
+    elements: [
+      { type: 'platform', platformKind: 'linkedin-ads', label: 'LinkedIn Ads', icon: 'logo-linkedin', x: 60, y: 120 },
+      { type: 'platform', platformKind: 'formular', label: 'Formular', icon: 'file-text', x: 320, y: 120 },
+      { type: 'platform', platformKind: 'email', label: 'E-Mail Sequenz', icon: 'mail', x: 580, y: 120 },
+      { type: 'platform', platformKind: 'kalender', label: 'Kalender-Buchung', icon: 'logo-calendly', x: 840, y: 120 },
+    ],
+    connections: [[0, 1, 'right', 'left'], [1, 2, 'right', 'left'], [2, 3, 'right', 'left']],
+  },
 ];
 
 // ─── Element Renderer (memoized) ─────────────────────────────────────────────
@@ -478,6 +550,9 @@ export default function FunnelCanvas() {
   const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
   const [selectedConnId, setSelectedConnId] = useState<string | null>(null);
   const [selectedPhaseId, setSelectedPhaseId] = useState<string | null>(null);
+  const [multiSelectedIds, setMultiSelectedIds] = useState<Set<string>>(new Set());
+  const [lassoState, setLassoState] = useState<{ startX: number; startY: number; currentX: number; currentY: number } | null>(null);
+  const clipboardRef = useRef<FunnelElement[]>([]);
 
   // ─── Drag ────────────────────────────────────────────────────────────────
   const [dragState, setDragState] = useState<{ id: string; offsetX: number; offsetY: number } | null>(null);
@@ -499,7 +574,7 @@ export default function FunnelCanvas() {
   // ─── UI State ────────────────────────────────────────────────────────────
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
-  const [paletteTab, setPaletteTab] = useState<'platforms' | 'mockups' | 'text' | 'media' | 'phases'>('platforms');
+  const [paletteTab, setPaletteTab] = useState<'platforms' | 'mockups' | 'text' | 'media' | 'phases' | 'templates'>('platforms');
   const [snapEnabled, setSnapEnabled] = useState(true);
   const [snapLines, setSnapLines] = useState<{ x: number[]; y: number[] }>({ x: [], y: [] });
   const [equalSpacingGuides, setEqualSpacingGuides] = useState<EqGuide[]>([]);
@@ -511,6 +586,13 @@ export default function FunnelCanvas() {
   const [contextMenu, setContextMenu] = useState<{ screenX: number; screenY: number; canvasX: number; canvasY: number; fromId: string; fromPort: PortDirection } | null>(null);
   const [showMetrics, setShowMetrics] = useState(false);
   const [showGlobalStyles, setShowGlobalStyles] = useState(false);
+  const [rightClickMenu, setRightClickMenu] = useState<{ x: number; y: number; canvasX: number; canvasY: number; targetType: 'canvas' | 'element' | 'connection'; targetId?: string } | null>(null);
+  const [showGrid, setShowGrid] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showHistoryPanel, setShowHistoryPanel] = useState(false);
+  const [showMinimap, setShowMinimap] = useState(false);
+  const [reconnectState, setReconnectState] = useState<{ connId: string; endpoint: 'from' | 'to'; canvasX: number; canvasY: number } | null>(null);
 
   // ─── Global Style Settings ──────────────────────────────────────────────
   type ConnLineStyle = 'solid' | 'dashed' | 'dotted';
@@ -555,11 +637,14 @@ export default function FunnelCanvas() {
   const [editMockupDesc, setEditMockupDesc] = useState('');
   const [editCtaText, setEditCtaText] = useState('');
   const [editBrowserUrl, setEditBrowserUrl] = useState('');
+  const [editNotes, setEditNotes] = useState('');
   const [editConnId, setEditConnId] = useState<string | null>(null);
   const [editConnLabel, setEditConnLabel] = useState('');
   const [editConnStyle, setEditConnStyle] = useState<FunnelLineStyle>('solid');
   const [editPhaseId, setEditPhaseId] = useState<string | null>(null);
   const [inlineEditId, setInlineEditId] = useState<string | null>(null);
+  const [inlineConnLabelId, setInlineConnLabelId] = useState<string | null>(null);
+  const [inlineConnLabelText, setInlineConnLabelText] = useState('');
   const [editPhaseLabel, setEditPhaseLabel] = useState('');
 
   // ─── Undo / Redo ─────────────────────────────────────────────────────────
@@ -591,6 +676,19 @@ export default function FunnelCanvas() {
     undoStackRef.current = [...undoStackRef.current, { elements, connections, phases }];
     setElements(next.elements); setConnections(next.connections); setPhases(next.phases);
     setCanUndo(true); setCanRedo(redoStackRef.current.length > 0);
+  }, [elements, connections, phases]);
+
+  const jumpToHistory = useCallback((index: number) => {
+    const stack = undoStackRef.current;
+    if (index < 0 || index >= stack.length) return;
+    const targetState = stack[index];
+    const currentState: FunnelSnapshot = { elements, connections, phases };
+    // States after target (plus current) become redo stack
+    const statesAfterTarget = stack.slice(index + 1);
+    redoStackRef.current = [...statesAfterTarget, currentState, ...redoStackRef.current];
+    undoStackRef.current = stack.slice(0, index);
+    setElements(targetState.elements); setConnections(targetState.connections); setPhases(targetState.phases);
+    setCanUndo(undoStackRef.current.length > 0); setCanRedo(redoStackRef.current.length > 0);
   }, [elements, connections, phases]);
 
   // ─── Zoom refs ───────────────────────────────────────────────────────────
@@ -651,7 +749,7 @@ export default function FunnelCanvas() {
     };
     const updated = [...boards, board];
     setBoards(updated);
-    saveFunnelBoards(updated.filter(b => b.id !== 'demo-funnel-1'));
+    saveFunnelBoards(updated);
     loadBoard(board);
   }, [boards, loadBoard]);
 
@@ -667,7 +765,7 @@ export default function FunnelCanvas() {
     const updated = boards.map(b => b.id === activeBoardId ? board : b);
     if (!updated.find(b => b.id === activeBoardId)) updated.push(board);
     setBoards(updated);
-    saveFunnelBoards(updated.filter(b => b.id !== 'demo-funnel-1'));
+    saveFunnelBoards(updated);
     setTimeout(() => { setSaveState('saved'); setTimeout(() => setSaveState('idle'), 1500); }, 300);
   }, [activeBoardId, boardName, boardDesc, elements, connections, phases, boards]);
 
@@ -699,21 +797,125 @@ export default function FunnelCanvas() {
       setZoom(nz);
       setPan({ x: mX - (mX - curPan.x) * ratio, y: mY - (mY - curPan.y) * ratio });
     };
-    el.addEventListener('wheel', handler, { passive: false });
-    return () => el.removeEventListener('wheel', handler);
-  }, []);
+    // Use capture phase to intercept wheel before page scroll
+    el.addEventListener('wheel', handler, { passive: false, capture: true });
+    return () => el.removeEventListener('wheel', handler, { capture: true });
+  }, [showBoardList]);
 
   // ─── Keyboard ────────────────────────────────────────────────────────────
   useEffect(() => {
+    const isEditing = editElementId || editPhaseId || editConnId || inlineEditId;
     const down = (e: KeyboardEvent) => {
       if (e.key === ' ' && !e.repeat) { e.preventDefault(); setSpaceHeld(true); }
-      if ((e.metaKey || e.ctrlKey) && e.key === 'z' && !e.shiftKey && !editElementId && !editPhaseId) { e.preventDefault(); historyUndo(); }
-      if ((e.metaKey || e.ctrlKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey)) && !editElementId && !editPhaseId) { e.preventDefault(); historyRedo(); }
-      if (e.key === 'Escape') { setSelectedElementId(null); setSelectedConnId(null); setSelectedPhaseId(null); setConnectState(null); setEditElementId(null); setEditConnId(null); setEditPhaseId(null); setContextMenu(null); setInlineEditId(null); }
-      if ((e.key === 'Delete' || e.key === 'Backspace') && !editElementId && !editPhaseId && !editConnId) {
-        if (selectedElementId) { pushHistory(); setElements(prev => prev.filter(el => el.id !== selectedElementId)); setConnections(prev => prev.filter(c => c.from !== selectedElementId && c.to !== selectedElementId)); setSelectedElementId(null); }
+      if ((e.metaKey || e.ctrlKey) && e.key === 'z' && !e.shiftKey && !isEditing) { e.preventDefault(); historyUndo(); }
+      if ((e.metaKey || e.ctrlKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey)) && !isEditing) { e.preventDefault(); historyRedo(); }
+      if (e.key === 'Escape') { setSelectedElementId(null); setSelectedConnId(null); setSelectedPhaseId(null); setMultiSelectedIds(new Set()); setConnectState(null); setEditElementId(null); setEditConnId(null); setEditPhaseId(null); setContextMenu(null); setInlineEditId(null); setRightClickMenu(null); setLassoState(null); }
+
+      // Delete / Backspace – remove all selected
+      if ((e.key === 'Delete' || e.key === 'Backspace') && !isEditing) {
+        const ids = new Set(multiSelectedIds);
+        if (selectedElementId) ids.add(selectedElementId);
+        if (ids.size > 0) {
+          pushHistory();
+          setElements(prev => prev.filter(el => !ids.has(el.id)));
+          setConnections(prev => prev.filter(c => !ids.has(c.from) && !ids.has(c.to)));
+          setSelectedElementId(null); setMultiSelectedIds(new Set());
+        }
         if (selectedConnId) { pushHistory(); setConnections(prev => prev.filter(c => c.id !== selectedConnId)); setSelectedConnId(null); }
         if (selectedPhaseId) { pushHistory(); setPhases(prev => prev.filter(p => p.id !== selectedPhaseId)); setSelectedPhaseId(null); }
+      }
+
+      // Ctrl+A – select all elements
+      if ((e.metaKey || e.ctrlKey) && e.key === 'a' && !isEditing) {
+        e.preventDefault();
+        setMultiSelectedIds(new Set(elements.map(el => el.id)));
+        setSelectedElementId(elements.length > 0 ? elements[0].id : null);
+      }
+
+      // Ctrl+C – copy selected elements
+      if ((e.metaKey || e.ctrlKey) && e.key === 'c' && !isEditing) {
+        const ids = new Set(multiSelectedIds);
+        if (selectedElementId) ids.add(selectedElementId);
+        if (ids.size > 0) {
+          clipboardRef.current = elements.filter(el => ids.has(el.id));
+        }
+      }
+
+      // Ctrl+V – paste from clipboard
+      if ((e.metaKey || e.ctrlKey) && e.key === 'v' && !isEditing) {
+        if (clipboardRef.current.length > 0) {
+          e.preventDefault();
+          pushHistory();
+          const newIds = new Map<string, string>();
+          const pasted: FunnelElement[] = clipboardRef.current.map(el => {
+            const newId = `el-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+            newIds.set(el.id, newId);
+            return { ...el, id: newId, x: el.x + 40, y: el.y + 40 };
+          });
+          // Also duplicate connections between pasted elements
+          const pastedConns: FunnelConnection[] = connections
+            .filter(c => newIds.has(c.from) && newIds.has(c.to))
+            .map(c => ({ ...c, id: `conn-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, from: newIds.get(c.from)!, to: newIds.get(c.to)! }));
+          setElements(prev => [...prev, ...pasted]);
+          if (pastedConns.length > 0) setConnections(prev => [...prev, ...pastedConns]);
+          setMultiSelectedIds(new Set(pasted.map(el => el.id)));
+          setSelectedElementId(pasted[0].id);
+          // Update clipboard offset for next paste
+          clipboardRef.current = pasted;
+        }
+      }
+
+      // Ctrl+D – duplicate selected
+      if ((e.metaKey || e.ctrlKey) && e.key === 'd' && !isEditing) {
+        e.preventDefault();
+        const ids = new Set(multiSelectedIds);
+        if (selectedElementId) ids.add(selectedElementId);
+        if (ids.size > 0) {
+          pushHistory();
+          const newIds = new Map<string, string>();
+          const duped: FunnelElement[] = elements.filter(el => ids.has(el.id)).map(el => {
+            const newId = `el-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+            newIds.set(el.id, newId);
+            return { ...el, id: newId, x: el.x + 30, y: el.y + 30 };
+          });
+          const dupedConns: FunnelConnection[] = connections
+            .filter(c => newIds.has(c.from) && newIds.has(c.to))
+            .map(c => ({ ...c, id: `conn-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, from: newIds.get(c.from)!, to: newIds.get(c.to)! }));
+          setElements(prev => [...prev, ...duped]);
+          if (dupedConns.length > 0) setConnections(prev => [...prev, ...dupedConns]);
+          setMultiSelectedIds(new Set(duped.map(el => el.id)));
+          setSelectedElementId(duped[0].id);
+        }
+      }
+
+      // Arrow keys – move selected elements
+      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key) && !isEditing) {
+        const ids = new Set(multiSelectedIds);
+        if (selectedElementId) ids.add(selectedElementId);
+        if (ids.size > 0) {
+          e.preventDefault();
+          const step = e.shiftKey ? 10 : 1;
+          const dx = e.key === 'ArrowLeft' ? -step : e.key === 'ArrowRight' ? step : 0;
+          const dy = e.key === 'ArrowUp' ? -step : e.key === 'ArrowDown' ? step : 0;
+          setElements(prev => prev.map(el => ids.has(el.id) ? { ...el, x: Math.max(0, el.x + dx), y: Math.max(0, el.y + dy) } : el));
+        }
+      }
+
+      // Tab – cycle through elements
+      if (e.key === 'Tab' && !isEditing) {
+        e.preventDefault();
+        if (elements.length === 0) return;
+        const curIdx = selectedElementId ? elements.findIndex(el => el.id === selectedElementId) : -1;
+        const nextIdx = (curIdx + (e.shiftKey ? -1 : 1) + elements.length) % elements.length;
+        setSelectedElementId(elements[nextIdx].id);
+        setMultiSelectedIds(new Set());
+        setSelectedConnId(null); setSelectedPhaseId(null);
+      }
+
+      // Ctrl+F – search
+      if ((e.metaKey || e.ctrlKey) && e.key === 'f' && !isEditing) {
+        e.preventDefault();
+        setSearchOpen(v => !v); setSearchQuery('');
       }
       if (e.key === '?') setShowShortcuts(v => !v);
     };
@@ -721,11 +923,12 @@ export default function FunnelCanvas() {
     window.addEventListener('keydown', down);
     window.addEventListener('keyup', up);
     return () => { window.removeEventListener('keydown', down); window.removeEventListener('keyup', up); };
-  }, [historyUndo, historyRedo, selectedElementId, selectedConnId, selectedPhaseId, editElementId, editPhaseId, editConnId, pushHistory]);
+  }, [historyUndo, historyRedo, selectedElementId, selectedConnId, selectedPhaseId, multiSelectedIds, editElementId, editPhaseId, editConnId, inlineEditId, pushHistory, elements, connections]);
 
   // ─── Mouse Handlers ─────────────────────────────────────────────────────
   const handleViewportMouseDown = useCallback((e: React.MouseEvent) => {
     if (contextMenu) { setContextMenu(null); return; }
+    if (rightClickMenu) { setRightClickMenu(null); return; }
     if (e.button === 1 || (e.button === 0 && spaceHeld)) {
       e.preventDefault();
       setIsPanning(true); setPanStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
@@ -743,12 +946,18 @@ export default function FunnelCanvas() {
         return;
       }
       if (isEmptyArea) {
-        setIsPanning(true); setPanStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
-        setPanStartMouse({ x: e.clientX, y: e.clientY }); setPanThresholdMet(false);
-        setSelectedElementId(null); setSelectedConnId(null); setSelectedPhaseId(null);
+        if (e.shiftKey) {
+          // Start lasso selection
+          const pos = screenToCanvas(e.clientX, e.clientY);
+          setLassoState({ startX: pos.x, startY: pos.y, currentX: pos.x, currentY: pos.y });
+        } else {
+          setIsPanning(true); setPanStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
+          setPanStartMouse({ x: e.clientX, y: e.clientY }); setPanThresholdMet(false);
+          setSelectedElementId(null); setSelectedConnId(null); setSelectedPhaseId(null); setMultiSelectedIds(new Set());
+        }
       }
     }
-  }, [spaceHeld, pan, connectState, contextMenu, screenToCanvas]);
+  }, [spaceHeld, pan, connectState, contextMenu, rightClickMenu, screenToCanvas]);
 
   const handleViewportMouseMove = useCallback((e: React.MouseEvent) => {
     // Pan
@@ -766,6 +975,13 @@ export default function FunnelCanvas() {
     if (connectState) {
       const pos = screenToCanvas(e.clientX, e.clientY);
       setConnectState(prev => prev ? { ...prev, canvasX: pos.x, canvasY: pos.y } : null);
+      return;
+    }
+
+    // Reconnect endpoint follow
+    if (reconnectState) {
+      const pos = screenToCanvas(e.clientX, e.clientY);
+      setReconnectState(prev => prev ? { ...prev, canvasX: pos.x, canvasY: pos.y } : null);
       return;
     }
 
@@ -815,7 +1031,15 @@ export default function FunnelCanvas() {
         setEqualSpacingGuides(eqResult.guides);
       }
 
-      setElements(prev => prev.map(e => e.id === dragState.id ? { ...e, x: Math.max(0, sx), y: Math.max(0, sy) } : e));
+      // Multi-drag: move all selected elements together
+      const dragEl = elements.find(e => e.id === dragState.id);
+      if (dragEl && multiSelectedIds.size > 0 && multiSelectedIds.has(dragState.id)) {
+        const dx = Math.max(0, sx) - dragEl.x;
+        const dy = Math.max(0, sy) - dragEl.y;
+        setElements(prev => prev.map(e => multiSelectedIds.has(e.id) ? { ...e, x: Math.max(0, e.x + dx), y: Math.max(0, e.y + dy) } : e));
+      } else {
+        setElements(prev => prev.map(e => e.id === dragState.id ? { ...e, x: Math.max(0, sx), y: Math.max(0, sy) } : e));
+      }
       return;
     }
 
@@ -825,15 +1049,40 @@ export default function FunnelCanvas() {
       setPhases(prev => prev.map(p => p.id === dragPhaseState.id ? { ...p, x: Math.max(0, pos.x - dragPhaseState.offsetX), y: Math.max(0, pos.y - dragPhaseState.offsetY) } : p));
       return;
     }
-  }, [isPanning, panThresholdMet, panStart, panStartMouse, connectState, resizeState, dragState, dragPhaseState, screenToCanvas, elements, phases, snapEnabled]);
+
+    // Lasso selection drag
+    if (lassoState) {
+      const pos = screenToCanvas(e.clientX, e.clientY);
+      setLassoState(prev => prev ? { ...prev, currentX: pos.x, currentY: pos.y } : null);
+      // Compute which elements are inside the lasso rect
+      const lx = Math.min(lassoState.startX, pos.x), ly = Math.min(lassoState.startY, pos.y);
+      const lw = Math.abs(pos.x - lassoState.startX), lh = Math.abs(pos.y - lassoState.startY);
+      const inside = new Set<string>();
+      for (const el of elements) {
+        const ex = el.x + el.width / 2, ey = el.y + el.height / 2;
+        if (ex >= lx && ex <= lx + lw && ey >= ly && ey <= ly + lh) inside.add(el.id);
+      }
+      setMultiSelectedIds(inside);
+      return;
+    }
+  }, [isPanning, panThresholdMet, panStart, panStartMouse, connectState, reconnectState, resizeState, dragState, dragPhaseState, lassoState, screenToCanvas, elements, phases, snapEnabled, multiSelectedIds]);
 
   const handleViewportMouseUp = useCallback(() => {
+    if (reconnectState) { setReconnectState(null); }
     if (dragState) { pushHistory(); }
     if (dragPhaseState) { pushHistory(); }
     if (resizeState) { pushHistory(); }
+    if (lassoState) {
+      // Set primary selection to first multi-selected if any
+      if (multiSelectedIds.size > 0) {
+        const firstId = [...multiSelectedIds][0];
+        setSelectedElementId(firstId);
+      }
+      setLassoState(null);
+    }
     setIsPanning(false); setDragState(null); setDragPhaseState(null); setResizeState(null);
     setSnapLines({ x: [], y: [] }); setEqualSpacingGuides([]);
-  }, [dragState, dragPhaseState, resizeState, pushHistory]);
+  }, [dragState, dragPhaseState, resizeState, lassoState, multiSelectedIds, reconnectState, pushHistory]);
 
   // ─── Element Interaction ─────────────────────────────────────────────────
   const handleElementMouseDown = useCallback((e: React.MouseEvent, id: string) => {
@@ -843,8 +1092,25 @@ export default function FunnelCanvas() {
     if (!el) return;
     const pos = screenToCanvas(e.clientX, e.clientY);
     setDragState({ id, offsetX: pos.x - el.x, offsetY: pos.y - el.y });
-    setSelectedElementId(id); setSelectedConnId(null); setSelectedPhaseId(null);
-  }, [elements, spaceHeld, screenToCanvas]);
+    if (e.shiftKey) {
+      // Shift+Click: toggle element in multi-selection
+      setMultiSelectedIds(prev => {
+        const next = new Set(prev);
+        if (next.has(id)) next.delete(id); else next.add(id);
+        if (selectedElementId && !next.has(selectedElementId)) next.add(selectedElementId);
+        return next;
+      });
+      setSelectedElementId(id);
+    } else if (!multiSelectedIds.has(id)) {
+      // Normal click on un-selected element: clear multi-selection
+      setMultiSelectedIds(new Set());
+      setSelectedElementId(id);
+    } else {
+      // Normal click on already multi-selected: keep multi-selection, set as primary
+      setSelectedElementId(id);
+    }
+    setSelectedConnId(null); setSelectedPhaseId(null);
+  }, [elements, spaceHeld, screenToCanvas, selectedElementId, multiSelectedIds]);
 
   const handlePhaseMouseDown = useCallback((e: React.MouseEvent, id: string) => {
     if (spaceHeld) return;
@@ -869,6 +1135,17 @@ export default function FunnelCanvas() {
   // ─── Port / Connection ───────────────────────────────────────────────────
   const handlePortClick = useCallback((e: React.MouseEvent, elementId: string, port: PortDirection) => {
     e.stopPropagation();
+    // Handle reconnect: update existing connection endpoint
+    if (reconnectState) {
+      pushHistory();
+      setConnections(prev => prev.map(c => {
+        if (c.id !== reconnectState.connId) return c;
+        if (reconnectState.endpoint === 'from') return { ...c, from: elementId, fromPort: port };
+        return { ...c, to: elementId, toPort: port };
+      }));
+      setReconnectState(null);
+      return;
+    }
     if (!connectState) {
       const el = elements.find(n => n.id === elementId);
       if (!el) return;
@@ -888,7 +1165,7 @@ export default function FunnelCanvas() {
       }
       setConnectState(null);
     }
-  }, [connectState, elements, connections, pushHistory]);
+  }, [connectState, reconnectState, elements, connections, pushHistory]);
 
   // ─── Drag & Drop from Palette ────────────────────────────────────────────
   const handleDrop = useCallback((e: React.DragEvent) => {
@@ -996,6 +1273,7 @@ export default function FunnelCanvas() {
       setEditMockupDesc(el.mockupDescription || ''); setEditCtaText(el.mockupCtaText || '');
       setEditBrowserUrl(el.mockupBrowserUrl || '');
     }
+    setEditNotes(el.notes || '');
   }, [elements]);
 
   const saveInlineEdit = useCallback((id: string, newText: string) => {
@@ -1009,14 +1287,15 @@ export default function FunnelCanvas() {
     pushHistory();
     setElements(prev => prev.map(el => {
       if (el.id !== editElementId) return el;
-      if (el.type === 'platform') return { ...el, label: editLabel, description: editDesc };
-      if (el.type === 'text') return { ...el, textContent: editTextContent };
-      if (el.type === 'media') return { ...el, mediaUrl: editMediaUrl };
-      if (el.type === 'mockup') return { ...el, mockupImageUrl: editMediaUrl, mockupText: editTextContent, mockupProfileImage: editProfileImage, mockupProfileName: editProfileName, mockupBodyText: editBodyText, mockupHeadline: editHeadline, mockupDescription: editMockupDesc, mockupCtaText: editCtaText, mockupBrowserUrl: editBrowserUrl };
+      const withNotes = { notes: editNotes || undefined };
+      if (el.type === 'platform') return { ...el, label: editLabel, description: editDesc, ...withNotes };
+      if (el.type === 'text') return { ...el, textContent: editTextContent, ...withNotes };
+      if (el.type === 'media') return { ...el, mediaUrl: editMediaUrl, ...withNotes };
+      if (el.type === 'mockup') return { ...el, mockupImageUrl: editMediaUrl, mockupText: editTextContent, mockupProfileImage: editProfileImage, mockupProfileName: editProfileName, mockupBodyText: editBodyText, mockupHeadline: editHeadline, mockupDescription: editMockupDesc, mockupCtaText: editCtaText, mockupBrowserUrl: editBrowserUrl, ...withNotes };
       return el;
     }));
     setEditElementId(null);
-  }, [editElementId, editLabel, editDesc, editTextContent, editMediaUrl, pushHistory]);
+  }, [editElementId, editLabel, editDesc, editTextContent, editMediaUrl, editNotes, pushHistory]);
 
   const handleConnDoubleClick = useCallback((id: string) => {
     const conn = connections.find(c => c.id === id);
@@ -1050,6 +1329,86 @@ export default function FunnelCanvas() {
     pushHistory();
     setElements(computeAutoLayout(elements, connections));
   }, [elements, connections, pushHistory]);
+
+  // ─── Right-Click Context Menu ────────────────────────────────────────────
+  const handleCanvasContextMenu = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const rect = viewportRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const canvasX = (e.clientX - rect.left - pan.x) / zoom;
+    const canvasY = (e.clientY - rect.top - pan.y) / zoom;
+    setRightClickMenu({ x: e.clientX, y: e.clientY, canvasX, canvasY, targetType: 'canvas' });
+  }, [pan, zoom]);
+
+  const handleElementContextMenu = useCallback((e: React.MouseEvent, id: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const rect = viewportRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const canvasX = (e.clientX - rect.left - pan.x) / zoom;
+    const canvasY = (e.clientY - rect.top - pan.y) / zoom;
+    setSelectedElementId(id);
+    setRightClickMenu({ x: e.clientX, y: e.clientY, canvasX, canvasY, targetType: 'element', targetId: id });
+  }, [pan, zoom]);
+
+  const handleConnContextMenu = useCallback((e: React.MouseEvent, id: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setSelectedConnId(id);
+    setRightClickMenu({ x: e.clientX, y: e.clientY, canvasX: 0, canvasY: 0, targetType: 'connection', targetId: id });
+  }, []);
+
+  const rcmAddElement = useCallback((type: FunnelElementType, kind?: PlatformKind | MockupKind | TextKind) => {
+    if (!rightClickMenu) return;
+    pushHistory();
+    const defaults = ELEMENT_DEFAULTS[type];
+    const w = type === 'mockup' && kind ? (MOCKUP_SIZES[kind as MockupKind]?.width || defaults.width) : defaults.width;
+    const h = type === 'mockup' && kind ? (MOCKUP_SIZES[kind as MockupKind]?.height || defaults.height) : defaults.height;
+    const platform = type === 'platform' && kind ? PLATFORMS.find(p => p.kind === kind) : null;
+    const el: FunnelElement = {
+      id: `el-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      type, x: rightClickMenu.canvasX - w / 2, y: rightClickMenu.canvasY - h / 2, width: w, height: h,
+      ...(platform && { platformKind: kind as PlatformKind, icon: platform.icon, label: platform.label }),
+      ...(type === 'mockup' && kind && { mockupKind: kind as MockupKind }),
+      ...(type === 'text' && { textKind: (kind as TextKind) || 'headline', textContent: 'Text hier eingeben' }),
+    };
+    setElements(prev => [...prev, el]);
+    setSelectedElementId(el.id);
+    setRightClickMenu(null);
+  }, [rightClickMenu, pushHistory]);
+
+  const rcmDuplicateElement = useCallback(() => {
+    if (!rightClickMenu?.targetId) return;
+    const src = elements.find(e => e.id === rightClickMenu.targetId);
+    if (!src) return;
+    pushHistory();
+    const dup: FunnelElement = { ...src, id: `el-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, x: src.x + 30, y: src.y + 30 };
+    setElements(prev => [...prev, dup]);
+    setSelectedElementId(dup.id);
+    setRightClickMenu(null);
+  }, [rightClickMenu, elements, pushHistory]);
+
+  const rcmDeleteElement = useCallback(() => {
+    if (!rightClickMenu?.targetId) return;
+    pushHistory();
+    setElements(prev => prev.filter(e => e.id !== rightClickMenu.targetId));
+    setConnections(prev => prev.filter(c => c.from !== rightClickMenu.targetId && c.to !== rightClickMenu.targetId));
+    setSelectedElementId(null);
+    setRightClickMenu(null);
+  }, [rightClickMenu, pushHistory]);
+
+  const rcmDeleteConnection = useCallback(() => {
+    if (!rightClickMenu?.targetId) return;
+    pushHistory();
+    setConnections(prev => prev.filter(c => c.id !== rightClickMenu.targetId));
+    setSelectedConnId(null);
+    setRightClickMenu(null);
+  }, [rightClickMenu, pushHistory]);
+
+  const rcmSelectAll = useCallback(() => {
+    setRightClickMenu(null);
+  }, []);
 
   // ─── PNG Export ──────────────────────────────────────────────────────────
   const handleExportPNG = useCallback(() => {
@@ -1171,6 +1530,34 @@ export default function FunnelCanvas() {
     setElements(prev => prev.map(el => el.id === id ? { ...el, metricValue: value } : el));
   }, []);
 
+  // ─── Template Loading ──────────────────────────────────────────────────
+  const loadTemplate = useCallback((tpl: FunnelTemplate) => {
+    pushHistory();
+    const defaults = ELEMENT_DEFAULTS.platform;
+    const newEls: FunnelElement[] = tpl.elements.map((e, i) => {
+      const platform = e.platformKind ? PLATFORMS.find(p => p.kind === e.platformKind) : null;
+      return {
+        id: `el-${Date.now()}-${i}-${Math.random().toString(36).slice(2, 6)}`,
+        type: e.type || 'platform',
+        x: e.x || i * 260 + 60,
+        y: e.y || 120,
+        width: e.width || defaults.width,
+        height: e.height || defaults.height,
+        platformKind: e.platformKind,
+        icon: e.icon || platform?.icon,
+        label: e.label || platform?.label,
+      } as FunnelElement;
+    });
+    const newConns: FunnelConnection[] = tpl.connections.map(([fi, ti, fp, tp], i) => ({
+      id: `conn-${Date.now()}-${i}-${Math.random().toString(36).slice(2, 6)}`,
+      from: newEls[fi].id, to: newEls[ti].id,
+      fromPort: fp, toPort: tp,
+    }));
+    setElements(prev => [...prev, ...newEls]);
+    setConnections(prev => [...prev, ...newConns]);
+    setMultiSelectedIds(new Set(newEls.map(e => e.id)));
+  }, [pushHistory]);
+
   // ─── Render: Board List ──────────────────────────────────────────────────
   if (showBoardList) {
     return (
@@ -1218,7 +1605,7 @@ export default function FunnelCanvas() {
   // ─── Render: Canvas ──────────────────────────────────────────────────────
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-6">
     <div className={`flex flex-col ${isFullscreen ? 'fixed inset-0 z-50 bg-gray-50 dark:bg-zinc-950' : 'rounded-2xl border border-gray-200 dark:border-zinc-800 overflow-hidden'}`} style={{ height: isFullscreen ? '100vh' : '80vh' }}>
 
       {/* ── Toolbar ─────────────────────────────────────────────────────── */}
@@ -1232,9 +1619,12 @@ export default function FunnelCanvas() {
 
         <button onClick={historyUndo} disabled={!canUndo} className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors disabled:opacity-30" title="Rückgängig (Ctrl+Z)"><Undo2 size={15} /></button>
         <button onClick={historyRedo} disabled={!canRedo} className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors disabled:opacity-30" title="Wiederholen (Ctrl+Y)"><Redo2 size={15} /></button>
+        <button onClick={() => setShowHistoryPanel(!showHistoryPanel)} disabled={!canUndo && !canRedo} className={`p-1.5 rounded-lg transition-colors disabled:opacity-30 ${showHistoryPanel ? 'bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800'}`} title="Verlauf"><History size={15} /></button>
         <div className="h-4 w-px bg-gray-200 dark:bg-zinc-700" />
 
         <button onClick={() => setSnapEnabled(!snapEnabled)} className={`p-1.5 rounded-lg transition-colors ${snapEnabled ? 'bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400' : 'text-gray-400 hover:bg-gray-100 dark:hover:bg-zinc-800'}`} title="Snap"><Magnet size={15} /></button>
+        <button onClick={() => setShowGrid(!showGrid)} className={`p-1.5 rounded-lg transition-colors ${showGrid ? 'bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400' : 'text-gray-400 hover:bg-gray-100 dark:hover:bg-zinc-800'}`} title="Raster"><Grid3X3 size={15} /></button>
+        <button onClick={() => { setSearchOpen(!searchOpen); setSearchQuery(''); }} className={`p-1.5 rounded-lg transition-colors ${searchOpen ? 'bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800'}`} title="Suche (Ctrl+F)"><Search size={15} /></button>
         <button onClick={handleAutoLayout} disabled={elements.length === 0} className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors disabled:opacity-30" title="Auto-Layout"><GitBranch size={15} /></button>
         <button onClick={handleExportPNG} disabled={elements.length === 0} className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors disabled:opacity-30" title="PNG Export"><Download size={15} /></button>
         <button onClick={() => setShowMetrics(!showMetrics)} className={`p-1.5 rounded-lg transition-colors ${showMetrics ? 'bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800'}`} title="Funnel-Metriken"><BarChart3 size={15} /></button>
@@ -1247,6 +1637,7 @@ export default function FunnelCanvas() {
           <button onClick={() => { setZoom(1); setPan({ x: 40, y: 40 }); }} className="min-w-[42px] text-center text-xs text-gray-500 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-zinc-800 px-1.5 py-1 rounded-lg transition-colors">{zoomPct}%</button>
           <button onClick={() => { const r = 1.25; setZoom(z => Math.min(5, z * r)); setPan(p => { const rect = viewportRef.current?.getBoundingClientRect(); if (!rect) return p; const cx = rect.width / 2, cy = rect.height / 2; return { x: cx - (cx - p.x) * r, y: cy - (cy - p.y) * r }; }); }} className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"><ZoomIn size={15} /></button>
           <button onClick={fitToScreen} className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"><Crosshair size={15} /></button>
+          <button onClick={() => setShowMinimap(!showMinimap)} className={`p-1.5 rounded-lg transition-colors ${showMinimap ? 'bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400' : 'text-gray-400 hover:bg-gray-100 dark:hover:bg-zinc-800'}`} title="Minimap"><MapIcon size={15} /></button>
         </div>
 
         <div className="h-4 w-px bg-gray-200 dark:bg-zinc-700" />
@@ -1262,14 +1653,81 @@ export default function FunnelCanvas() {
         <button onClick={() => { setShowBoardList(true); setPaletteOpen(false); }} className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors" title="Zur Board-Übersicht"><LayoutGrid size={15} /></button>
       </div>
 
+      {/* ── History Panel ──────────────────────────────────────────────── */}
+      {showHistoryPanel && (canUndo || canRedo) && (
+        <div className="border-b border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shrink-0" style={{ maxHeight: '25vh', overflowY: 'auto' }}>
+          <div className="p-3">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-xs font-semibold text-gray-900 dark:text-white flex items-center gap-1.5"><History size={12} /> Verlauf</h3>
+              <button onClick={() => setShowHistoryPanel(false)} className="p-0.5 rounded text-gray-400 hover:text-gray-600 dark:hover:text-zinc-300"><X size={12} /></button>
+            </div>
+            <div className="space-y-0.5">
+              {/* Current state */}
+              <div className="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400">
+                <div className="w-1.5 h-1.5 rounded-full bg-purple-500" />
+                <span className="text-[11px] font-medium">Aktueller Stand</span>
+                <span className="text-[10px] ml-auto opacity-60">{elements.length} Elemente · {connections.length} Verbindungen</span>
+              </div>
+              {/* Undo stack (most recent first) */}
+              {[...undoStackRef.current].reverse().map((snap, reverseIdx) => {
+                const realIdx = undoStackRef.current.length - 1 - reverseIdx;
+                return (
+                  <button key={reverseIdx} onClick={() => { jumpToHistory(realIdx); setShowHistoryPanel(false); }}
+                    className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-left hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors group">
+                    <div className="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-zinc-600 group-hover:bg-purple-400" />
+                    <span className="text-[11px] text-gray-500 dark:text-zinc-400">Schritt {realIdx + 1}</span>
+                    <span className="text-[10px] text-gray-400 dark:text-zinc-500 ml-auto">{snap.elements.length} El. · {snap.connections.length} Verb.</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Search Bar ─────────────────────────────────────────────────── */}
+      {searchOpen && (
+        <div className="flex items-center gap-2 px-3 py-1.5 border-b border-gray-200 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-900/50 shrink-0">
+          <Search size={14} className="text-gray-400" />
+          <input
+            autoFocus
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            placeholder="Element suchen…"
+            className="flex-1 bg-transparent text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-zinc-600 focus:outline-none"
+            onKeyDown={e => {
+              if (e.key === 'Escape') { setSearchOpen(false); setSearchQuery(''); }
+              if (e.key === 'Enter' && searchQuery.length > 1) {
+                // Jump to first matching element
+                const match = elements.find(el => el.label?.toLowerCase().includes(searchQuery.toLowerCase()) || el.textContent?.toLowerCase().includes(searchQuery.toLowerCase()) || el.platformKind?.toLowerCase().includes(searchQuery.toLowerCase()));
+                if (match) {
+                  setSelectedElementId(match.id);
+                  // Center viewport on the match
+                  const rect = viewportRef.current?.getBoundingClientRect();
+                  if (rect) {
+                    setPan({ x: rect.width / 2 - (match.x + match.width / 2) * zoom, y: rect.height / 2 - (match.y + match.height / 2) * zoom });
+                  }
+                }
+              }
+            }}
+          />
+          {searchQuery && (
+            <span className="text-[11px] text-gray-400 dark:text-zinc-500">
+              {elements.filter(el => el.label?.toLowerCase().includes(searchQuery.toLowerCase()) || el.textContent?.toLowerCase().includes(searchQuery.toLowerCase()) || el.platformKind?.toLowerCase().includes(searchQuery.toLowerCase())).length} Treffer
+            </span>
+          )}
+          <button onClick={() => { setSearchOpen(false); setSearchQuery(''); }} className="p-1 rounded text-gray-400 hover:text-gray-600 dark:hover:text-zinc-300"><X size={14} /></button>
+        </div>
+      )}
+
       <div className="flex flex-1 overflow-hidden">
         {/* ── Palette ───────────────────────────────────────────────────── */}
         {paletteOpen && (
           <div className="w-56 border-r border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-y-auto shrink-0">
             <div className="flex border-b border-gray-200 dark:border-zinc-800">
-              {(['platforms', 'mockups', 'text', 'media', 'phases'] as const).map(tab => (
+              {(['platforms', 'mockups', 'text', 'media', 'phases', 'templates'] as const).map(tab => (
                 <button key={tab} onClick={() => setPaletteTab(tab)} className={`flex-1 py-2 text-[10px] font-medium transition-colors ${paletteTab === tab ? 'text-purple-600 dark:text-purple-400 border-b-2 border-purple-500' : 'text-gray-400 dark:text-zinc-500 hover:text-gray-600 dark:hover:text-zinc-300'}`}>
-                  {tab === 'platforms' ? 'Plattformen' : tab === 'mockups' ? 'Mockups' : tab === 'text' ? 'Text' : tab === 'media' ? 'Medien' : 'Phasen'}
+                  {tab === 'platforms' ? 'Plattformen' : tab === 'mockups' ? 'Mockups' : tab === 'text' ? 'Text' : tab === 'media' ? 'Medien' : tab === 'phases' ? 'Phasen' : 'Vorlagen'}
                 </button>
               ))}
             </div>
@@ -1345,6 +1803,27 @@ export default function FunnelCanvas() {
                   <span className="text-xs text-gray-700 dark:text-zinc-300">{colors.name}</span>
                 </button>
               ))}
+
+              {paletteTab === 'templates' && (
+                <div className="space-y-2">
+                  <p className="text-[10px] uppercase font-semibold text-gray-400 dark:text-zinc-500 px-2 pt-2 pb-1">Funnel-Vorlagen</p>
+                  {FUNNEL_TEMPLATES.map((tpl, i) => (
+                    <button key={i} onClick={() => { loadTemplate(tpl); setPaletteOpen(false); }} className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors">
+                      <p className="text-xs font-semibold text-gray-700 dark:text-zinc-300">{tpl.name}</p>
+                      <p className="text-[10px] text-gray-400 dark:text-zinc-500 mt-0.5">{tpl.description}</p>
+                      <div className="flex items-center gap-1 mt-1.5">
+                        {tpl.elements.map((e, j) => {
+                          const p = e.platformKind ? PLATFORMS.find(pp => pp.kind === e.platformKind) : null;
+                          return <div key={j} className="w-4 h-4 rounded flex items-center justify-center" style={{ background: (p?.color || '#8b5cf6') + '20' }}>
+                            <span className="text-[7px] font-bold" style={{ color: p?.color || '#8b5cf6' }}>{(e.label || '?').charAt(0)}</span>
+                          </div>;
+                        })}
+                        <span className="text-[9px] text-gray-300 dark:text-zinc-600 ml-1">{tpl.elements.length} Steps</span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -1475,7 +1954,7 @@ export default function FunnelCanvas() {
         {/* ── Canvas Viewport ───────────────────────────────────────────── */}
         <div ref={viewportRef}
           className={`flex-1 overflow-hidden relative ${isDragOver ? 'ring-2 ring-inset ring-purple-500/30 bg-purple-500/5' : ''}`}
-          style={{ cursor: spaceHeld ? 'grab' : isPanning ? 'grabbing' : 'default', background: isDark ? '#09090b' : '#f9fafb', touchAction: 'none' }}
+          style={{ cursor: spaceHeld ? 'grab' : isPanning ? 'grabbing' : 'default', background: isDark ? '#09090b' : '#f9fafb', touchAction: 'none', overscrollBehavior: 'contain' }}
           onMouseDown={handleViewportMouseDown}
           onMouseMove={handleViewportMouseMove}
           onMouseUp={handleViewportMouseUp}
@@ -1483,6 +1962,7 @@ export default function FunnelCanvas() {
           onDrop={handleDrop}
           onDragOver={e => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; setIsDragOver(true); }}
           onDragLeave={() => setIsDragOver(false)}
+          onContextMenu={handleCanvasContextMenu}
         >
           {/* Transform Container */}
           <div className="canvas-inner absolute" style={{ transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`, transformOrigin: '0 0', width: canvasW, height: canvasH }}>
@@ -1493,6 +1973,12 @@ export default function FunnelCanvas() {
                 <pattern id="funnelDots" x="0" y="0" width="24" height="24" patternUnits="userSpaceOnUse">
                   <circle cx="12" cy="12" r="1" fill={isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.08)'} />
                 </pattern>
+                {showGrid && (
+                  <pattern id="funnelGrid" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+                    <line x1="40" y1="0" x2="40" y2="40" stroke={isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} strokeWidth="0.5" />
+                    <line x1="0" y1="40" x2="40" y2="40" stroke={isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} strokeWidth="0.5" />
+                  </pattern>
+                )}
                 {globalConnArrowhead !== 'none' && (
                   <marker id="arrowhead-default" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto" markerUnits="userSpaceOnUse">
                     <path d={globalConnArrowhead === 'filled' ? 'M0,0 L10,4 L0,8 L2,4 Z' : 'M1,1 L9,4 L1,7'} fill={globalConnArrowhead === 'filled' ? CONN_COLORS[globalConnColor] : 'none'} stroke={globalConnArrowhead === 'open' ? CONN_COLORS[globalConnColor] : 'none'} strokeWidth={1.5} />
@@ -1505,6 +1991,7 @@ export default function FunnelCanvas() {
                 })}
               </defs>
               <rect width="100%" height="100%" fill="url(#funnelDots)" />
+              {showGrid && <rect width="100%" height="100%" fill="url(#funnelGrid)" />}
 
               {/* Connections */}
               {connections.map(conn => {
@@ -1527,6 +2014,7 @@ export default function FunnelCanvas() {
                     onDoubleClick={() => handleConnDoubleClick(conn.id)}
                     onMouseEnter={() => setHoveredConnId(conn.id)}
                     onMouseLeave={() => setHoveredConnId(null)}
+                    onContextMenu={e => handleConnContextMenu(e, conn.id)}
                   >
                     <path d={pathD} stroke="transparent" strokeWidth={12 / zoom} fill="none" style={{ cursor: 'pointer' }} />
                     <path d={pathD} stroke={isSelected ? '#a855f7' : isHovered ? 'rgba(168,85,247,0.8)' : color} strokeWidth={isSelected ? baseWidth + 1 : isHovered ? baseWidth + 0.5 : baseWidth} fill="none" strokeDasharray={dash} markerEnd={markerAttr} />
@@ -1545,14 +2033,37 @@ export default function FunnelCanvas() {
                     {(() => {
                       const mx = (from.x + from.width / 2 + to.x + to.width / 2) / 2;
                       const my = (from.y + from.height / 2 + to.y + to.height / 2) / 2 - 10;
-                      // Auto-calculated conversion rate
                       const fromVal = from.metricValue || 0;
                       const toVal = to.metricValue || 0;
                       const autoRate = showMetrics && fromVal > 0 && toVal > 0 ? `${((toVal / fromVal) * 100).toFixed(1)}%` : null;
                       const displayLabel = conn.label || autoRate;
-                      if (!displayLabel) return null;
+                      // Inline editing mode
+                      if (inlineConnLabelId === conn.id) {
+                        return (
+                          <foreignObject x={mx - 50} y={my - 12} width={100} height={24}>
+                            <input
+                              autoFocus
+                              value={inlineConnLabelText}
+                              onChange={e => setInlineConnLabelText(e.target.value)}
+                              onBlur={() => { pushHistory(); setConnections(prev => prev.map(c => c.id === conn.id ? { ...c, label: inlineConnLabelText || undefined } : c)); setInlineConnLabelId(null); }}
+                              onKeyDown={e => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); if (e.key === 'Escape') setInlineConnLabelId(null); }}
+                              className="w-full h-full text-center text-[10px] bg-white dark:bg-zinc-800 border border-purple-400 rounded px-1 focus:outline-none text-gray-900 dark:text-white"
+                              style={{ fontSize: 10 }}
+                            />
+                          </foreignObject>
+                        );
+                      }
+                      if (!displayLabel) {
+                        // Show a faint "+" to add label on hover
+                        return isHovered ? (
+                          <g style={{ cursor: 'pointer', pointerEvents: 'all' }} onClick={e => { e.stopPropagation(); setInlineConnLabelId(conn.id); setInlineConnLabelText(''); }}>
+                            <rect x={mx - 10} y={my - 8} width={20} height={16} rx={4} fill={isDark ? '#27272a' : '#f3f4f6'} stroke={isDark ? '#3f3f46' : '#e5e7eb'} strokeWidth={1} opacity={0.7} />
+                            <text x={mx} y={my + 4} textAnchor="middle" fill={isDark ? '#71717a' : '#9ca3af'} fontSize={10} fontFamily="system-ui">+</text>
+                          </g>
+                        ) : null;
+                      }
                       return (
-                        <g>
+                        <g style={{ cursor: 'pointer', pointerEvents: 'all' }} onClick={e => { e.stopPropagation(); setInlineConnLabelId(conn.id); setInlineConnLabelText(conn.label || ''); }}>
                           <rect x={mx - displayLabel.length * 3.5 - 4} y={my - 10} width={displayLabel.length * 7 + 8} height={16} rx={4} fill={isDark ? '#27272a' : '#fff'} stroke={autoRate && !conn.label ? (isDark ? '#7c3aed' : '#c084fc') : (isDark ? '#3f3f46' : '#e5e7eb')} strokeWidth={1} />
                           <text x={mx} y={my + 2} textAnchor="middle" fill={autoRate && !conn.label ? '#a855f7' : (isDark ? '#a1a1aa' : '#6b7280')} fontSize={10} fontWeight={autoRate && !conn.label ? 'bold' : 'normal'} fontFamily="system-ui">{displayLabel}</text>
                         </g>
@@ -1585,6 +2096,53 @@ export default function FunnelCanvas() {
                   return (<g key={`eq-${i}`} opacity={0.7}><line x1={x} y1={g.segA.from} x2={x} y2={g.segA.to} stroke="#a855f7" strokeWidth={1} strokeDasharray="3,2" /><line x1={x-cap} y1={g.segA.from} x2={x+cap} y2={g.segA.from} stroke="#a855f7" strokeWidth={1} /><line x1={x-cap} y1={g.segA.to} x2={x+cap} y2={g.segA.to} stroke="#a855f7" strokeWidth={1} /><line x1={x} y1={g.segB.from} x2={x} y2={g.segB.to} stroke="#a855f7" strokeWidth={1} strokeDasharray="3,2" /><line x1={x-cap} y1={g.segB.from} x2={x+cap} y2={g.segB.from} stroke="#a855f7" strokeWidth={1} /><line x1={x-cap} y1={g.segB.to} x2={x+cap} y2={g.segB.to} stroke="#a855f7" strokeWidth={1} /></g>);
                 }
               })}
+
+              {/* Lasso selection rectangle */}
+              {lassoState && (
+                <rect
+                  x={Math.min(lassoState.startX, lassoState.currentX)}
+                  y={Math.min(lassoState.startY, lassoState.currentY)}
+                  width={Math.abs(lassoState.currentX - lassoState.startX)}
+                  height={Math.abs(lassoState.currentY - lassoState.startY)}
+                  fill="rgba(168,85,247,0.08)" stroke="#a855f7" strokeWidth={1} strokeDasharray="6,3" rx={4}
+                />
+              )}
+
+              {/* Reconnect handles for selected connection */}
+              {selectedConnId && !reconnectState && (() => {
+                const conn = connections.find(c => c.id === selectedConnId);
+                if (!conn) return null;
+                const fromEl = elements.find(e => e.id === conn.from);
+                const toEl = elements.find(e => e.id === conn.to);
+                if (!fromEl || !toEl) return null;
+                const fromPos = getElPortPos(fromEl, conn.fromPort);
+                const toPos = getElPortPos(toEl, conn.toPort);
+                return (
+                  <>
+                    <circle cx={fromPos.x} cy={fromPos.y} r={6 / zoom} fill="#a855f7" stroke="#fff" strokeWidth={2 / zoom}
+                      style={{ cursor: 'grab', pointerEvents: 'all' }}
+                      onMouseDown={e => { e.stopPropagation(); setReconnectState({ connId: conn.id, endpoint: 'from', canvasX: fromPos.x, canvasY: fromPos.y }); }}
+                    />
+                    <circle cx={toPos.x} cy={toPos.y} r={6 / zoom} fill="#a855f7" stroke="#fff" strokeWidth={2 / zoom}
+                      style={{ cursor: 'grab', pointerEvents: 'all' }}
+                      onMouseDown={e => { e.stopPropagation(); setReconnectState({ connId: conn.id, endpoint: 'to', canvasX: toPos.x, canvasY: toPos.y }); }}
+                    />
+                  </>
+                );
+              })()}
+
+              {/* Reconnect temp line */}
+              {reconnectState && (() => {
+                const conn = connections.find(c => c.id === reconnectState.connId);
+                if (!conn) return null;
+                const fixedEl = elements.find(e => e.id === (reconnectState.endpoint === 'from' ? conn.to : conn.from));
+                if (!fixedEl) return null;
+                const fixedPort = reconnectState.endpoint === 'from' ? conn.toPort : conn.fromPort;
+                const fixedPos = getElPortPos(fixedEl, fixedPort);
+                const dir = PORT_DIR[fixedPort];
+                const pathD = getTempPath(fixedPos.x, fixedPos.y, dir, reconnectState.canvasX, reconnectState.canvasY);
+                return <path d={pathD} stroke="#a855f7" strokeWidth={2} fill="none" strokeDasharray="6,3" opacity={0.7} />;
+              })()}
             </svg>
 
             {/* Phases */}
@@ -1610,28 +2168,44 @@ export default function FunnelCanvas() {
             {/* Elements */}
             {elements.map(el => {
               const isSelected = selectedElementId === el.id;
+              const isMultiSelected = multiSelectedIds.has(el.id);
+              const isAnySelected = isSelected || isMultiSelected;
               const platform = el.type === 'platform' ? PLATFORMS.find(p => p.kind === el.platformKind) : null;
               const borderAccent = platform?.color || (el.type === 'mockup' ? (isDark ? '#3f3f46' : '#d1d5db') : el.type === 'text' ? 'transparent' : (isDark ? '#3f3f46' : '#d1d5db'));
-              const bgColor = el.type === 'platform' ? (platform ? platform.color + '08' : 'rgba(139,92,246,0.05)') : el.type === 'text' ? 'transparent' : (isDark ? 'rgba(39,39,42,0.5)' : 'rgba(255,255,255,0.9)');
+              const defaultBg = el.type === 'platform' ? (platform ? platform.color + '08' : 'rgba(139,92,246,0.05)') : el.type === 'text' ? 'transparent' : (isDark ? 'rgba(39,39,42,0.5)' : 'rgba(255,255,255,0.9)');
+              const bgColor = el.backgroundColor ? el.backgroundColor + '15' : defaultBg;
+              // Animation: elements created in last 400ms get appear animation
+              const elTs = parseInt(el.id.split('-')[1] || '0', 10);
+              const isNew = Date.now() - elTs < 400;
+              // Search highlight
+              const isSearchMatch = searchOpen && searchQuery.length > 1 && (el.label?.toLowerCase().includes(searchQuery.toLowerCase()) || el.textContent?.toLowerCase().includes(searchQuery.toLowerCase()) || el.platformKind?.toLowerCase().includes(searchQuery.toLowerCase()));
 
               return (
                 <div key={el.id}
-                  className={`absolute select-none ${dragState?.id === el.id ? '' : 'transition-shadow duration-200'} ${isSelected ? 'ring-2 ring-purple-500 shadow-lg shadow-purple-500/10' : ''} ${el.type !== 'text' ? `${NODE_STYLE_CLASSES[globalNodeStyle]} ${NODE_SHADOW_CLASS[globalNodeShadow]}` : ''}`}
+                  className={`absolute select-none ${isNew ? 'funnel-node-appear' : ''} ${dragState?.id === el.id ? '' : 'transition-shadow duration-200'} ${isAnySelected ? 'ring-2 ring-purple-500 shadow-lg shadow-purple-500/10' : ''} ${isMultiSelected && !isSelected ? 'ring-purple-400/60' : ''} ${isSearchMatch ? 'ring-2 ring-yellow-400 shadow-lg shadow-yellow-400/20' : ''} ${el.type !== 'text' ? `${NODE_STYLE_CLASSES[globalNodeStyle]} ${NODE_SHADOW_CLASS[globalNodeShadow]}` : ''}`}
                   style={{
                     left: el.x, top: el.y, width: el.width, height: el.height,
-                    background: bgColor, borderColor: isSelected ? '#a855f7' : borderAccent,
+                    background: bgColor, borderColor: isAnySelected ? '#a855f7' : borderAccent,
                     cursor: dragState?.id === el.id ? 'grabbing' : 'grab',
-                    zIndex: isSelected ? 20 : 10,
+                    zIndex: isAnySelected ? 20 : 10,
                   }}
                   onMouseDown={e => handleElementMouseDown(e, el.id)}
                   onMouseEnter={() => setHoveredElementId(el.id)}
                   onMouseLeave={() => setHoveredElementId(null)}
                   onDoubleClick={() => handleElementDoubleClick(el.id)}
+                  onContextMenu={e => handleElementContextMenu(e, el.id)}
                 >
                   {el.type === 'platform' && <PlatformNode el={el} isDark={isDark} />}
                   {el.type === 'mockup' && <MockupFrame el={el} isDark={isDark} />}
                   {el.type === 'text' && <TextBlock el={el} isDark={isDark} isInlineEditing={inlineEditId === el.id} onSave={saveInlineEdit} />}
                   {el.type === 'media' && <MediaBlock el={el} isDark={isDark} />}
+
+                  {/* Note indicator */}
+                  {el.notes && (
+                    <div className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-yellow-400 dark:bg-yellow-500 flex items-center justify-center shadow-sm z-30 cursor-pointer" title={el.notes}>
+                      <span className="text-[9px] font-bold text-white">!</span>
+                    </div>
+                  )}
 
                   {/* Resize handle */}
                   {isSelected && el.type !== 'text' && (
@@ -1641,7 +2215,7 @@ export default function FunnelCanvas() {
                   )}
 
                   {/* Connection ports */}
-                  {(hoveredElementId === el.id || connectState) && el.type !== 'text' && (
+                  {(hoveredElementId === el.id || connectState || reconnectState || isAnySelected) && el.type !== 'text' && (
                     <>
                       {(['top', 'right', 'bottom', 'left'] as PortDirection[]).map(port => {
                         const style: React.CSSProperties = port === 'top' ? { top: 0, left: '50%', transform: 'translate(-50%, -50%)' } : port === 'right' ? { top: '50%', right: 0, transform: 'translate(50%, -50%)' } : port === 'bottom' ? { bottom: 0, left: '50%', transform: 'translate(-50%, 50%)' } : { top: '50%', left: 0, transform: 'translate(-50%, -50%)' };
@@ -1660,6 +2234,51 @@ export default function FunnelCanvas() {
             })}
           </div>
         </div>
+
+        {/* ── Minimap ─────────────────────────────────────────────────── */}
+        {showMinimap && elements.length > 0 && (() => {
+          const mapW = 160, mapH = 100;
+          const allX = elements.map(e => e.x), allY = elements.map(e => e.y);
+          const allR = elements.map(e => e.x + e.width), allB = elements.map(e => e.y + e.height);
+          const minX = Math.min(...allX) - 40, minY = Math.min(...allY) - 40;
+          const maxX = Math.max(...allR) + 40, maxY = Math.max(...allB) + 40;
+          const totalW = maxX - minX || 1, totalH = maxY - minY || 1;
+          const scale = Math.min(mapW / totalW, mapH / totalH);
+          // Viewport rect in canvas coords
+          const rect = viewportRef.current?.getBoundingClientRect();
+          const vpW = rect ? rect.width / zoom : 800, vpH = rect ? rect.height / zoom : 600;
+          const vpX = -pan.x / zoom, vpY = -pan.y / zoom;
+          return (
+            <div className="absolute bottom-3 right-3 z-30 rounded-lg border border-gray-200 dark:border-zinc-700 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-sm overflow-hidden shadow-lg"
+              style={{ width: mapW, height: mapH, cursor: 'pointer' }}
+              onClick={e => {
+                const r = e.currentTarget.getBoundingClientRect();
+                const mx = (e.clientX - r.left) / scale + minX;
+                const my = (e.clientY - r.top) / scale + minY;
+                const vr = viewportRef.current?.getBoundingClientRect();
+                if (vr) setPan({ x: -(mx - vpW / 2) * zoom, y: -(my - vpH / 2) * zoom });
+              }}
+            >
+              <svg width={mapW} height={mapH}>
+                {elements.map(el => {
+                  const platform = el.type === 'platform' ? PLATFORMS.find(p => p.kind === el.platformKind) : null;
+                  return (
+                    <rect key={el.id} x={(el.x - minX) * scale} y={(el.y - minY) * scale} width={Math.max(2, el.width * scale)} height={Math.max(2, el.height * scale)} rx={2}
+                      fill={platform?.color || (el.type === 'text' ? 'transparent' : isDark ? '#52525b' : '#d1d5db')} opacity={0.7} />
+                  );
+                })}
+                {connections.map(conn => {
+                  const from = elements.find(e => e.id === conn.from);
+                  const to = elements.find(e => e.id === conn.to);
+                  if (!from || !to) return null;
+                  return <line key={conn.id} x1={(from.x + from.width / 2 - minX) * scale} y1={(from.y + from.height / 2 - minY) * scale} x2={(to.x + to.width / 2 - minX) * scale} y2={(to.y + to.height / 2 - minY) * scale} stroke={isDark ? '#71717a' : '#9ca3af'} strokeWidth={0.5} />;
+                })}
+                {/* Viewport indicator */}
+                <rect x={(vpX - minX) * scale} y={(vpY - minY) * scale} width={vpW * scale} height={vpH * scale} fill="rgba(168,85,247,0.08)" stroke="#a855f7" strokeWidth={1} rx={2} />
+              </svg>
+            </div>
+          );
+        })()}
       </div>
 
       {/* ── Metriken-Eingabe (hinter Toggle) ─────────────────────────── */}
@@ -1673,22 +2292,38 @@ export default function FunnelCanvas() {
                 const name = step.label || platform?.label || step.mockupKind || `Step ${i + 1}`;
                 const metricLabel = getDefaultMetricLabel(step);
                 return (
-                  <div key={step.id} className="bg-gray-50 dark:bg-zinc-800 rounded-xl px-3 py-2.5 min-w-[160px]">
+                  <div key={step.id} className="bg-gray-50 dark:bg-zinc-800 rounded-xl px-3 py-2.5 min-w-[180px]">
                     <div className="flex items-center gap-2 mb-1.5">
                       {platform && <div className="w-5 h-5 rounded flex items-center justify-center" style={{ backgroundColor: platform.color + '20' }}>
                         <span style={{ color: platform.color }} className="text-[10px] font-bold">{platform.label.charAt(0)}</span>
                       </div>}
                       <span className="text-xs text-gray-700 dark:text-zinc-300 font-semibold truncate">{name}</span>
+                      {/* Traffic light indicator */}
+                      {step.metricTarget && step.metricTarget > 0 && step.metricValue ? (() => {
+                        const pct = (step.metricValue / step.metricTarget) * 100;
+                        const color = pct >= 90 ? '#10b981' : pct >= 60 ? '#f59e0b' : '#ef4444';
+                        return <div className="w-2.5 h-2.5 rounded-full ml-auto shrink-0" style={{ backgroundColor: color }} title={`${pct.toFixed(0)}% vom Ziel`} />;
+                      })() : null}
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 mb-1">
                       <input
                         type="number"
                         value={step.metricValue ?? ''}
                         onChange={e => handleMetricChange(step.id, Number(e.target.value) || 0)}
-                        placeholder="0"
-                        className="w-24 px-2 py-1.5 text-sm rounded-lg border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-gray-900 dark:text-white focus:outline-none focus:border-purple-400 text-right"
+                        placeholder="Ist"
+                        className="w-20 px-2 py-1.5 text-sm rounded-lg border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-gray-900 dark:text-white focus:outline-none focus:border-purple-400 text-right"
                       />
                       <span className="text-[11px] text-gray-400 dark:text-zinc-500 whitespace-nowrap">{metricLabel}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="number"
+                        value={step.metricTarget ?? ''}
+                        onChange={e => setElements(prev => prev.map(el => el.id === step.id ? { ...el, metricTarget: Number(e.target.value) || 0 } : el))}
+                        placeholder="Ziel"
+                        className="w-20 px-2 py-1.5 text-[11px] rounded-lg border border-dashed border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-gray-500 dark:text-zinc-400 focus:outline-none focus:border-purple-400 text-right"
+                      />
+                      <span className="text-[10px] text-gray-300 dark:text-zinc-600 whitespace-nowrap">Ziel</span>
                     </div>
                   </div>
                 );
@@ -1743,6 +2378,11 @@ export default function FunnelCanvas() {
                   <input value={editTextContent} onChange={e => setEditTextContent(e.target.value)} placeholder="Platzhalter-Text (Fallback)" className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-purple-400" />
                 </div>
               )}
+              {/* Notes */}
+              <div>
+                <p className="text-[10px] uppercase font-semibold text-gray-400 dark:text-zinc-500 mb-1">Notizen</p>
+                <textarea value={editNotes} onChange={e => setEditNotes(e.target.value)} rows={2} placeholder="Interne Notiz hinzufügen…" className="w-full px-3 py-2 rounded-lg border border-dashed border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-yellow-400 resize-none" />
+              </div>
               <div className="flex justify-end gap-2">
                 <button onClick={() => setEditElementId(null)} className="px-3 py-1.5 rounded-lg text-sm text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800">Abbrechen</button>
                 <button onClick={saveElementEdit} className="px-3 py-1.5 rounded-lg text-sm bg-purple-600 text-white hover:bg-purple-700">Speichern</button>
@@ -1794,13 +2434,102 @@ export default function FunnelCanvas() {
               <button onClick={() => setShowShortcuts(false)} className="text-gray-400 hover:text-gray-600"><X size={16} /></button>
             </div>
             <div className="space-y-2 text-sm">
-              {[['Space + Drag', 'Canvas verschieben'], ['Scroll', 'Zoom'], ['Ctrl+Z', 'Rückgängig'], ['Ctrl+Y', 'Wiederholen'], ['Delete', 'Element löschen'], ['Escape', 'Auswahl aufheben'], ['Doppelklick', 'Element bearbeiten'], ['?', 'Tastenkürzel']].map(([key, desc]) => (
+              {[['Space + Drag', 'Canvas verschieben'], ['Scroll', 'Zoom'], ['Ctrl+Z', 'Rückgängig'], ['Ctrl+Y', 'Wiederholen'], ['Delete', 'Element löschen'], ['Escape', 'Auswahl aufheben'], ['Doppelklick', 'Element bearbeiten'], ['Shift+Klick', 'Multi-Auswahl'], ['Shift+Drag', 'Lasso-Auswahl'], ['Ctrl+A', 'Alles auswählen'], ['Ctrl+C / V', 'Kopieren / Einfügen'], ['Ctrl+D', 'Duplizieren'], ['Pfeiltasten', 'Verschieben (1px)'], ['Shift+Pfeiltasten', 'Verschieben (10px)'], ['Tab', 'Nächstes Element'], ['?', 'Tastenkürzel']].map(([key, desc]) => (
                 <div key={key} className="flex justify-between">
                   <span className="text-gray-500 dark:text-zinc-400">{desc}</span>
                   <kbd className="px-1.5 py-0.5 text-[11px] rounded bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-300 font-mono">{key}</kbd>
                 </div>
               ))}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Right-Click Context Menu ──────────────────────────────────── */}
+      {rightClickMenu && (
+        <div className="fixed inset-0 z-50" onClick={() => setRightClickMenu(null)}>
+          <div
+            className="absolute bg-white dark:bg-zinc-900 rounded-xl shadow-2xl border border-gray-200 dark:border-zinc-700 w-52 py-1 overflow-hidden"
+            style={{ left: Math.min(rightClickMenu.x, window.innerWidth - 220), top: Math.min(rightClickMenu.y, window.innerHeight - 380) }}
+            onClick={ee => ee.stopPropagation()}
+          >
+            {rightClickMenu.targetType === 'canvas' && (
+              <>
+                <p className="px-3 py-1.5 text-[10px] uppercase font-semibold text-gray-400 dark:text-zinc-500">Plattform hinzufügen</p>
+                {PLATFORMS.slice(0, 6).map(p => (
+                  <button key={p.kind} onClick={() => rcmAddElement('platform', p.kind)} className="w-full flex items-center gap-2 px-3 py-1.5 text-left hover:bg-gray-100 dark:hover:bg-zinc-800 text-xs text-gray-700 dark:text-zinc-300">
+                    <div className="w-4 h-4 rounded flex items-center justify-center" style={{ background: p.color + '18' }}>
+                      {TOOL_LOGOS[p.icon] ? renderNodeIcon(p.icon, undefined, undefined, 10) : <Globe size={10} style={{ color: p.color }} />}
+                    </div>
+                    {p.label}
+                  </button>
+                ))}
+                <div className="h-px bg-gray-100 dark:bg-zinc-800 my-1" />
+                <p className="px-3 py-1.5 text-[10px] uppercase font-semibold text-gray-400 dark:text-zinc-500">Weitere</p>
+                <button onClick={() => rcmAddElement('mockup', 'mobile')} className="w-full flex items-center gap-2 px-3 py-1.5 text-left hover:bg-gray-100 dark:hover:bg-zinc-800 text-xs text-gray-700 dark:text-zinc-300">
+                  <Smartphone size={12} className="text-gray-400" /> Mobile Mockup
+                </button>
+                <button onClick={() => rcmAddElement('mockup', 'desktop')} className="w-full flex items-center gap-2 px-3 py-1.5 text-left hover:bg-gray-100 dark:hover:bg-zinc-800 text-xs text-gray-700 dark:text-zinc-300">
+                  <Monitor size={12} className="text-gray-400" /> Desktop Mockup
+                </button>
+                <button onClick={() => rcmAddElement('text', 'headline')} className="w-full flex items-center gap-2 px-3 py-1.5 text-left hover:bg-gray-100 dark:hover:bg-zinc-800 text-xs text-gray-700 dark:text-zinc-300">
+                  <Type size={12} className="text-gray-400" /> Text
+                </button>
+                <button onClick={() => rcmAddElement('media')} className="w-full flex items-center gap-2 px-3 py-1.5 text-left hover:bg-gray-100 dark:hover:bg-zinc-800 text-xs text-gray-700 dark:text-zinc-300">
+                  <ImageIcon size={12} className="text-gray-400" /> Bild / Medien
+                </button>
+                <div className="h-px bg-gray-100 dark:bg-zinc-800 my-1" />
+                <button onClick={() => { rcmSelectAll(); setPaletteOpen(true); }} className="w-full flex items-center gap-2 px-3 py-1.5 text-left hover:bg-gray-100 dark:hover:bg-zinc-800 text-xs text-gray-700 dark:text-zinc-300">
+                  <LayoutGrid size={12} className="text-gray-400" /> Alle Elemente anzeigen
+                </button>
+                <button onClick={() => { setRightClickMenu(null); handleAutoLayout(); }} className="w-full flex items-center gap-2 px-3 py-1.5 text-left hover:bg-gray-100 dark:hover:bg-zinc-800 text-xs text-gray-700 dark:text-zinc-300">
+                  <GitBranch size={12} className="text-gray-400" /> Auto-Layout
+                </button>
+                <button onClick={() => { setRightClickMenu(null); fitToScreen(); }} className="w-full flex items-center gap-2 px-3 py-1.5 text-left hover:bg-gray-100 dark:hover:bg-zinc-800 text-xs text-gray-700 dark:text-zinc-300">
+                  <Maximize2 size={12} className="text-gray-400" /> An Bildschirm anpassen
+                </button>
+                <button onClick={() => { setRightClickMenu(null); handleExportPNG(); }} className="w-full flex items-center gap-2 px-3 py-1.5 text-left hover:bg-gray-100 dark:hover:bg-zinc-800 text-xs text-gray-700 dark:text-zinc-300">
+                  <Download size={12} className="text-gray-400" /> Als PNG exportieren
+                </button>
+              </>
+            )}
+            {rightClickMenu.targetType === 'element' && (
+              <>
+                <button onClick={() => { setRightClickMenu(null); if (rightClickMenu.targetId) { setSelectedElementId(rightClickMenu.targetId); handleElementDoubleClick(rightClickMenu.targetId); } }} className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-gray-100 dark:hover:bg-zinc-800 text-xs text-gray-700 dark:text-zinc-300">
+                  <FileText size={12} className="text-gray-400" /> Bearbeiten
+                </button>
+                <button onClick={rcmDuplicateElement} className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-gray-100 dark:hover:bg-zinc-800 text-xs text-gray-700 dark:text-zinc-300">
+                  <Copy size={12} className="text-gray-400" /> Duplizieren
+                </button>
+                <div className="h-px bg-gray-100 dark:bg-zinc-800 my-1" />
+                <p className="px-3 py-1 text-[10px] uppercase font-semibold text-gray-400 dark:text-zinc-500">Farbe</p>
+                <div className="flex gap-1 px-3 py-1">
+                  {['#a855f7', '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#ec4899', '#6366f1', '#64748b'].map(c => (
+                    <button key={c} onClick={() => {
+                      pushHistory();
+                      const ids = multiSelectedIds.size > 0 ? multiSelectedIds : new Set([rightClickMenu.targetId!]);
+                      setElements(prev => prev.map(el => ids.has(el.id) ? { ...el, backgroundColor: c } : el));
+                      setRightClickMenu(null);
+                    }} className="w-5 h-5 rounded-full border-2 border-white dark:border-zinc-800 hover:scale-125 transition-transform" style={{ backgroundColor: c }} />
+                  ))}
+                </div>
+                <div className="h-px bg-gray-100 dark:bg-zinc-800 my-1" />
+                <button onClick={rcmDeleteElement} className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-red-50 dark:hover:bg-red-500/10 text-xs text-red-600 dark:text-red-400">
+                  <Trash2 size={12} /> Löschen
+                </button>
+              </>
+            )}
+            {rightClickMenu.targetType === 'connection' && (
+              <>
+                <button onClick={() => { setRightClickMenu(null); if (rightClickMenu.targetId) handleConnDoubleClick(rightClickMenu.targetId); }} className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-gray-100 dark:hover:bg-zinc-800 text-xs text-gray-700 dark:text-zinc-300">
+                  <FileText size={12} className="text-gray-400" /> Bearbeiten
+                </button>
+                <div className="h-px bg-gray-100 dark:bg-zinc-800 my-1" />
+                <button onClick={rcmDeleteConnection} className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-red-50 dark:hover:bg-red-500/10 text-xs text-red-600 dark:text-red-400">
+                  <Trash2 size={12} /> Löschen
+                </button>
+              </>
+            )}
           </div>
         </div>
       )}
@@ -1919,6 +2648,13 @@ export default function FunnelCanvas() {
                       <p className="text-xs font-semibold text-gray-800 dark:text-zinc-200 truncate">{name}</p>
                       <p className="text-lg font-bold text-gray-900 dark:text-white mt-0.5">{val > 0 ? val.toLocaleString('de-DE') : '–'}</p>
                       <p className="text-[10px] text-gray-400 dark:text-zinc-500">{metricLabel}</p>
+                      {/* Target traffic light */}
+                      {step.metricTarget && step.metricTarget > 0 && val > 0 && (() => {
+                        const pct = (val / step.metricTarget) * 100;
+                        const color = pct >= 90 ? 'text-emerald-500' : pct >= 60 ? 'text-yellow-500' : 'text-red-500';
+                        const bg = pct >= 90 ? 'bg-emerald-50 dark:bg-emerald-500/10' : pct >= 60 ? 'bg-yellow-50 dark:bg-yellow-500/10' : 'bg-red-50 dark:bg-red-500/10';
+                        return <span className={`inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-semibold ${bg} ${color}`}>{pct.toFixed(0)}% Ziel</span>;
+                      })()}
                       {overallRate && (
                         <span className={`inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-semibold ${
                           parseFloat(overallRate) >= 20 ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : parseFloat(overallRate) >= 5 ? 'bg-yellow-50 dark:bg-yellow-500/10 text-yellow-600 dark:text-yellow-400' : 'bg-red-50 dark:bg-red-500/10 text-red-500'

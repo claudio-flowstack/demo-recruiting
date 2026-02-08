@@ -60,9 +60,13 @@ export interface FunnelElement {
   backgroundColor?: string;
   borderColor?: string;
 
-  // Future: metrics
+  // Metrics
   metricLabel?: string;
   metricValue?: number;
+  metricTarget?: number;
+
+  // Notes / Comments
+  notes?: string;
 }
 
 export interface FunnelConnection {
