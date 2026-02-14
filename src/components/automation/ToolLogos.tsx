@@ -1,5 +1,5 @@
 /**
- * Tool Logos – Predefined SVG logos for popular tools/services
+ * Tool Logos – Brand-accurate SVG logos for popular tools/services
  * Usage: renderNodeIcon(node) returns the appropriate React element
  */
 
@@ -8,194 +8,194 @@ import { TikTok, GoogleAds, Instagram, Calendly, Stripe, YouTube, Typeform } fro
 
 // ─── Inline SVG Logo Components ───────────────────────────────────────────────
 
-const size = 20;
+const s = 20;
 
 const GoogleDrive = () => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <path d="M8.01 18.26l-3.47-6L8.54 6h6.93l4 6-3.47 6.26H8.01z" fill="#4285F4" opacity={0.8}/>
-    <path d="M1.07 18.26L4.54 12.26 8.54 6 15.47 6 8.01 18.26z" fill="#0F9D58" opacity={0.8}/>
-    <path d="M15.47 6L8.54 6 12 12.26l3.47 6H22.93l-3.46-6L15.47 6z" fill="#FBBC04" opacity={0.8}/>
+  <svg width={s} height={s} viewBox="0 0 87.3 78" fill="none">
+    <path d="m6.6 66.85 3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8H0c0 1.55.4 3.1 1.2 4.5l5.4 9.35z" fill="#0066DA"/>
+    <path d="m43.65 25-13.75-23.8c-1.35.8-2.5 1.9-3.3 3.3l-25.4 44A9.06 9.06 0 0 0 0 53h27.5l16.15-28z" fill="#00AC47"/>
+    <path d="M73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75L86.1 58c.8-1.4 1.2-2.95 1.2-4.5H59.8L73.55 76.8z" fill="#EA4335"/>
+    <path d="M43.65 25 57.4 1.2C56.05.4 54.5 0 52.9 0H34.4c-1.6 0-3.15.45-4.5 1.2L43.65 25z" fill="#00832D"/>
+    <path d="M59.8 53H27.5L13.75 76.8c1.35.8 2.9 1.2 4.5 1.2h36.6c1.6 0 3.15-.45 4.5-1.2L59.8 53z" fill="#2684FC"/>
+    <path d="M73.4 26.5 60.65 4.5c-.8-1.4-1.95-2.5-3.3-3.3L43.6 25l16.15 28h27.5c0-1.55-.4-3.1-1.2-4.5l-12.65-22z" fill="#FFBA00"/>
   </svg>
 );
 
 const Gmail = () => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <rect x="2" y="5" width="20" height="14" rx="2" fill="#EA4335" opacity={0.15}/>
-    <path d="M2 7l10 6 10-6" stroke="#EA4335" strokeWidth="2" fill="none"/>
-    <rect x="2" y="5" width="20" height="14" rx="2" stroke="#EA4335" strokeWidth="1.5" fill="none"/>
+  <svg width={s} height={s} viewBox="0 0 24 24" fill="none">
+    <path d="M2 6a2 2 0 012-2h16a2 2 0 012 2v12a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" fill="#f2f2f2"/>
+    <path d="M2 6l10 7 10-7" stroke="#EA4335" strokeWidth="0" fill="none"/>
+    <path d="M22 6L12 13 2 6v12h2V8.4l8 5.6 8-5.6V18h2V6z" fill="#EA4335" opacity={0.85}/>
+    <path d="M2 6l10 7V8.4L4 4H4a2 2 0 00-2 2z" fill="#C5221F" opacity={0.7}/>
+    <path d="M22 6L12 13V8.4l8-4.4h0a2 2 0 012 2z" fill="#F44336" opacity={0.6}/>
   </svg>
 );
 
 const GoogleSheets = () => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <rect x="4" y="2" width="16" height="20" rx="2" fill="#0F9D58" opacity={0.2}/>
-    <rect x="4" y="2" width="16" height="20" rx="2" stroke="#0F9D58" strokeWidth="1.5" fill="none"/>
-    <line x1="4" y1="9" x2="20" y2="9" stroke="#0F9D58" strokeWidth="1"/>
-    <line x1="4" y1="14" x2="20" y2="14" stroke="#0F9D58" strokeWidth="1"/>
-    <line x1="12" y1="5" x2="12" y2="19" stroke="#0F9D58" strokeWidth="1"/>
+  <svg width={s} height={s} viewBox="0 0 24 24" fill="none">
+    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z" fill="#0F9D58"/>
+    <path d="M14 2v6h6" fill="#87CEAC"/>
+    <rect x="7" y="11" width="10" height="8" rx="0.5" fill="white" opacity={0.9}/>
+    <line x1="7" y1="14" x2="17" y2="14" stroke="#0F9D58" strokeWidth="0.8"/>
+    <line x1="7" y1="16.5" x2="17" y2="16.5" stroke="#0F9D58" strokeWidth="0.8"/>
+    <line x1="11.5" y1="11" x2="11.5" y2="19" stroke="#0F9D58" strokeWidth="0.8"/>
   </svg>
 );
 
 const GoogleDocs = () => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <rect x="4" y="2" width="16" height="20" rx="2" fill="#4285F4" opacity={0.15}/>
-    <rect x="4" y="2" width="16" height="20" rx="2" stroke="#4285F4" strokeWidth="1.5" fill="none"/>
-    <line x1="8" y1="8" x2="16" y2="8" stroke="#4285F4" strokeWidth="1.5" strokeLinecap="round"/>
-    <line x1="8" y1="12" x2="16" y2="12" stroke="#4285F4" strokeWidth="1.5" strokeLinecap="round"/>
-    <line x1="8" y1="16" x2="13" y2="16" stroke="#4285F4" strokeWidth="1.5" strokeLinecap="round"/>
+  <svg width={s} height={s} viewBox="0 0 24 24" fill="none">
+    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z" fill="#4285F4"/>
+    <path d="M14 2v6h6" fill="#A1C2FA"/>
+    <line x1="8" y1="13" x2="16" y2="13" stroke="white" strokeWidth="1.2" strokeLinecap="round" opacity={0.9}/>
+    <line x1="8" y1="16" x2="14" y2="16" stroke="white" strokeWidth="1.2" strokeLinecap="round" opacity={0.9}/>
+    <line x1="8" y1="19" x2="15" y2="19" stroke="white" strokeWidth="1.2" strokeLinecap="round" opacity={0.7}/>
   </svg>
 );
 
 const GoogleCalendar = () => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <rect x="3" y="4" width="18" height="17" rx="2" fill="#4285F4" opacity={0.15}/>
-    <rect x="3" y="4" width="18" height="17" rx="2" stroke="#4285F4" strokeWidth="1.5" fill="none"/>
-    <line x1="3" y1="9" x2="21" y2="9" stroke="#4285F4" strokeWidth="1.5"/>
+  <svg width={s} height={s} viewBox="0 0 24 24" fill="none">
+    <rect x="3" y="4" width="18" height="18" rx="2" fill="#fff"/>
+    <rect x="3" y="4" width="18" height="6" rx="2" fill="#4285F4"/>
+    <rect x="3" y="4" width="18" height="18" rx="2" stroke="#4285F4" strokeWidth="1.2" fill="none"/>
     <line x1="8" y1="2" x2="8" y2="6" stroke="#4285F4" strokeWidth="1.5" strokeLinecap="round"/>
     <line x1="16" y1="2" x2="16" y2="6" stroke="#4285F4" strokeWidth="1.5" strokeLinecap="round"/>
-    <text x="12" y="17" textAnchor="middle" fill="#4285F4" fontSize="7" fontWeight="bold">31</text>
+    <text x="12" y="18.5" textAnchor="middle" fill="#4285F4" fontSize="8" fontWeight="700" fontFamily="Arial, sans-serif">31</text>
   </svg>
 );
 
 const Slack = () => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <path d="M6 15a2 2 0 01-2-2 2 2 0 012-2h2v2a2 2 0 01-2 2z" fill="#E01E5A"/>
-    <path d="M9 15a2 2 0 002-2V6a2 2 0 10-4 0v7a2 2 0 002 2z" fill="#E01E5A"/>
-    <path d="M9 6a2 2 0 012-2 2 2 0 012 2v2h-2a2 2 0 01-2-2z" fill="#36C5F0"/>
-    <path d="M9 9a2 2 0 002 2h7a2 2 0 100-4h-7a2 2 0 00-2 2z" fill="#36C5F0"/>
-    <path d="M18 9a2 2 0 012 2 2 2 0 01-2 2h-2v-2a2 2 0 012-2z" fill="#2EB67D"/>
-    <path d="M15 9a2 2 0 00-2 2v7a2 2 0 104 0v-7a2 2 0 00-2-2z" fill="#2EB67D"/>
-    <path d="M15 18a2 2 0 01-2 2 2 2 0 01-2-2v-2h2a2 2 0 012 2z" fill="#ECB22E"/>
-    <path d="M15 15a2 2 0 00-2-2H6a2 2 0 100 4h7a2 2 0 002-2z" fill="#ECB22E"/>
+  <svg width={s} height={s} viewBox="0 0 24 24" fill="none">
+    <path d="M6.5 14.5a1.5 1.5 0 01-1.5-1.5 1.5 1.5 0 011.5-1.5H8v1.5A1.5 1.5 0 016.5 14.5z" fill="#E01E5A"/>
+    <path d="M8 14.5a1.5 1.5 0 001.5-1.5V8A1.5 1.5 0 008 6.5 1.5 1.5 0 006.5 8v5a1.5 1.5 0 001.5 1.5z" fill="#E01E5A"/>
+    <path d="M8 6.5A1.5 1.5 0 019.5 5 1.5 1.5 0 0111 6.5V8H9.5A1.5 1.5 0 018 6.5z" fill="#36C5F0"/>
+    <path d="M8 8a1.5 1.5 0 001.5 1.5H16A1.5 1.5 0 0017.5 8 1.5 1.5 0 0016 6.5H9.5A1.5 1.5 0 008 8z" fill="#36C5F0"/>
+    <path d="M17.5 8A1.5 1.5 0 0119 9.5a1.5 1.5 0 01-1.5 1.5H16V9.5A1.5 1.5 0 0117.5 8z" fill="#2EB67D"/>
+    <path d="M16 8a1.5 1.5 0 00-1.5 1.5V16a1.5 1.5 0 001.5 1.5 1.5 1.5 0 001.5-1.5V9.5A1.5 1.5 0 0016 8z" fill="#2EB67D"/>
+    <path d="M16 17.5a1.5 1.5 0 01-1.5 1.5 1.5 1.5 0 01-1.5-1.5V16h1.5a1.5 1.5 0 011.5 1.5z" fill="#ECB22E"/>
+    <path d="M16 16a1.5 1.5 0 00-1.5-1.5H8A1.5 1.5 0 006.5 16 1.5 1.5 0 008 17.5h6.5A1.5 1.5 0 0016 16z" fill="#ECB22E"/>
   </svg>
 );
 
 const WhatsApp = () => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <path d="M12 2C6.48 2 2 6.48 2 12c0 1.77.46 3.43 1.27 4.88L2 22l5.23-1.23C8.65 21.54 10.28 22 12 22c5.52 0 10-4.48 10-10S17.52 2 12 2z" fill="#25D366" opacity={0.15}/>
-    <path d="M12 2C6.48 2 2 6.48 2 12c0 1.77.46 3.43 1.27 4.88L2 22l5.23-1.23C8.65 21.54 10.28 22 12 22c5.52 0 10-4.48 10-10S17.52 2 12 2z" stroke="#25D366" strokeWidth="1.5" fill="none"/>
-    <path d="M8.5 10.5c.3.8 1 2 2.2 2.8 1.2.8 2 .9 2.5.7.3-.1.8-.6.9-1.1.1-.3-.1-.6-.3-.8l-1-.6c-.2-.1-.5 0-.7.2l-.3.4c-.1.1-.3.1-.5 0-.5-.3-1-.7-1.3-1.2-.1-.2-.1-.3.1-.5l.3-.3c.2-.2.2-.5.1-.7l-.6-1c-.2-.3-.5-.3-.7-.2-.5.2-.9.6-1 1.1-.1.5.1 1.2.3 1.2z" fill="#25D366"/>
+  <svg width={s} height={s} viewBox="0 0 24 24" fill="none">
+    <path d="M12 2a10 10 0 00-8.6 15.1L2 22l5-1.4A10 10 0 1012 2z" fill="#25D366"/>
+    <path d="M9.1 7.6c-.2-.5-.4-.5-.6-.5h-.5a1 1 0 00-.7.3c-.3.3-.9.9-.9 2.1s1 2.5 1.1 2.6c.1.2 1.8 3 4.5 4 2.2.8 2.7.7 3.2.6.5-.1 1.5-.6 1.7-1.2s.2-1.1.2-1.2c-.1-.1-.3-.2-.6-.3s-1.5-.8-1.7-.9c-.3-.1-.4-.1-.6.2l-.8 1c-.2.2-.3.2-.6.1s-1.2-.5-2.2-1.4c-.8-.7-1.4-1.6-1.5-1.9-.2-.3 0-.4.1-.6l.4-.4c.1-.2.2-.3.3-.5s.1-.3 0-.4l-.8-1.6z" fill="white"/>
   </svg>
 );
 
 const HubSpot = () => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <circle cx="17" cy="8" r="2" stroke="#FF7A59" strokeWidth="1.5" fill="#FF7A59" opacity={0.2}/>
-    <circle cx="12" cy="14" r="3.5" stroke="#FF7A59" strokeWidth="1.5" fill="#FF7A59" opacity={0.15}/>
-    <circle cx="7" cy="9" r="2" stroke="#FF7A59" strokeWidth="1.5" fill="#FF7A59" opacity={0.2}/>
-    <line x1="9" y1="10" x2="10" y2="12.5" stroke="#FF7A59" strokeWidth="1.5"/>
-    <line x1="15" y1="9.5" x2="14" y2="12" stroke="#FF7A59" strokeWidth="1.5"/>
-    <line x1="12" y1="17.5" x2="12" y2="20" stroke="#FF7A59" strokeWidth="1.5"/>
-    <circle cx="12" cy="21" r="1" fill="#FF7A59"/>
+  <svg width={s} height={s} viewBox="0 0 24 24" fill="none">
+    <circle cx="17" cy="7" r="1.8" fill="#FF7A59"/>
+    <path d="M15.2 8.2V12a3.5 3.5 0 11-2.2 1l-2.3-1.6a2.5 2.5 0 110-3.8L13 9a3.5 3.5 0 012.2-.8z" fill="#FF7A59"/>
+    <circle cx="12" cy="14.5" r="2.3" fill="#FF7A59"/>
+    <circle cx="6" cy="11" r="1.5" fill="#FF7A59"/>
   </svg>
 );
 
 const Salesforce = () => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <path d="M10 5c1.5-1.5 4-1.5 5.5 0s1.5 4 0 5.5c1.5.5 2.5 2 2.5 3.5 0 2.2-1.8 4-4 4H8c-2.8 0-5-2.2-5-5 0-2.2 1.4-4 3.4-4.6C6.2 7.2 7.8 5.5 10 5z" fill="#00A1E0" opacity={0.2}/>
-    <path d="M10 5c1.5-1.5 4-1.5 5.5 0s1.5 4 0 5.5c1.5.5 2.5 2 2.5 3.5 0 2.2-1.8 4-4 4H8c-2.8 0-5-2.2-5-5 0-2.2 1.4-4 3.4-4.6C6.2 7.2 7.8 5.5 10 5z" stroke="#00A1E0" strokeWidth="1.5" fill="none"/>
+  <svg width={s} height={s} viewBox="0 0 24 24" fill="none">
+    <path d="M10 5.5a4.2 4.2 0 014-1.5c2 0 3.6 1.1 4.3 2.7a3.5 3.5 0 011.2-.2 3.5 3.5 0 010 7H5.5a3 3 0 01-.3-6c.4-1.7 2-3 3.8-3a4 4 0 011 .5z" fill="#00A1E0"/>
   </svg>
 );
 
 const Make = () => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <circle cx="12" cy="12" r="9" stroke="#6D00CC" strokeWidth="1.5" fill="#6D00CC" opacity={0.12}/>
-    <circle cx="8" cy="12" r="2" fill="#6D00CC" opacity={0.6}/>
-    <circle cx="16" cy="12" r="2" fill="#6D00CC" opacity={0.6}/>
-    <path d="M10 12h4" stroke="#6D00CC" strokeWidth="1.5"/>
+  <svg width={s} height={s} viewBox="0 0 24 24" fill="none">
+    <circle cx="12" cy="12" r="10" fill="#6D00CC"/>
+    <circle cx="8.5" cy="12" r="2.5" fill="white" opacity={0.9}/>
+    <circle cx="15.5" cy="12" r="2.5" fill="white" opacity={0.9}/>
+    <rect x="10" y="10.5" width="4" height="3" fill="#6D00CC"/>
+    <path d="M10 12h4" stroke="white" strokeWidth="1.5" opacity={0.9}/>
   </svg>
 );
 
 const N8n = () => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <rect x="3" y="3" width="18" height="18" rx="4" stroke="#EA4B71" strokeWidth="1.5" fill="#EA4B71" opacity={0.12}/>
-    <text x="12" y="16" textAnchor="middle" fill="#EA4B71" fontSize="9" fontWeight="bold">n8n</text>
+  <svg width={s} height={s} viewBox="0 0 24 24" fill="none">
+    <rect x="2" y="2" width="20" height="20" rx="4" fill="#EA4B71"/>
+    <circle cx="8" cy="12" r="2.2" fill="white" opacity={0.9}/>
+    <circle cx="16" cy="9" r="2.2" fill="white" opacity={0.9}/>
+    <circle cx="16" cy="15" r="2.2" fill="white" opacity={0.9}/>
+    <line x1="10" y1="11.2" x2="14" y2="9.5" stroke="white" strokeWidth="1.3" opacity={0.8}/>
+    <line x1="10" y1="12.8" x2="14" y2="14.5" stroke="white" strokeWidth="1.3" opacity={0.8}/>
   </svg>
 );
 
 const Zapier = () => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <circle cx="12" cy="12" r="9" stroke="#FF4A00" strokeWidth="1.5" fill="#FF4A00" opacity={0.12}/>
-    <path d="M12 6v12M6 12h12M8 8l8 8M16 8l-8 8" stroke="#FF4A00" strokeWidth="1.5" strokeLinecap="round"/>
-    <circle cx="12" cy="12" r="2.5" fill="#FF4A00" opacity={0.3}/>
+  <svg width={s} height={s} viewBox="0 0 24 24" fill="none">
+    <circle cx="12" cy="12" r="10" fill="#FF4A00"/>
+    <path d="M12 5v14M5 12h14M7.8 7.8l8.4 8.4M16.2 7.8l-8.4 8.4" stroke="white" strokeWidth="1.6" strokeLinecap="round"/>
+    <circle cx="12" cy="12" r="3" fill="#FF4A00" stroke="white" strokeWidth="1.2"/>
   </svg>
 );
 
 const OpenAI = () => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <path d="M12 3C7 3 3 7 3 12s4 9 9 9 9-4 9-9-4-9-9-9z" fill="#10A37F" opacity={0.12}/>
-    <path d="M12 3C7 3 3 7 3 12s4 9 9 9 9-4 9-9-4-9-9-9z" stroke="#10A37F" strokeWidth="1.5" fill="none"/>
-    <path d="M12 7v4l3 2" stroke="#10A37F" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-    <circle cx="12" cy="12" r="1" fill="#10A37F"/>
+  <svg width={s} height={s} viewBox="0 0 24 24" fill="none">
+    <path d="M22.28 9.37a5.87 5.87 0 00-.51-4.85 5.96 5.96 0 00-6.42-2.86A5.9 5.9 0 0010.93.03a5.97 5.97 0 00-5.71 4.14 5.88 5.88 0 00-3.93 2.85 5.96 5.96 0 00.74 6.98 5.87 5.87 0 00.51 4.85 5.96 5.96 0 006.42 2.86A5.9 5.9 0 0013.38 24a5.97 5.97 0 005.71-4.14 5.88 5.88 0 003.93-2.85 5.96 5.96 0 00-.74-6.98v-.66zM13.38 22.34a4.42 4.42 0 01-2.83-1.02l.14-.08 4.7-2.71a.76.76 0 00.39-.67v-6.62l1.99 1.15a.07.07 0 01.04.05v5.49a4.46 4.46 0 01-4.43 4.41zM4.05 18.25a4.41 4.41 0 01-.53-2.97l.14.08 4.7 2.71a.78.78 0 00.77 0l5.74-3.31v2.3a.07.07 0 01-.03.06l-4.75 2.74a4.46 4.46 0 01-6.04-1.61zM3.03 8.06A4.42 4.42 0 015.36 6.1v5.57a.76.76 0 00.38.66l5.74 3.31-1.99 1.15a.07.07 0 01-.07 0L4.67 14.06a4.46 4.46 0 01-1.64-5.99zm16.16 3.76l-5.74-3.31 1.99-1.15a.07.07 0 01.07 0l4.75 2.74a4.44 4.44 0 01-.68 8.01v-5.57a.76.76 0 00-.39-.67v-.05zm1.98-3a4.49 4.49 0 00-.67-.46l-.14-.08-4.7-2.71a.78.78 0 00-.77 0l-5.74 3.31V7.58a.07.07 0 01.03-.06l4.75-2.74a4.46 4.46 0 016.65 4.62l-.41-.58zM9.39 13.32L7.4 12.17a.07.07 0 01-.04-.05V6.63a4.44 4.44 0 017.26-3.41l-.14.08-4.7 2.71a.76.76 0 00-.39.67v6.64zm1.08-2.33l2.56-1.47 2.56 1.47v2.95l-2.56 1.47-2.56-1.47V11z" fill="#10A37F"/>
   </svg>
 );
 
 const Claude = () => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <rect x="3" y="3" width="18" height="18" rx="5" fill="#D97706" opacity={0.12}/>
-    <rect x="3" y="3" width="18" height="18" rx="5" stroke="#D97706" strokeWidth="1.5" fill="none"/>
-    <circle cx="9" cy="11" r="1.5" fill="#D97706"/>
-    <circle cx="15" cy="11" r="1.5" fill="#D97706"/>
-    <path d="M9 15.5c1 1 5 1 6 0" stroke="#D97706" strokeWidth="1.5" strokeLinecap="round"/>
+  <svg width={s} height={s} viewBox="0 0 24 24" fill="none">
+    <path d="M15.27 4.69a.78.78 0 00-1.45-.08L12 9.22 10.18 4.6a.78.78 0 00-1.45.08L6.05 12l2.68 7.31a.78.78 0 001.45.08L12 14.78l1.82 4.62a.78.78 0 001.45-.08L17.95 12l-2.68-7.31z" fill="#D97706"/>
+    <path d="M12 2v4.5M12 17.5V22M4.5 9.5L8 11M16 13l3.5 1.5M4.5 14.5L8 13M16 11l3.5-1.5" stroke="#D97706" strokeWidth="1.5" strokeLinecap="round" opacity={0.5}/>
   </svg>
 );
 
 const Notion = () => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <rect x="4" y="3" width="16" height="18" rx="2" stroke="#000" strokeWidth="1.5" fill="none" className="dark:stroke-white"/>
-    <path d="M8 7h8M8 11h5M8 15h7" stroke="#000" strokeWidth="1.2" strokeLinecap="round" className="dark:stroke-white" opacity={0.5}/>
-    <rect x="15" y="13" width="3" height="5" rx="0.5" fill="#000" className="dark:fill-white" opacity={0.2}/>
+  <svg width={s} height={s} viewBox="0 0 24 24" fill="none">
+    <path d="M4 4.5A2.5 2.5 0 016.5 2h8.13a2.5 2.5 0 011.77.73l2.87 2.87A2.5 2.5 0 0120 7.37V19.5a2.5 2.5 0 01-2.5 2.5h-11A2.5 2.5 0 014 19.5V4.5z" stroke="currentColor" strokeWidth="1.5" fill="none" opacity={0.7}/>
+    <path d="M7.5 7l3.5 1v8.5l-3.5-1V7z" fill="currentColor" opacity={0.5}/>
+    <path d="M11 8l4-1v8.5l-4 1V8z" stroke="currentColor" strokeWidth="1" fill="none" opacity={0.4}/>
   </svg>
 );
 
 const Airtable = () => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <path d="M4 8l8-4 8 4v2l-8 4-8-4V8z" fill="#18BFFF" opacity={0.3}/>
-    <path d="M4 8l8-4 8 4-8 4-8-4z" stroke="#18BFFF" strokeWidth="1.5" fill="none"/>
-    <path d="M4 12l8 4 8-4" stroke="#F82B60" strokeWidth="1.5" fill="none"/>
-    <path d="M4 16l8 4 8-4" stroke="#FCBF00" strokeWidth="1.5" fill="none"/>
+  <svg width={s} height={s} viewBox="0 0 24 24" fill="none">
+    <path d="M11.5 3.5L3 7.5l8.5 4 8.5-4-8.5-4z" fill="#FCB400"/>
+    <path d="M12.5 12.5v8l8.5-4v-8l-8.5 4z" fill="#18BFFF"/>
+    <path d="M11.5 12.5v8L3 16.5v-8l8.5 4z" fill="#F82B60"/>
   </svg>
 );
 
 const LinkedIn = () => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <rect x="3" y="3" width="18" height="18" rx="3" fill="#0A66C2" opacity={0.15}/>
-    <rect x="3" y="3" width="18" height="18" rx="3" stroke="#0A66C2" strokeWidth="1.5" fill="none"/>
-    <path d="M8 10v6M8 7.5v.01" stroke="#0A66C2" strokeWidth="2" strokeLinecap="round"/>
-    <path d="M12 16v-4c0-1.1.9-2 2-2s2 .9 2 2v4" stroke="#0A66C2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  <svg width={s} height={s} viewBox="0 0 24 24" fill="none">
+    <rect x="2" y="2" width="20" height="20" rx="3" fill="#0A66C2"/>
+    <path d="M7 10v7M7 7v.01" stroke="white" strokeWidth="2.2" strokeLinecap="round"/>
+    <path d="M11 17v-4.5a2 2 0 014 0V17" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
+    <line x1="11" y1="10" x2="11" y2="17" stroke="white" strokeWidth="2.2" strokeLinecap="round"/>
   </svg>
 );
 
 const Meta = () => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <path d="M6 12c0-3 1.5-6 3-6s2 2 3 4c1-2 1.5-4 3-4s3 3 3 6-1.5 6-3 6-2-2-3-4c-1 2-1.5 4-3 4s-3-3-3-6z" stroke="#0081FB" strokeWidth="1.5" fill="#0081FB" opacity={0.12}/>
+  <svg width={s} height={s} viewBox="0 0 24 24" fill="none">
+    <path d="M5 12c0-3.5 1.5-7 3.5-7 1.3 0 2 1.5 3.5 4.5 1.5-3 2.2-4.5 3.5-4.5 2 0 3.5 3.5 3.5 7s-1.5 7-3.5 7c-1.3 0-2-1.5-3.5-4.5-1.5 3-2.2 4.5-3.5 4.5C6.5 19 5 15.5 5 12z" fill="#0081FB"/>
   </svg>
 );
 
 const GitHub = () => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <path d="M12 2C6.48 2 2 6.48 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.61.07-.61 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.8-.22 1.65-.33 2.5-.33.85 0 1.7.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21.5c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12c0-5.52-4.48-10-10-10z" fill="currentColor" opacity={0.7}/>
+  <svg width={s} height={s} viewBox="0 0 24 24" fill="none">
+    <path d="M12 2C6.48 2 2 6.48 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.61.07-.61 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.8-.22 1.65-.33 2.5-.33.85 0 1.7.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21.5c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12c0-5.52-4.48-10-10-10z" fill="currentColor" opacity={0.8}/>
   </svg>
 );
 
 const Jira = () => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <path d="M12.005 2L2 12.005l4.998 4.998L12.005 22l10.005-10.005L17.003 7.003 12.005 2zm0 5.6l4.398 4.398-4.398 4.397-4.398-4.397L12.005 7.6z" fill="#2684FF" opacity={0.6}/>
+  <svg width={s} height={s} viewBox="0 0 24 24" fill="none">
+    <path d="M12.005 2L2 12.005l4.998 4.998L12.005 22l10.005-10.005L17.003 7.003 12.005 2zm0 5.6l4.398 4.398-4.398 4.397-4.398-4.397L12.005 7.6z" fill="#2684FF"/>
   </svg>
 );
 
 const WordPress = () => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <circle cx="12" cy="12" r="9.5" stroke="#21759B" strokeWidth="1.2" fill="#21759B" opacity={0.1}/>
-    <path d="M12 3.5a8.5 8.5 0 0 0-7.92 5.38L9.44 21.2A8.5 8.5 0 0 0 12 3.5zm-8.27 6.4A8.47 8.47 0 0 0 3.5 12a8.5 8.5 0 0 0 4.62 7.56L4.07 9.9h-.34zm16.48 1.14c0-1.04-.38-1.76-.7-2.32a4.32 4.32 0 0 0-.68-1.04c-.24-.3-.46-.55-.46-.85 0-.33.26-.64.62-.64h.05a8.48 8.48 0 0 0-12.84-.4h.68c1.1 0 2.82-.14 2.82-.14a.44.44 0 0 1 .05.86s-.58.07-1.22.1l3.86 11.48 2.32-6.96-1.66-4.52c-.57-.03-1.1-.1-1.1-.1a.44.44 0 0 1 .05-.86s1.74.14 2.78.14c1.1 0 2.82-.14 2.82-.14a.44.44 0 0 1 .05.86s-.58.07-1.22.1l3.84 11.4.6-2.16c.38-1.02.6-1.82.6-2.51zM12.3 13.1l-3.18 9.24a8.5 8.5 0 0 0 5.24-.14.76.76 0 0 1-.06-.12L12.3 13.1zm7.5-6.02c.04.33.07.68.07 1.07 0 1.06-.2 2.24-.8 3.72l-3.2 9.24A8.49 8.49 0 0 0 20.5 12c0-1.72-.52-3.32-1.4-4.66l.7-.26z" fill="#21759B" opacity={0.7}/>
+  <svg width={s} height={s} viewBox="0 0 24 24" fill="none">
+    <circle cx="12" cy="12" r="10" fill="#21759B"/>
+    <path d="M3.5 12a8.5 8.5 0 004.6 7.56l-3.9-10.7A8.44 8.44 0 003.5 12zm14.27-1.26c0-.94-.38-1.63-.66-2.1a3.64 3.64 0 00-.58-.93c-.2-.26-.38-.47-.38-.72 0-.28.22-.54.52-.54h.04a8.5 8.5 0 00-12.82-.44h.56c.94 0 2.38-.12 2.38-.12.48-.03.54.68.06.73 0 0-.48.06-1.02.09l3.26 9.69 1.96-5.88-1.4-3.81c-.48-.03-.93-.09-.93-.09-.48-.03-.43-.76.06-.73 0 0 1.47.12 2.35.12.94 0 2.38-.12 2.38-.12.48-.03.54.68.06.73 0 0-.48.06-1.02.09l3.24 9.62.5-1.82c.32-.86.5-1.54.5-2.12z" fill="white" opacity={0.9}/>
+    <path d="M12.2 13l-2.7 7.82a8.52 8.52 0 005.24-.14l-.04-.08L12.2 13zm7.4-5.1c.04.27.06.57.06.9 0 .88-.17 1.88-.66 3.12l-2.7 7.82A8.48 8.48 0 0020.5 12c0-1.46-.44-2.82-1.18-3.96l.28-.14z" fill="white" opacity={0.9}/>
   </svg>
 );
 
 const GoogleAnalytics = () => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <rect x="5" y="14" width="3.5" height="6" rx="1.2" fill="#F9AB00" opacity={0.6}/>
-    <rect x="10.25" y="9" width="3.5" height="11" rx="1.2" fill="#F9AB00" opacity={0.75}/>
-    <rect x="15.5" y="4" width="3.5" height="16" rx="1.2" fill="#E37400" opacity={0.75}/>
+  <svg width={s} height={s} viewBox="0 0 24 24" fill="none">
+    <rect x="15" y="4" width="4" height="16" rx="2" fill="#F9AB00"/>
+    <rect x="10" y="9" width="4" height="11" rx="2" fill="#E37400"/>
+    <circle cx="7" cy="18" r="2" fill="#E37400"/>
   </svg>
 );
 
@@ -237,9 +237,9 @@ export const TOOL_LOGOS: Record<string, ToolLogo> = {
   'logo-calendly':        { id: 'logo-calendly',        name: 'Calendly',        category: 'Booking',       component: Calendly,       color: '#006BFF' },
   'logo-stripe':          { id: 'logo-stripe',          name: 'Stripe',          category: 'Payment',       component: Stripe,         color: '#635BFF' },
   'logo-youtube':         { id: 'logo-youtube',         name: 'YouTube',         category: 'Social',        component: YouTube,        color: '#FF0000' },
-  'logo-typeform':          { id: 'logo-typeform',          name: 'Typeform',          category: 'Forms',         component: Typeform,          color: '#262627' },
-  'logo-wordpress':         { id: 'logo-wordpress',         name: 'WordPress',         category: 'CMS',           component: WordPress,         color: '#21759B' },
-  'logo-google-analytics':  { id: 'logo-google-analytics',  name: 'Google Analytics',  category: 'Analytics',     component: GoogleAnalytics,   color: '#F9AB00' },
+  'logo-typeform':        { id: 'logo-typeform',        name: 'Typeform',        category: 'Forms',         component: Typeform,       color: '#262627' },
+  'logo-wordpress':       { id: 'logo-wordpress',       name: 'WordPress',       category: 'CMS',           component: WordPress,      color: '#21759B' },
+  'logo-google-analytics':{ id: 'logo-google-analytics',name: 'Google Analytics',category: 'Analytics',     component: GoogleAnalytics, color: '#F9AB00' },
 };
 
 // ─── Unified Icon Renderer ────────────────────────────────────────────────────
@@ -265,11 +265,6 @@ export function getToolLogosByCategory(): Record<string, ToolLogo[]> {
  * Renders the icon for a node.
  * Priority: logoUrl > logo- prefix > lucide icon key
  */
-/**
- * Renders the icon for a node.
- * Priority: logoUrl > logo- prefix > lucide icon key
- * Dark mode: logos get slight brightness boost for better visibility.
- */
 export function renderNodeIcon(
   icon: string,
   logoUrl?: string,
@@ -282,18 +277,18 @@ export function renderNodeIcon(
       <img
         src={logoUrl}
         alt="Logo"
-        className="rounded object-contain dark:brightness-110"
+        className="rounded object-contain"
         style={{ width: iconSize, height: iconSize }}
         onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
       />
     );
   }
 
-  // Tool logo — wrapped with dark-mode brightness adjustment
+  // Tool logo
   const logo = TOOL_LOGOS[icon];
   if (logo) {
     const Logo = logo.component;
-    return <span className="inline-flex dark:brightness-110"><Logo /></span>;
+    return <span className="inline-flex"><Logo /></span>;
   }
 
   // Fallback to lucide icon or default

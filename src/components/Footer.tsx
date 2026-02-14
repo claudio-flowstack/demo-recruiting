@@ -20,7 +20,7 @@ export const Footer = ({ hideCta = true }: FooterProps) => {
             </p>
             <Link
               to="/kostenlose-beratung"
-              className="inline-block px-8 py-3 bg-primary text-primary-foreground font-semibold rounded-lg hover:bg-primary/90 transition-colors"
+              className="inline-block px-8 py-3 bg-primary text-primary-foreground font-semibold rounded-xl hover:bg-primary/90 transition-colors"
             >
               Kostenlose Prozess-Analyse sichern
             </Link>
@@ -48,27 +48,27 @@ export const Footer = ({ hideCta = true }: FooterProps) => {
             <h4 className="font-medium text-foreground mb-4">Leistungen</h4>
             <ul className="space-y-3 text-sm">
               <li>
-                <a href="#services" className="text-muted-foreground hover:text-primary transition-colors">
+                <a href="#leistungen" className="text-muted-foreground hover:text-primary transition-colors">
                   Prozessautomatisierung
                 </a>
               </li>
               <li>
-                <a href="#services" className="text-muted-foreground hover:text-primary transition-colors">
+                <a href="#leistungen" className="text-muted-foreground hover:text-primary transition-colors">
                   KI-Integration
                 </a>
               </li>
               <li>
-                <a href="#services" className="text-muted-foreground hover:text-primary transition-colors">
+                <a href="#leistungen" className="text-muted-foreground hover:text-primary transition-colors">
                   Workflow-Optimierung
                 </a>
               </li>
               <li>
-                <a href="#services" className="text-muted-foreground hover:text-primary transition-colors">
+                <a href="#leistungen" className="text-muted-foreground hover:text-primary transition-colors">
                   System-Architektur
                 </a>
               </li>
               <li>
-                <a href="#services" className="text-muted-foreground hover:text-primary transition-colors">
+                <a href="#leistungen" className="text-muted-foreground hover:text-primary transition-colors">
                   Consulting & Beratung
                 </a>
               </li>
@@ -80,13 +80,13 @@ export const Footer = ({ hideCta = true }: FooterProps) => {
             <h4 className="font-medium text-foreground mb-4">Unternehmen</h4>
             <ul className="space-y-3 text-sm">
               <li>
-                <a href="#testimonials" className="text-muted-foreground hover:text-primary transition-colors">
-                  Referenzen
+                <a href="#system" className="text-muted-foreground hover:text-primary transition-colors">
+                  Unser System
                 </a>
               </li>
               <li>
-                <a href="#process" className="text-muted-foreground hover:text-primary transition-colors">
-                  Ablauf
+                <a href="#team" className="text-muted-foreground hover:text-primary transition-colors">
+                  Team
                 </a>
               </li>
               <li>
@@ -98,11 +98,6 @@ export const Footer = ({ hideCta = true }: FooterProps) => {
                 <Link to="/kostenlose-beratung" className="text-muted-foreground hover:text-primary transition-colors">
                   Kontakt
                 </Link>
-              </li>
-              <li>
-                <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                  Karriere
-                </a>
               </li>
             </ul>
           </div>
@@ -176,12 +171,12 @@ export const Footer = ({ hideCta = true }: FooterProps) => {
               >
                 Datenschutz
               </Link>
-              <a
-                href="#"
+              <Link
+                to="/agb"
                 className="text-muted-foreground hover:text-primary transition-colors"
               >
                 AGB
-              </a>
+              </Link>
               <button
                 onClick={() => window.dispatchEvent(new CustomEvent('openCookieSettings'))}
                 className="text-muted-foreground hover:text-primary transition-colors"

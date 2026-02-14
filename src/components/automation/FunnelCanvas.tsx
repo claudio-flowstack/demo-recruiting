@@ -331,7 +331,7 @@ const MockupFrame = memo(({ el, isDark }: { el: FunnelElement; isDark: boolean }
               {el.mockupHeadline ? <p className="text-xs font-bold text-center" style={{ color: isDark ? '#fff' : '#1f2937' }}>{el.mockupHeadline}</p> : null}
               {el.mockupBodyText ? <p className={`text-[9px] text-center ${subText}`}>{el.mockupBodyText}</p> : null}
               {!el.mockupHeadline && !el.mockupBodyText && <div className="flex-1 flex items-center justify-center"><span className={`text-xs text-center ${subText}`}>{el.mockupText || 'Mobile Preview'}</span></div>}
-              {el.mockupCtaText && <div className="mt-auto"><div className="bg-purple-600 text-white text-[9px] font-medium text-center py-1.5 rounded-lg">{el.mockupCtaText}</div></div>}
+              {el.mockupCtaText && <div className="mt-auto"><div className="bg-purple-600 text-white text-[9px] font-medium text-center py-1.5 rounded-xl">{el.mockupCtaText}</div></div>}
             </div>
           )}
         </div>
@@ -343,7 +343,7 @@ const MockupFrame = memo(({ el, isDark }: { el: FunnelElement; isDark: boolean }
   }
   if (kind === 'desktop') {
     return (
-      <div className="h-full flex flex-col rounded-lg overflow-hidden" style={{ border: `2px solid ${borderColor}`, background: bgColor }}>
+      <div className="h-full flex flex-col rounded-xl overflow-hidden" style={{ border: `2px solid ${borderColor}`, background: bgColor }}>
         <div className="flex items-center gap-1.5 px-3 py-2" style={{ borderBottom: `1px solid ${borderColor}` }}>
           <div className="w-2.5 h-2.5 rounded-full bg-red-400/60" />
           <div className="w-2.5 h-2.5 rounded-full bg-yellow-400/60" />
@@ -358,7 +358,7 @@ const MockupFrame = memo(({ el, isDark }: { el: FunnelElement; isDark: boolean }
               {el.mockupHeadline ? <p className="text-sm font-bold" style={{ color: isDark ? '#fff' : '#1f2937' }}>{el.mockupHeadline}</p> : null}
               {el.mockupBodyText ? <p className={`text-[10px] ${subText}`}>{el.mockupBodyText}</p> : null}
               {!el.mockupHeadline && !el.mockupBodyText && <div className="flex-1 flex items-center justify-center"><span className={`text-xs text-center ${subText}`}>{el.mockupText || 'Desktop Preview'}</span></div>}
-              {el.mockupCtaText && <div><div className="bg-purple-600 text-white text-[10px] font-medium text-center py-2 rounded-lg w-32">{el.mockupCtaText}</div></div>}
+              {el.mockupCtaText && <div><div className="bg-purple-600 text-white text-[10px] font-medium text-center py-2 rounded-xl w-32">{el.mockupCtaText}</div></div>}
             </div>
           )}
         </div>
@@ -498,7 +498,7 @@ const MockupFrame = memo(({ el, isDark }: { el: FunnelElement; isDark: boolean }
   // google-ad (Text-only search ad)
   if (kind === 'google-ad') {
     return (
-      <div className="h-full flex flex-col rounded-lg overflow-hidden p-4" style={{ border: `2px solid ${borderColor}`, background: cardBg }}>
+      <div className="h-full flex flex-col rounded-xl overflow-hidden p-4" style={{ border: `2px solid ${borderColor}`, background: cardBg }}>
         <div className="flex items-center gap-1 mb-1">
           <span className="text-[8px] font-bold text-white bg-[#202124] dark:bg-zinc-600 px-1.5 py-0.5 rounded">Ad</span>
           <span className="text-[9px]" style={{ color: '#202124' }}>{el.mockupBrowserUrl || 'www.example.com'}</span>
@@ -701,10 +701,10 @@ const TextBlock = memo(({ el, isDark, isInlineEditing, onSave }: { el: FunnelEle
 
 const MediaBlock = memo(({ el, isDark }: { el: FunnelElement; isDark: boolean }) => {
   if (el.mediaUrl) {
-    return <img src={el.mediaUrl} alt={el.mediaAlt || ''} className="w-full h-full object-cover rounded-lg" />;
+    return <img src={el.mediaUrl} alt={el.mediaAlt || ''} className="w-full h-full object-cover rounded-xl" />;
   }
   return (
-    <div className={`w-full h-full flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed ${isDark ? 'border-zinc-700 text-zinc-500' : 'border-gray-300 text-gray-400'}`}>
+    <div className={`w-full h-full flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed ${isDark ? 'border-zinc-700 text-zinc-500' : 'border-gray-300 text-gray-400'}`}>
       <ImageIcon size={24} />
       <span className="text-xs">Bild / Medien URL</span>
     </div>
@@ -1831,7 +1831,7 @@ export default function FunnelCanvas() {
 
         <div className="h-4 w-px bg-gray-200 dark:bg-zinc-700" />
 
-        <button onClick={saveCurrentBoard} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${saveState === 'saved' ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 hover:bg-purple-100 dark:hover:bg-purple-500/20'}`}>
+        <button onClick={saveCurrentBoard} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-medium transition-colors ${saveState === 'saved' ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 hover:bg-purple-100 dark:hover:bg-purple-500/20'}`}>
           <Save size={14} />{saveState === 'saving' ? 'Speichert...' : saveState === 'saved' ? 'Gespeichert' : 'Speichern'}
         </button>
         <button onClick={() => { setShowBoardList(true); setPaletteOpen(false); }} className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors" title="Zur Board-Übersicht"><LayoutGrid size={15} /></button>
@@ -1847,7 +1847,7 @@ export default function FunnelCanvas() {
             </div>
             <div className="space-y-0.5">
               {/* Current state */}
-              <div className="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400">
+              <div className="flex items-center gap-2 px-2 py-1.5 rounded-xl bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400">
                 <div className="w-1.5 h-1.5 rounded-full bg-purple-500" />
                 <span className="text-[11px] font-medium">Aktueller Stand</span>
                 <span className="text-[10px] ml-auto opacity-60">{elements.length} Elemente · {connections.length} Verbindungen</span>
@@ -1857,7 +1857,7 @@ export default function FunnelCanvas() {
                 const realIdx = undoStackRef.current.length - 1 - reverseIdx;
                 return (
                   <button key={reverseIdx} onClick={() => { jumpToHistory(realIdx); setShowHistoryPanel(false); }}
-                    className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-left hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors group">
+                    className="w-full flex items-center gap-2 px-2 py-1.5 rounded-xl text-left hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors group">
                     <div className="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-zinc-600 group-hover:bg-purple-400" />
                     <span className="text-[11px] text-gray-500 dark:text-zinc-400">Schritt {realIdx + 1}</span>
                     <span className="text-[10px] text-gray-400 dark:text-zinc-500 ml-auto">{snap.elements.length} El. · {snap.connections.length} Verb.</span>
@@ -1928,7 +1928,7 @@ export default function FunnelCanvas() {
                       return (
                         <button key={p.kind} onClick={() => addElementFromPalette(item)} draggable
                           onDragStart={e => { e.dataTransfer.setData('application/json', JSON.stringify(item)); e.dataTransfer.effectAllowed = 'copy'; }}
-                          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors cursor-grab active:cursor-grabbing">
+                          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-left hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors cursor-grab active:cursor-grabbing">
                           <div className="w-6 h-6 rounded flex items-center justify-center shrink-0" style={{ background: p.color + '18' }}>
                             {TOOL_LOGOS[p.icon] ? renderNodeIcon(p.icon) : LucideIcon ? <LucideIcon size={14} style={{ color: p.color }} /> : <Globe size={14} style={{ color: p.color }} />}
                           </div>
@@ -1945,7 +1945,7 @@ export default function FunnelCanvas() {
                 return (
                   <button key={item.label} onClick={() => addElementFromPalette(item)} draggable
                     onDragStart={e => { e.dataTransfer.setData('application/json', JSON.stringify(item)); e.dataTransfer.effectAllowed = 'copy'; }}
-                    className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-left hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors cursor-grab active:cursor-grabbing">
+                    className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors cursor-grab active:cursor-grabbing">
                     <Icon size={16} className="text-gray-500 dark:text-zinc-400 shrink-0" />
                     <span className="text-xs text-gray-700 dark:text-zinc-300">{item.label}</span>
                   </button>
@@ -1955,7 +1955,7 @@ export default function FunnelCanvas() {
               {paletteTab === 'text' && TEXT_ITEMS.map(item => (
                 <button key={item.label} onClick={() => addElementFromPalette(item)} draggable
                   onDragStart={e => { e.dataTransfer.setData('application/json', JSON.stringify(item)); e.dataTransfer.effectAllowed = 'copy'; }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-left hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors cursor-grab active:cursor-grabbing">
+                  className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors cursor-grab active:cursor-grabbing">
                   <Type size={16} className="text-gray-500 dark:text-zinc-400 shrink-0" />
                   <span className="text-xs text-gray-700 dark:text-zinc-300">{item.label}</span>
                 </button>
@@ -1966,7 +1966,7 @@ export default function FunnelCanvas() {
                 return (
                   <button key={item.label} onClick={() => addElementFromPalette(item)} draggable
                     onDragStart={e => { e.dataTransfer.setData('application/json', JSON.stringify(item)); e.dataTransfer.effectAllowed = 'copy'; }}
-                    className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-left hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors cursor-grab active:cursor-grabbing">
+                    className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors cursor-grab active:cursor-grabbing">
                     <Icon size={16} className="text-gray-500 dark:text-zinc-400 shrink-0" />
                     <span className="text-xs text-gray-700 dark:text-zinc-300">{item.label}</span>
                   </button>
@@ -1982,7 +1982,7 @@ export default function FunnelCanvas() {
                   const phase: FunnelPhase = { id: `phase-${Date.now()}`, label: `Phase (${colors.name})`, x: cx - 150, y: cy - 100, width: 300, height: 200, color: key };
                   setPhases(prev => [...prev, phase]);
                   setSelectedPhaseId(phase.id);
-                }} className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-left hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors">
+                }} className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors">
                   <div className="w-5 h-5 rounded border-2 border-dashed" style={{ background: colors.bg, borderColor: colors.border }} />
                   <span className="text-xs text-gray-700 dark:text-zinc-300">{colors.name}</span>
                 </button>
@@ -1992,7 +1992,7 @@ export default function FunnelCanvas() {
                 <div className="space-y-2">
                   <p className="text-[10px] uppercase font-semibold text-gray-400 dark:text-zinc-500 px-2 pt-2 pb-1">Funnel-Vorlagen</p>
                   {FUNNEL_TEMPLATES.map((tpl, i) => (
-                    <button key={i} onClick={() => { loadTemplate(tpl); setPaletteOpen(false); }} className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors">
+                    <button key={i} onClick={() => { loadTemplate(tpl); setPaletteOpen(false); }} className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors">
                       <p className="text-xs font-semibold text-gray-700 dark:text-zinc-300">{tpl.name}</p>
                       <p className="text-[10px] text-gray-400 dark:text-zinc-500 mt-0.5">{tpl.description}</p>
                       <div className="flex items-center gap-1 mt-1.5">
@@ -2032,7 +2032,7 @@ export default function FunnelCanvas() {
                     { key: 'dashed' as ConnLineStyle, label: '╌╌╌', desc: 'Gestrichelt' },
                     { key: 'dotted' as ConnLineStyle, label: '···', desc: 'Gepunktet' },
                   ]).map(s => (
-                    <button key={s.key} onClick={() => setGlobalConnLineStyle(s.key)} className={`flex-1 py-1.5 rounded-lg text-xs font-medium border transition-colors ${globalConnLineStyle === s.key ? 'border-purple-500 bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400' : 'border-gray-200 dark:border-zinc-700 text-gray-500 hover:border-gray-300'}`} title={s.desc}>{s.label}</button>
+                    <button key={s.key} onClick={() => setGlobalConnLineStyle(s.key)} className={`flex-1 py-1.5 rounded-xl text-xs font-medium border transition-colors ${globalConnLineStyle === s.key ? 'border-purple-500 bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400' : 'border-gray-200 dark:border-zinc-700 text-gray-500 hover:border-gray-300'}`} title={s.desc}>{s.label}</button>
                   ))}
                 </div>
 
@@ -2044,7 +2044,7 @@ export default function FunnelCanvas() {
                     { key: 'normal' as ConnThickness, label: 'Normal' },
                     { key: 'thick' as ConnThickness, label: 'Dick' },
                   ]).map(s => (
-                    <button key={s.key} onClick={() => setGlobalConnThickness(s.key)} className={`flex-1 py-1.5 rounded-lg text-[10px] font-medium border transition-colors ${globalConnThickness === s.key ? 'border-purple-500 bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400' : 'border-gray-200 dark:border-zinc-700 text-gray-500 hover:border-gray-300'}`}>{s.label}</button>
+                    <button key={s.key} onClick={() => setGlobalConnThickness(s.key)} className={`flex-1 py-1.5 rounded-xl text-[10px] font-medium border transition-colors ${globalConnThickness === s.key ? 'border-purple-500 bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400' : 'border-gray-200 dark:border-zinc-700 text-gray-500 hover:border-gray-300'}`}>{s.label}</button>
                   ))}
                 </div>
 
@@ -2056,7 +2056,7 @@ export default function FunnelCanvas() {
                     { key: 'straight' as ConnCurve, label: 'Gerade', icon: '╲' },
                     { key: 'step' as ConnCurve, label: 'Stufen', icon: '⌐' },
                   ]).map(s => (
-                    <button key={s.key} onClick={() => setGlobalConnCurve(s.key)} className={`flex-1 py-1.5 rounded-lg text-[10px] font-medium border transition-colors ${globalConnCurve === s.key ? 'border-purple-500 bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400' : 'border-gray-200 dark:border-zinc-700 text-gray-500 hover:border-gray-300'}`}>{s.icon} {s.label}</button>
+                    <button key={s.key} onClick={() => setGlobalConnCurve(s.key)} className={`flex-1 py-1.5 rounded-xl text-[10px] font-medium border transition-colors ${globalConnCurve === s.key ? 'border-purple-500 bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400' : 'border-gray-200 dark:border-zinc-700 text-gray-500 hover:border-gray-300'}`}>{s.icon} {s.label}</button>
                   ))}
                 </div>
 
@@ -2078,7 +2078,7 @@ export default function FunnelCanvas() {
                     { key: 'pulse' as ConnAnimation, label: 'Puls' },
                     { key: 'none' as ConnAnimation, label: 'Keine' },
                   ]).map(s => (
-                    <button key={s.key} onClick={() => setGlobalConnAnimation(s.key)} className={`flex-1 py-1.5 rounded-lg text-[10px] font-medium border transition-colors ${globalConnAnimation === s.key ? 'border-purple-500 bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400' : 'border-gray-200 dark:border-zinc-700 text-gray-500 hover:border-gray-300'}`}>{s.label}</button>
+                    <button key={s.key} onClick={() => setGlobalConnAnimation(s.key)} className={`flex-1 py-1.5 rounded-xl text-[10px] font-medium border transition-colors ${globalConnAnimation === s.key ? 'border-purple-500 bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400' : 'border-gray-200 dark:border-zinc-700 text-gray-500 hover:border-gray-300'}`}>{s.label}</button>
                   ))}
                 </div>
 
@@ -2090,7 +2090,7 @@ export default function FunnelCanvas() {
                     { key: 'open' as ConnArrowhead, label: '▷ Offen' },
                     { key: 'none' as ConnArrowhead, label: '— Keine' },
                   ]).map(s => (
-                    <button key={s.key} onClick={() => setGlobalConnArrowhead(s.key)} className={`flex-1 py-1.5 rounded-lg text-[10px] font-medium border transition-colors ${globalConnArrowhead === s.key ? 'border-purple-500 bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400' : 'border-gray-200 dark:border-zinc-700 text-gray-500 hover:border-gray-300'}`}>{s.label}</button>
+                    <button key={s.key} onClick={() => setGlobalConnArrowhead(s.key)} className={`flex-1 py-1.5 rounded-xl text-[10px] font-medium border transition-colors ${globalConnArrowhead === s.key ? 'border-purple-500 bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400' : 'border-gray-200 dark:border-zinc-700 text-gray-500 hover:border-gray-300'}`}>{s.label}</button>
                   ))}
                 </div>
               </div>
@@ -2111,7 +2111,7 @@ export default function FunnelCanvas() {
                     { key: 'pill' as NodeStyle, label: 'Pill', preview: 'rounded-full border-2' },
                     { key: 'card' as NodeStyle, label: 'Karte', preview: 'rounded-xl border-2 border-b-4' },
                   ]).map(s => (
-                    <button key={s.key} onClick={() => setGlobalNodeStyle(s.key)} className={`py-1.5 rounded-lg text-[10px] font-medium border transition-colors ${globalNodeStyle === s.key ? 'border-purple-500 bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400' : 'border-gray-200 dark:border-zinc-700 text-gray-500 hover:border-gray-300'}`}>
+                    <button key={s.key} onClick={() => setGlobalNodeStyle(s.key)} className={`py-1.5 rounded-xl text-[10px] font-medium border transition-colors ${globalNodeStyle === s.key ? 'border-purple-500 bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400' : 'border-gray-200 dark:border-zinc-700 text-gray-500 hover:border-gray-300'}`}>
                       <div className={`w-8 h-4 mx-auto mb-0.5 border-current bg-purple-200/40 ${s.preview}`} />
                       {s.label}
                     </button>
@@ -2127,7 +2127,7 @@ export default function FunnelCanvas() {
                     { key: 'md' as NodeShadow, label: 'Mittel' },
                     { key: 'lg' as NodeShadow, label: 'Groß' },
                   ]).map(s => (
-                    <button key={s.key} onClick={() => setGlobalNodeShadow(s.key)} className={`flex-1 py-1.5 rounded-lg text-[10px] font-medium border transition-colors ${globalNodeShadow === s.key ? 'border-purple-500 bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400' : 'border-gray-200 dark:border-zinc-700 text-gray-500 hover:border-gray-300'}`}>{s.label}</button>
+                    <button key={s.key} onClick={() => setGlobalNodeShadow(s.key)} className={`flex-1 py-1.5 rounded-xl text-[10px] font-medium border transition-colors ${globalNodeShadow === s.key ? 'border-purple-500 bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400' : 'border-gray-200 dark:border-zinc-700 text-gray-500 hover:border-gray-300'}`}>{s.label}</button>
                   ))}
                 </div>
               </div>
@@ -2433,7 +2433,7 @@ export default function FunnelCanvas() {
           const vpW = rect ? rect.width / zoom : 800, vpH = rect ? rect.height / zoom : 600;
           const vpX = -pan.x / zoom, vpY = -pan.y / zoom;
           return (
-            <div className="absolute bottom-3 right-3 z-30 rounded-lg border border-gray-200 dark:border-zinc-700 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-sm overflow-hidden shadow-lg"
+            <div className="absolute bottom-3 right-3 z-30 rounded-xl border border-gray-200 dark:border-zinc-700 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-sm overflow-hidden shadow-lg"
               style={{ width: mapW, height: mapH, cursor: 'pointer' }}
               onClick={e => {
                 const r = e.currentTarget.getBoundingClientRect();
@@ -2495,7 +2495,7 @@ export default function FunnelCanvas() {
                         value={step.metricValue ?? ''}
                         onChange={e => handleMetricChange(step.id, Number(e.target.value) || 0)}
                         placeholder="Ist"
-                        className="w-20 px-2 py-1.5 text-sm rounded-lg border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-gray-900 dark:text-white focus:outline-none focus:border-purple-400 text-right"
+                        className="w-20 px-2 py-1.5 text-sm rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-gray-900 dark:text-white focus:outline-none focus:border-purple-400 text-right"
                       />
                       <span className="text-[11px] text-gray-400 dark:text-zinc-500 whitespace-nowrap">{metricLabel}</span>
                     </div>
@@ -2527,49 +2527,49 @@ export default function FunnelCanvas() {
               <h3 className="font-semibold text-gray-900 dark:text-white">{el.type === 'mockup' ? 'Mockup bearbeiten' : 'Element bearbeiten'}</h3>
               {(el.type === 'platform') && (
                 <>
-                  <input value={editLabel} onChange={e => setEditLabel(e.target.value)} placeholder="Label" className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-purple-400" />
-                  <input value={editDesc} onChange={e => setEditDesc(e.target.value)} placeholder="Beschreibung" className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-purple-400" />
+                  <input value={editLabel} onChange={e => setEditLabel(e.target.value)} placeholder="Label" className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-purple-400" />
+                  <input value={editDesc} onChange={e => setEditDesc(e.target.value)} placeholder="Beschreibung" className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-purple-400" />
                 </>
               )}
               {el.type === 'text' && (
-                <textarea value={editTextContent} onChange={e => setEditTextContent(e.target.value)} rows={4} placeholder="Text eingeben..." className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-purple-400 resize-none" />
+                <textarea value={editTextContent} onChange={e => setEditTextContent(e.target.value)} rows={4} placeholder="Text eingeben..." className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-purple-400 resize-none" />
               )}
               {el.type === 'media' && (
-                <input value={editMediaUrl} onChange={e => setEditMediaUrl(e.target.value)} placeholder="Bild-URL" className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-purple-400" />
+                <input value={editMediaUrl} onChange={e => setEditMediaUrl(e.target.value)} placeholder="Bild-URL" className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-purple-400" />
               )}
               {el.type === 'mockup' && (
                 <div className="space-y-3 max-h-[60vh] overflow-y-auto">
                   {(el.mockupKind === 'social-post' || el.mockupKind === 'ad-mockup') && (
                     <>
                       <p className="text-[10px] uppercase font-semibold text-gray-400 dark:text-zinc-500">Profil</p>
-                      <input value={editProfileImage} onChange={e => setEditProfileImage(e.target.value)} placeholder="Profilbild-URL" className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-purple-400" />
-                      <input value={editProfileName} onChange={e => setEditProfileName(e.target.value)} placeholder="Name / Marke" className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-purple-400" />
+                      <input value={editProfileImage} onChange={e => setEditProfileImage(e.target.value)} placeholder="Profilbild-URL" className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-purple-400" />
+                      <input value={editProfileName} onChange={e => setEditProfileName(e.target.value)} placeholder="Name / Marke" className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-purple-400" />
                     </>
                   )}
                   <p className="text-[10px] uppercase font-semibold text-gray-400 dark:text-zinc-500">Inhalt</p>
-                  <textarea value={editBodyText} onChange={e => setEditBodyText(e.target.value)} rows={3} placeholder="Text / Beschreibung" className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-purple-400 resize-none" />
-                  <input value={editMediaUrl} onChange={e => setEditMediaUrl(e.target.value)} placeholder="Bild-URL (Hauptbild)" className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-purple-400" />
-                  <input value={editHeadline} onChange={e => setEditHeadline(e.target.value)} placeholder="Headline" className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-purple-400" />
+                  <textarea value={editBodyText} onChange={e => setEditBodyText(e.target.value)} rows={3} placeholder="Text / Beschreibung" className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-purple-400 resize-none" />
+                  <input value={editMediaUrl} onChange={e => setEditMediaUrl(e.target.value)} placeholder="Bild-URL (Hauptbild)" className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-purple-400" />
+                  <input value={editHeadline} onChange={e => setEditHeadline(e.target.value)} placeholder="Headline" className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-purple-400" />
                   {el.mockupKind === 'ad-mockup' && (
-                    <input value={editMockupDesc} onChange={e => setEditMockupDesc(e.target.value)} placeholder="Untertitel / Beschreibung" className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-purple-400" />
+                    <input value={editMockupDesc} onChange={e => setEditMockupDesc(e.target.value)} placeholder="Untertitel / Beschreibung" className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-purple-400" />
                   )}
                   {(el.mockupKind === 'ad-mockup' || el.mockupKind === 'mobile' || el.mockupKind === 'desktop') && (
-                    <input value={editCtaText} onChange={e => setEditCtaText(e.target.value)} placeholder="CTA-Button Text (z.B. 'Jetzt kaufen')" className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-purple-400" />
+                    <input value={editCtaText} onChange={e => setEditCtaText(e.target.value)} placeholder="CTA-Button Text (z.B. 'Jetzt kaufen')" className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-purple-400" />
                   )}
                   {(el.mockupKind === 'desktop' || el.mockupKind === 'mobile' || el.mockupKind === 'ad-mockup') && (
-                    <input value={editBrowserUrl} onChange={e => setEditBrowserUrl(e.target.value)} placeholder="URL (z.B. 'www.example.com')" className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-purple-400" />
+                    <input value={editBrowserUrl} onChange={e => setEditBrowserUrl(e.target.value)} placeholder="URL (z.B. 'www.example.com')" className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-purple-400" />
                   )}
-                  <input value={editTextContent} onChange={e => setEditTextContent(e.target.value)} placeholder="Platzhalter-Text (Fallback)" className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-purple-400" />
+                  <input value={editTextContent} onChange={e => setEditTextContent(e.target.value)} placeholder="Platzhalter-Text (Fallback)" className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-purple-400" />
                 </div>
               )}
               {/* Notes */}
               <div>
                 <p className="text-[10px] uppercase font-semibold text-gray-400 dark:text-zinc-500 mb-1">Notizen</p>
-                <textarea value={editNotes} onChange={e => setEditNotes(e.target.value)} rows={2} placeholder="Interne Notiz hinzufügen…" className="w-full px-3 py-2 rounded-lg border border-dashed border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-yellow-400 resize-none" />
+                <textarea value={editNotes} onChange={e => setEditNotes(e.target.value)} rows={2} placeholder="Interne Notiz hinzufügen…" className="w-full px-3 py-2 rounded-xl border border-dashed border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-yellow-400 resize-none" />
               </div>
               <div className="flex justify-end gap-2">
-                <button onClick={() => setEditElementId(null)} className="px-3 py-1.5 rounded-lg text-sm text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800">Abbrechen</button>
-                <button onClick={saveElementEdit} className="px-3 py-1.5 rounded-lg text-sm bg-purple-600 text-white hover:bg-purple-700">Speichern</button>
+                <button onClick={() => setEditElementId(null)} className="px-3 py-1.5 rounded-xl text-sm text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800">Abbrechen</button>
+                <button onClick={saveElementEdit} className="px-3 py-1.5 rounded-xl text-sm bg-purple-600 text-white hover:bg-purple-700">Speichern</button>
               </div>
             </div>
           </div>
@@ -2580,17 +2580,17 @@ export default function FunnelCanvas() {
         <div className="absolute inset-0 bg-black/30 z-40 flex items-center justify-center" onClick={() => setEditConnId(null)}>
           <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl p-6 w-80 space-y-4" onClick={e => e.stopPropagation()}>
             <h3 className="font-semibold text-gray-900 dark:text-white">Verbindung bearbeiten</h3>
-            <input value={editConnLabel} onChange={e => setEditConnLabel(e.target.value)} placeholder="Label (z.B. 'Klick', '32% CTR')" className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-purple-400" />
+            <input value={editConnLabel} onChange={e => setEditConnLabel(e.target.value)} placeholder="Label (z.B. 'Klick', '32% CTR')" className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-purple-400" />
             <div className="flex gap-2">
               {(['solid', 'dashed', 'dotted'] as FunnelLineStyle[]).map(s => (
-                <button key={s} onClick={() => setEditConnStyle(s)} className={`flex-1 py-2 rounded-lg text-xs font-medium border transition-colors ${editConnStyle === s ? 'border-purple-500 bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400' : 'border-gray-200 dark:border-zinc-700 text-gray-500'}`}>
+                <button key={s} onClick={() => setEditConnStyle(s)} className={`flex-1 py-2 rounded-xl text-xs font-medium border transition-colors ${editConnStyle === s ? 'border-purple-500 bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400' : 'border-gray-200 dark:border-zinc-700 text-gray-500'}`}>
                   {s === 'solid' ? '━━━' : s === 'dashed' ? '╌╌╌' : '···'}
                 </button>
               ))}
             </div>
             <div className="flex justify-end gap-2">
-              <button onClick={() => setEditConnId(null)} className="px-3 py-1.5 rounded-lg text-sm text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800">Abbrechen</button>
-              <button onClick={saveConnEdit} className="px-3 py-1.5 rounded-lg text-sm bg-purple-600 text-white hover:bg-purple-700">Speichern</button>
+              <button onClick={() => setEditConnId(null)} className="px-3 py-1.5 rounded-xl text-sm text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800">Abbrechen</button>
+              <button onClick={saveConnEdit} className="px-3 py-1.5 rounded-xl text-sm bg-purple-600 text-white hover:bg-purple-700">Speichern</button>
             </div>
           </div>
         </div>
@@ -2600,10 +2600,10 @@ export default function FunnelCanvas() {
         <div className="absolute inset-0 bg-black/30 z-40 flex items-center justify-center" onClick={() => setEditPhaseId(null)}>
           <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl p-6 w-80 space-y-4" onClick={e => e.stopPropagation()}>
             <h3 className="font-semibold text-gray-900 dark:text-white">Phase bearbeiten</h3>
-            <input value={editPhaseLabel} onChange={e => setEditPhaseLabel(e.target.value)} placeholder="Phase-Name" className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-purple-400" />
+            <input value={editPhaseLabel} onChange={e => setEditPhaseLabel(e.target.value)} placeholder="Phase-Name" className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-purple-400" />
             <div className="flex justify-end gap-2">
-              <button onClick={() => setEditPhaseId(null)} className="px-3 py-1.5 rounded-lg text-sm text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800">Abbrechen</button>
-              <button onClick={savePhaseEdit} className="px-3 py-1.5 rounded-lg text-sm bg-purple-600 text-white hover:bg-purple-700">Speichern</button>
+              <button onClick={() => setEditPhaseId(null)} className="px-3 py-1.5 rounded-xl text-sm text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800">Abbrechen</button>
+              <button onClick={savePhaseEdit} className="px-3 py-1.5 rounded-xl text-sm bg-purple-600 text-white hover:bg-purple-700">Speichern</button>
             </div>
           </div>
         </div>
@@ -2781,7 +2781,7 @@ export default function FunnelCanvas() {
               <p className="text-[10px] text-gray-400 dark:text-zinc-500">Gesamt-Conversion</p>
             </div>
           ) : (
-            <div className="px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-zinc-800">
+            <div className="px-3 py-1.5 rounded-xl bg-gray-100 dark:bg-zinc-800">
               <p className="text-[11px] text-gray-400 dark:text-zinc-500">Metriken eingeben ↑</p>
             </div>
           )}

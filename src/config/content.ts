@@ -35,9 +35,9 @@ export const siteConfig = {
 // Navigation Links
 // ============================================
 export const navLinks = [
-  { label: "System", href: "#flowstack-system" },
-  { label: "Fallstudien", href: "#case-studies" },
-  { label: "Leistungen", href: "#services" },
+  { label: "System", href: "#system" },
+  { label: "Leistungen", href: "#leistungen" },
+  { label: "Team", href: "#team" },
   { label: "FAQ", href: "#faq" },
 ];
 

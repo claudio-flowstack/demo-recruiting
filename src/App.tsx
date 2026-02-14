@@ -3,7 +3,8 @@
  * React Router configuration with multiple pages
  */
 
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
+import { useEffect } from "react";
 import HomePage from "./pages/HomePage";
 import HomePageV2 from "./pages/HomePageV2";
 import HomePageV3 from "./pages/HomePageV3";
@@ -24,9 +25,16 @@ import OnboardingPage from "./pages/OnboardingPage";
 import CookieBanner from "./components/CookieBanner";
 import "./App.css";
 
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
+  return null;
+}
+
 function App() {
   return (
     <Router>
+      <ScrollToTop />
       <Routes>
         <Route path="/" element={<HomePageV3 />} />
         <Route path="/v1" element={<HomePage />} />

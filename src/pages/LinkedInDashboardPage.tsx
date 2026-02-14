@@ -62,6 +62,7 @@ import {
   ArrowDownCircle,
   Globe,
   Layers,
+  Menu,
 } from "lucide-react";
 import { LanguageProvider, useLanguage } from '../i18n/LanguageContext';
 import ConfirmDialog, { useModalEsc } from '../components/ui/ConfirmDialog';
@@ -702,14 +703,14 @@ const LeadModal = ({ lead, onClose, onStatusChange, onSaveNotes, onSendMessage, 
           <p className="text-sm text-gray-500 mb-3">{tx("Status ändern", "Change status")}</p>
           <div className="flex flex-wrap gap-2">
             {Object.entries(statusLabels).map(([key, label]) => (
-              <button key={key} onClick={() => { onStatusChange(lead.id, key); }} className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${lead.status === key ? `${statusColors[key].bg} ${statusColors[key].text}` : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}>{label}</button>
+              <button key={key} onClick={() => { onStatusChange(lead.id, key); }} className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-colors ${lead.status === key ? `${statusColors[key].bg} ${statusColors[key].text}` : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}>{label}</button>
             ))}
           </div>
         </div>
         <div className="mb-6">
           <div className="flex items-center justify-between mb-3">
             <p className="text-sm text-gray-500">{tx("Notizen", "Notes")}</p>
-            <button onClick={handleSaveNotes} className={`px-3 py-1 text-sm rounded-lg transition-colors ${notesSaved ? "bg-emerald-100 text-emerald-600" : "bg-sky-100 text-sky-600 hover:bg-sky-200"}`}>
+            <button onClick={handleSaveNotes} className={`px-3 py-1 text-sm rounded-xl transition-colors ${notesSaved ? "bg-emerald-100 text-emerald-600" : "bg-sky-100 text-sky-600 hover:bg-sky-200"}`}>
               {notesSaved ? <><Check className="w-3 h-3 inline mr-1" />{tx("Gespeichert", "Saved")}</> : tx("Speichern", "Save")}
             </button>
           </div>
@@ -861,7 +862,7 @@ const TemplateModal = ({ template, onClose, onSave, onDelete }: { template: Mess
                     className="text-lg font-semibold bg-transparent border-b border-transparent hover:border-gray-300 focus:border-sky-500 outline-none"
                   />
                   {editTemplate.activeVersionId !== currentVersion.id && (
-                    <button onClick={() => handleSetActive(currentVersion.id)} className="px-3 py-1 text-sm bg-emerald-100 text-emerald-600 rounded-lg hover:bg-emerald-200">{tx("Als aktiv setzen", "Set as active")}</button>
+                    <button onClick={() => handleSetActive(currentVersion.id)} className="px-3 py-1 text-sm bg-emerald-100 text-emerald-600 rounded-xl hover:bg-emerald-200">{tx("Als aktiv setzen", "Set as active")}</button>
                   )}
                 </div>
                 {/* Variables Toolbar */}
@@ -885,7 +886,7 @@ const TemplateModal = ({ template, onClose, onSave, onDelete }: { template: Mess
                         } else {
                           handleVersionChange(currentVersion.id, currentVersion.content + variable);
                         }
-                      }} className="px-3 py-1.5 bg-sky-50 dark:bg-sky-500/10 text-sky-600 rounded-lg text-xs font-mono hover:bg-sky-100 dark:hover:bg-sky-500/20 transition-colors">{variable}</button>
+                      }} className="px-3 py-1.5 bg-sky-50 dark:bg-sky-500/10 text-sky-600 rounded-xl text-xs font-mono hover:bg-sky-100 dark:hover:bg-sky-500/20 transition-colors">{variable}</button>
                     ))}
                   </div>
                 </div>
@@ -1309,11 +1310,11 @@ const PostEditorModal = ({ post, isOpen, onClose, onSave }: { post: LinkedInPost
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-sm text-gray-500 block mb-2">{tx("Datum", "Date")}</label>
-                <input type="date" value={scheduledDate} onChange={e => setScheduledDate(e.target.value)} className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm focus:ring-2 focus:ring-sky-500 outline-none" />
+                <input type="date" value={scheduledDate} onChange={e => setScheduledDate(e.target.value)} className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700/60 rounded-xl text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-sky-500/40 focus:border-sky-500 outline-none transition-colors" />
               </div>
               <div>
                 <label className="text-sm text-gray-500 block mb-2">{tx("Uhrzeit", "Time")}</label>
-                <input type="time" value={scheduledTime} onChange={e => setScheduledTime(e.target.value)} className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm focus:ring-2 focus:ring-sky-500 outline-none" />
+                <input type="time" value={scheduledTime} onChange={e => setScheduledTime(e.target.value)} className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700/60 rounded-xl text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-sky-500/40 focus:border-sky-500 outline-none transition-colors" />
               </div>
             </div>
           )}
@@ -1380,6 +1381,7 @@ const LinkedInDashboardContent = () => {
   const [postFilter, setPostFilter] = useState<PostFilter>("all");
   const [leadStatusFilter, setLeadStatusFilter] = useState<string>("all");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   // Data State
   const [notifications, setNotifications] = useState(initialNotifications);
@@ -1387,14 +1389,9 @@ const LinkedInDashboardContent = () => {
   const [templates, setTemplates] = useState(() => { const s = loadLinkedinTemplates<MessageTemplate>(); return s.length ? s : initialTemplates; });
   const [posts, setPosts] = useState(() => { const s = loadLinkedinPosts<LinkedInPost>(); return s.length ? s : initialPosts; });
   const [leads, setLeads] = useState(() => { const s = loadLinkedinLeads<OutreachLead>(); return s.length ? s : initialLeads; });
-  const [settingsData, setSettingsData] = useState({
-    dailyConnections: 25,
-    dailyMessages: 50,
-    dailyViews: 80,
-    notifyConnections: true,
-    notifyReplies: true,
-    notifyEngagement: true,
-    dailyReport: false,
+  const [settingsData, setSettingsData] = useState<{ dailyConnections: number; dailyMessages: number; dailyViews: number; notifyConnections: boolean; notifyReplies: boolean; notifyEngagement: boolean; dailyReport: boolean }>(() => {
+    try { const s = localStorage.getItem('flowstack-linkedin-settings'); if (s) return JSON.parse(s); } catch {}
+    return { dailyConnections: 25, dailyMessages: 50, dailyViews: 80, notifyConnections: true, notifyReplies: true, notifyEngagement: true, dailyReport: false };
   });
 
   // Modals
@@ -1415,6 +1412,9 @@ const LinkedInDashboardContent = () => {
   const [selectedSequence, setSelectedSequence] = useState<AutomationSequence | null>(null);
   const [showNewSequenceModal, setShowNewSequenceModal] = useState(false);
 
+  // Inline delete confirmation
+  const [pendingInlineDelete, setPendingInlineDelete] = useState<{ type: string; id: string } | null>(null);
+
   // Inbox
   const [conversations, setConversations] = useState(initialConversations);
   const [selectedConversation, setSelectedConversation] = useState<InboxConversation | null>(null);
@@ -1423,7 +1423,10 @@ const LinkedInDashboardContent = () => {
 
   // Import
   const [importedLeads, setImportedLeads] = useState(initialImportedLeads);
-  const [blacklist, setBlacklist] = useState(initialBlacklist);
+  const [blacklist, setBlacklist] = useState<BlacklistEntry[]>(() => {
+    try { const s = localStorage.getItem('flowstack-linkedin-blacklist'); if (s) return JSON.parse(s); } catch {}
+    return initialBlacklist;
+  });
   const [importHistory, setImportHistory] = useState(initialImportHistory);
   const [importUrl, setImportUrl] = useState('');
   const [showBlacklistModal, setShowBlacklistModal] = useState(false);
@@ -1433,25 +1436,26 @@ const LinkedInDashboardContent = () => {
   const [linkedinSearchUrl, setLinkedinSearchUrl] = useState('');
   const [importSuccessCount, setImportSuccessCount] = useState<number | null>(null);
   const csvFileInputRef = useRef<HTMLInputElement>(null);
-  const [crmConnections, setCrmConnections] = useState<Record<string, boolean>>({ HubSpot: false, Salesforce: false, Pipedrive: false, 'Zoho CRM': false });
+  const [crmConnections, setCrmConnections] = useState<Record<string, boolean>>(() => {
+    try { const s = localStorage.getItem('flowstack-linkedin-crm'); if (s) return JSON.parse(s); } catch {}
+    return { HubSpot: false, Salesforce: false, Pipedrive: false, 'Zoho CRM': false };
+  });
   const [webhookTestId, setWebhookTestId] = useState<string | null>(null);
   const [googleSheetsUrl, setGoogleSheetsUrl] = useState('');
   const [googleSheetsConnected, setGoogleSheetsConnected] = useState(false);
 
   // Safety & Integrations
-  const [webhooks, setWebhooks] = useState(initialWebhooks);
-  const [eventTriggers, setEventTriggers] = useState(initialEventTriggers);
-  const [safetySettings, setSafetySettings] = useState({
-    warmupEnabled: true,
-    warmupStartLimit: 5,
-    warmupTargetLimit: 50,
-    warmupDays: 14,
-    workingHoursStart: '09:00',
-    workingHoursEnd: '18:00',
-    workingDays: [true, true, true, true, true, false, false],
-    minDelay: 30,
-    maxDelay: 120,
-    accountHealthScore: 87,
+  const [webhooks, setWebhooks] = useState<WebhookConfig[]>(() => {
+    try { const s = localStorage.getItem('flowstack-linkedin-webhooks'); if (s) return JSON.parse(s); } catch {}
+    return initialWebhooks;
+  });
+  const [eventTriggers, setEventTriggers] = useState<EventTrigger[]>(() => {
+    try { const s = localStorage.getItem('flowstack-linkedin-triggers'); if (s) return JSON.parse(s); } catch {}
+    return initialEventTriggers;
+  });
+  const [safetySettings, setSafetySettings] = useState<{ warmupEnabled: boolean; warmupStartLimit: number; warmupTargetLimit: number; warmupDays: number; workingHoursStart: string; workingHoursEnd: string; workingDays: boolean[]; minDelay: number; maxDelay: number; accountHealthScore: number }>(() => {
+    try { const s = localStorage.getItem('flowstack-linkedin-safety'); if (s) return JSON.parse(s); } catch {}
+    return { warmupEnabled: true, warmupStartLimit: 5, warmupTargetLimit: 50, warmupDays: 14, workingHoursStart: '09:00', workingHoursEnd: '18:00', workingDays: [true, true, true, true, true, false, false], minDelay: 30, maxDelay: 120, accountHealthScore: 87 };
   });
   const [settingsTab, setSettingsTab] = useState<'account' | 'safety' | 'integrations' | 'triggers'>('account');
 
@@ -1469,6 +1473,12 @@ const LinkedInDashboardContent = () => {
   useEffect(() => { saveLinkedinPosts(posts); }, [posts]);
   useEffect(() => { saveLinkedinLeads(leads); }, [leads]);
   useEffect(() => { saveLinkedinSequences(sequences); }, [sequences]);
+  useEffect(() => { try { localStorage.setItem('flowstack-linkedin-settings', JSON.stringify(settingsData)); } catch {} }, [settingsData]);
+  useEffect(() => { try { localStorage.setItem('flowstack-linkedin-safety', JSON.stringify(safetySettings)); } catch {} }, [safetySettings]);
+  useEffect(() => { try { localStorage.setItem('flowstack-linkedin-blacklist', JSON.stringify(blacklist)); } catch {} }, [blacklist]);
+  useEffect(() => { try { localStorage.setItem('flowstack-linkedin-webhooks', JSON.stringify(webhooks)); } catch {} }, [webhooks]);
+  useEffect(() => { try { localStorage.setItem('flowstack-linkedin-triggers', JSON.stringify(eventTriggers)); } catch {} }, [eventTriggers]);
+  useEffect(() => { try { localStorage.setItem('flowstack-linkedin-crm', JSON.stringify(crmConnections)); } catch {} }, [crmConnections]);
 
   // Date range multiplier
   const dateMultiplier = useMemo(() => {
@@ -1695,7 +1705,7 @@ const LinkedInDashboardContent = () => {
     <div className="min-h-screen bg-gray-50 dark:bg-black">
       {/* Toast Notifications */}
       {toasts.length > 0 && (
-        <div className="fixed top-4 right-4 z-[110] flex flex-col gap-2">
+        <div className="fixed bottom-6 right-6 z-[110] flex flex-col gap-2">
           {toasts.map(t => (
             <div key={t.id} className={`px-4 py-3 rounded-xl shadow-lg text-sm font-medium animate-in slide-in-from-right fade-in duration-200 ${t.type === 'success' ? 'bg-emerald-500 text-white' : t.type === 'error' ? 'bg-red-500 text-white' : 'bg-gray-800 text-white'}`}>
               {t.msg}
@@ -1714,8 +1724,11 @@ const LinkedInDashboardContent = () => {
       <PostEditorModal post={editingPost} isOpen={showNewPostModal || !!editingPost} onClose={() => { setShowNewPostModal(false); setEditingPost(null); }} onSave={handleSavePost} />
       <MessageModal data={showMessageModal} onClose={() => setShowMessageModal(null)} onSend={handleSendMessage} />
 
+      {/* Mobile sidebar overlay */}
+      {mobileSidebarOpen && <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-30 lg:hidden" onClick={() => setMobileSidebarOpen(false)} />}
+
       {/* Sidebar */}
-      <aside className={`fixed left-0 top-0 bottom-0 w-64 bg-white dark:bg-gray-900 border-r border-gray-100 dark:border-gray-800 z-40 hidden ${sidebarCollapsed ? '' : 'lg:flex'} flex-col transition-transform duration-300`}>
+      <aside className={`fixed left-0 top-0 bottom-0 w-64 bg-white dark:bg-gray-900 border-r border-gray-100 dark:border-gray-800 z-40 flex flex-col transition-transform duration-300 ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'} ${sidebarCollapsed ? 'lg:-translate-x-full' : 'lg:translate-x-0'}`}>
         <div className="p-6 flex items-center justify-between">
           <h1 className="text-xl font-bold flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-sky-500 to-blue-600 flex items-center justify-center">
@@ -1727,7 +1740,7 @@ const LinkedInDashboardContent = () => {
             <button onClick={() => setDarkMode(!darkMode)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors" title={darkMode ? tx("Heller Modus", "Light mode") : tx("Dunkler Modus", "Dark mode")}>
               {darkMode ? <Sun className="w-5 h-5 text-yellow-500" /> : <Moon className="w-5 h-5 text-gray-500" />}
             </button>
-            <button onClick={() => setSidebarCollapsed(true)} className="hidden lg:flex p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors" title={tx("Sidebar einklappen", "Collapse sidebar")}>
+            <button onClick={() => { setSidebarCollapsed(true); setMobileSidebarOpen(false); }} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors" title={tx("Sidebar einklappen", "Collapse sidebar")}>
               <ChevronLeft className="w-4 h-4 text-gray-400" />
             </button>
           </div>
@@ -1740,28 +1753,28 @@ const LinkedInDashboardContent = () => {
             { icon: <MessageSquare className="w-5 h-5" />, label: tx("Nachrichten", "Messages"), key: "messages" },
             { icon: <FileText className="w-5 h-5" />, label: "Posts", key: "posts" },
           ] as const).map(i => (
-            <button key={i.key} onClick={() => setSection(i.key)} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${section === i.key ? "bg-sky-50 dark:bg-sky-500/10 text-sky-600 font-medium" : "text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"}`}>{i.icon}{i.label}</button>
+            <button key={i.key} onClick={() => { setSection(i.key); setMobileSidebarOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${section === i.key ? "bg-sky-50 dark:bg-sky-500/10 text-sky-600 font-medium" : "text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"}`}>{i.icon}{i.label}</button>
           ))}
           <p className="text-xs text-gray-400 uppercase font-medium px-4 mt-6 mb-2">{tx("Automation", "Automation")}</p>
           {([
             { icon: <GitBranch className="w-5 h-5" />, label: tx("Sequenzen", "Sequences"), key: "sequences" },
             { icon: <Upload className="w-5 h-5" />, label: "Import", key: "import" },
           ] as const).map(i => (
-            <button key={i.key} onClick={() => setSection(i.key)} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${section === i.key ? "bg-sky-50 dark:bg-sky-500/10 text-sky-600 font-medium" : "text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"}`}>{i.icon}{i.label}</button>
+            <button key={i.key} onClick={() => { setSection(i.key); setMobileSidebarOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${section === i.key ? "bg-sky-50 dark:bg-sky-500/10 text-sky-600 font-medium" : "text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"}`}>{i.icon}{i.label}</button>
           ))}
           <p className="text-xs text-gray-400 uppercase font-medium px-4 mt-6 mb-2">{tx("Pipeline", "Pipeline")}</p>
           {([
             { icon: <Users className="w-5 h-5" />, label: "Leads", key: "leads" },
             { icon: <Activity className="w-5 h-5" />, label: "Analytics", key: "analytics" },
           ] as const).map(i => (
-            <button key={i.key} onClick={() => setSection(i.key)} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${section === i.key ? "bg-sky-50 dark:bg-sky-500/10 text-sky-600 font-medium" : "text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"}`}>{i.icon}{i.label}</button>
+            <button key={i.key} onClick={() => { setSection(i.key); setMobileSidebarOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${section === i.key ? "bg-sky-50 dark:bg-sky-500/10 text-sky-600 font-medium" : "text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"}`}>{i.icon}{i.label}</button>
           ))}
           <p className="text-xs text-gray-400 uppercase font-medium px-4 mt-6 mb-2">{tx("Tools", "Tools")}</p>
           {([
             { icon: <Calendar className="w-5 h-5" />, label: "Scheduler", key: "scheduler" },
             { icon: <Settings className="w-5 h-5" />, label: tx("Einstellungen", "Settings"), key: "settings" },
           ] as const).map(i => (
-            <button key={i.key} onClick={() => setSection(i.key)} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${section === i.key ? "bg-sky-50 dark:bg-sky-500/10 text-sky-600 font-medium" : "text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"}`}>{i.icon}{i.label}</button>
+            <button key={i.key} onClick={() => { setSection(i.key); setMobileSidebarOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${section === i.key ? "bg-sky-50 dark:bg-sky-500/10 text-sky-600 font-medium" : "text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"}`}>{i.icon}{i.label}</button>
           ))}
         </nav>
         <div className="p-4">
@@ -1777,7 +1790,10 @@ const LinkedInDashboardContent = () => {
         {/* Header */}
         <header className="sticky top-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-b border-gray-100 dark:border-gray-800 z-30">
           <div className="flex items-center justify-between px-6 py-4">
+            <div className="flex items-center gap-2">
+            <button onClick={() => setMobileSidebarOpen(true)} className="lg:hidden p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors" title={tx('Menü öffnen', 'Open menu')}><Menu className="w-5 h-5 text-gray-500" /></button>
             {sidebarCollapsed && <button onClick={() => setSidebarCollapsed(false)} className="hidden lg:flex p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors" title={tx("Sidebar ausklappen", "Expand sidebar")}><ChevronRight className="w-5 h-5 text-gray-500" /></button>}
+            </div>
             <div>
               <h1 className="text-2xl font-bold">{{ dashboard: "Dashboard", outreach: tx("Kampagnen", "Campaigns"), messages: tx("Nachrichten-Templates", "Message Templates"), posts: "Posts", leads: "Leads", analytics: "Analytics", scheduler: "Scheduler", settings: tx("Einstellungen", "Settings"), sequences: tx("Sequenzen", "Sequences"), inbox: "Smart Inbox", import: tx("Lead Import", "Lead Import") }[section]}</h1>
               <p className="text-sm text-gray-500">{dateLabels[dateRange]}</p>
@@ -1787,7 +1803,7 @@ const LinkedInDashboardContent = () => {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input type="text" placeholder={tx("Suchen...", "Search...")} value={search} onChange={e => setSearch(e.target.value)} className="pl-10 pr-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm w-64 focus:ring-2 focus:ring-sky-500 outline-none" />
               </div>
-              <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-0.5">
+              <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-xl p-0.5">
                 <button onClick={() => setLang('de')} className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${lang === 'de' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}`}>DE</button>
                 <button onClick={() => setLang('en')} className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${lang === 'en' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}`}>EN</button>
               </div>
@@ -1800,9 +1816,9 @@ const LinkedInDashboardContent = () => {
               <CustomDropdown value={dateRange} onChange={setDateRange} options={[{ value: "today", label: tx("Heute", "Today") }, { value: "7d", label: tx("Letzte 7 Tage", "Last 7 days") }, { value: "30d", label: tx("Letzte 30 Tage", "Last 30 days") }, { value: "90d", label: tx("Letzte 90 Tage", "Last 90 days") }, { value: "6m", label: tx("Letzte 6 Monate", "Last 6 months") }, { value: "12m", label: tx("Letzte 12 Monate", "Last 12 months") }, { value: "custom", label: tx("Benutzerdefiniert", "Custom") }]} icon={<Calendar className="w-4 h-4 text-gray-500" />} />
               {dateRange === "custom" && (
                 <div className="flex items-center gap-2">
-                  <input type="date" value={customDateFrom} onChange={e => setCustomDateFrom(e.target.value)} className="px-3 py-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:ring-2 focus:ring-sky-500 outline-none" />
+                  <input type="date" value={customDateFrom} onChange={e => setCustomDateFrom(e.target.value)} className="px-3 py-2 bg-white dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700/60 rounded-xl text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-sky-500/40 focus:border-sky-500 outline-none transition-colors" />
                   <span className="text-gray-400 text-sm">–</span>
-                  <input type="date" value={customDateTo} onChange={e => setCustomDateTo(e.target.value)} className="px-3 py-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:ring-2 focus:ring-sky-500 outline-none" />
+                  <input type="date" value={customDateTo} onChange={e => setCustomDateTo(e.target.value)} className="px-3 py-2 bg-white dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700/60 rounded-xl text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-sky-500/40 focus:border-sky-500 outline-none transition-colors" />
                 </div>
               )}
               {section === "posts" && (
@@ -1957,6 +1973,9 @@ const LinkedInDashboardContent = () => {
                 <button onClick={() => setShowNewTemplateModal(true)} className="px-4 py-2 bg-sky-500 text-white rounded-xl font-medium hover:bg-sky-600 flex items-center gap-2"><Plus className="w-4 h-4" />{tx("Neues Template", "New Template")}</button>
               </div>
               <div className="grid md:grid-cols-2 gap-6">
+                {templates.length === 0 && (
+                  <p className="col-span-full text-center text-gray-400 py-8">{tx('Noch keine Templates erstellt.', 'No templates created yet.')}</p>
+                )}
                 {templates.map(template => (
                   <div key={template.id} className="bg-white dark:bg-gray-900 rounded-2xl p-6 border border-gray-100 dark:border-gray-800">
                     <div className="flex items-center justify-between mb-4">
@@ -1965,7 +1984,10 @@ const LinkedInDashboardContent = () => {
                         <h3 className="font-semibold">{template.name}</h3>
                         <span className="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded-full">{template.type}</span>
                       </div>
-                      <button onClick={() => setSelectedTemplate(template)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg" title={tx("Template bearbeiten", "Edit template")}><Edit3 className="w-4 h-4 text-gray-500" /></button>
+                      <div className="flex items-center gap-1">
+                        <button onClick={(e) => { e.stopPropagation(); const dup = { ...template, id: Date.now().toString(), name: template.name + ' (Copy)', versions: template.versions.map(v => ({ ...v, id: Date.now().toString() + '-' + v.id, sent: 0, replied: 0, replyRate: 0 })) }; setTemplates(t => [...t, dup]); addToast(tx('Template dupliziert', 'Template duplicated')); }} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl" title={tx("Template duplizieren", "Duplicate template")}><Copy className="w-4 h-4 text-gray-500" /></button>
+                        <button onClick={() => setSelectedTemplate(template)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl" title={tx("Template bearbeiten", "Edit template")}><Edit3 className="w-4 h-4 text-gray-500" /></button>
+                      </div>
                     </div>
                     <div className="space-y-3">
                       {template.versions.map(v => (
@@ -1982,7 +2004,7 @@ const LinkedInDashboardContent = () => {
                         </div>
                       ))}
                     </div>
-                    <button onClick={() => setSelectedTemplate(template)} className="w-full mt-4 py-2 text-sm text-sky-500 hover:bg-sky-50 dark:hover:bg-sky-500/10 rounded-lg transition-colors">{tx("+ Neue Version hinzufügen", "+ Add new version")}</button>
+                    <button onClick={() => setSelectedTemplate(template)} className="w-full mt-4 py-2 text-sm text-sky-500 hover:bg-sky-50 dark:hover:bg-sky-500/10 rounded-xl transition-colors">{tx("+ Neue Version hinzufügen", "+ Add new version")}</button>
                   </div>
                 ))}
               </div>
@@ -2002,6 +2024,9 @@ const LinkedInDashboardContent = () => {
                 <button onClick={() => setShowNewPostModal(true)} className="px-4 py-2 bg-sky-500 text-white rounded-xl font-medium hover:bg-sky-600 flex items-center gap-2"><Edit3 className="w-4 h-4" />{tx("Neuer Post", "New Post")}</button>
               </div>
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {filteredPosts.length === 0 && (
+                  <p className="col-span-full text-center text-gray-400 py-8">{tx('Keine Posts gefunden.', 'No posts found.')}</p>
+                )}
                 {filteredPosts.map(post => (
                   <div key={post.id} onClick={() => setSelectedPost(post)} className="bg-white dark:bg-gray-900 rounded-2xl p-6 border border-gray-100 dark:border-gray-800 hover:border-sky-200 cursor-pointer transition-colors">
                     <div className="flex items-start justify-between mb-4">
@@ -2067,6 +2092,9 @@ const LinkedInDashboardContent = () => {
                 <table className="w-full">
                   <thead><tr className="border-b border-gray-100 dark:border-gray-800 text-left text-sm text-gray-500"><th className="py-3 px-4 font-medium">{tx("Name", "Name")}</th><th className="py-3 px-4 font-medium">{tx("Position", "Position")}</th><th className="py-3 px-4 font-medium">{tx("Unternehmen", "Company")}</th><th className="py-3 px-4 font-medium">{tx("Kampagne", "Campaign")}</th><th className="py-3 px-4 font-medium">{tx("Status", "Status")}</th><th className="py-3 px-4 font-medium">{tx("Aktivität", "Activity")}</th><th className="py-3 px-4"></th></tr></thead>
                   <tbody>
+                    {filteredLeads.length === 0 && (
+                      <tr><td colSpan={7} className="py-8 text-center text-gray-400">{tx('Keine Leads gefunden.', 'No leads found.')}</td></tr>
+                    )}
                     {filteredLeads.map(lead => {
                       const sc = statusColors[lead.status];
                       return (
@@ -2204,7 +2232,7 @@ const LinkedInDashboardContent = () => {
                       <div className="flex-1"><p className="font-medium truncate">{post.content}</p><p className="text-sm text-gray-500">{formatDate(post.publishedAt, lang)}</p></div>
                       <div className="flex items-center gap-2">
                         <button onClick={() => setSelectedPost(post)} className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg" title={tx("Post bearbeiten", "Edit post")}><Edit3 className="w-4 h-4 text-gray-500" /></button>
-                        <button onClick={() => handlePostAction("delete", post.id)} className="p-2 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg" title={tx("Post löschen", "Delete post")}><Trash2 className="w-4 h-4 text-red-500" /></button>
+                        <button onClick={() => setPendingInlineDelete({ type: 'post', id: post.id })} className="p-2 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg" title={tx("Post löschen", "Delete post")}><Trash2 className="w-4 h-4 text-red-500" /></button>
                       </div>
                     </div>
                   ))}
@@ -2225,6 +2253,9 @@ const LinkedInDashboardContent = () => {
                 <button onClick={() => setShowNewSequenceModal(true)} className="px-4 py-2 bg-sky-500 text-white rounded-xl font-medium hover:bg-sky-600 flex items-center gap-2"><Plus className="w-4 h-4" />{tx("Neue Sequenz", "New Sequence")}</button>
               </div>
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {sequences.length === 0 && (
+                  <p className="col-span-full text-center text-gray-400 py-8">{tx('Noch keine Sequenzen erstellt.', 'No sequences created yet.')}</p>
+                )}
                 {sequences.map(seq => (
                   <div key={seq.id} onClick={() => setSelectedSequence(seq)} className="bg-white dark:bg-gray-900 rounded-2xl p-6 border border-gray-100 dark:border-gray-800 hover:border-sky-200 cursor-pointer transition-colors">
                     <div className="flex items-start justify-between mb-4">
@@ -2364,8 +2395,8 @@ const LinkedInDashboardContent = () => {
                                     <ChevronDown className="w-4 h-4 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                                   </div>
                                   <div className="flex items-center gap-1">
-                                    <button onClick={() => handleMoveStep(i, -1)} disabled={i === 0} className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg disabled:opacity-30" title={tx("Nach oben", "Move up")}><ChevronUp className="w-4 h-4 text-gray-500" /></button>
-                                    <button onClick={() => handleMoveStep(i, 1)} disabled={i === editSeq.steps.length - 1} className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg disabled:opacity-30" title={tx("Nach unten", "Move down")}><ChevronDown className="w-4 h-4 text-gray-500" /></button>
+                                    <button onClick={() => handleMoveStep(i, -1)} disabled={i === 0} className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed" title={tx("Nach oben", "Move up")}><ChevronUp className="w-4 h-4 text-gray-500" /></button>
+                                    <button onClick={() => handleMoveStep(i, 1)} disabled={i === editSeq.steps.length - 1} className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed" title={tx("Nach unten", "Move down")}><ChevronDown className="w-4 h-4 text-gray-500" /></button>
                                     <button onClick={() => handleRemoveStep(i)} className="p-1.5 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg" title={tx("Schritt entfernen", "Remove step")}><X className="w-4 h-4 text-red-500" /></button>
                                   </div>
                                 </div>
@@ -2374,14 +2405,14 @@ const LinkedInDashboardContent = () => {
                                     value={step.content || ''}
                                     onChange={e => handleStepChange(i, 'content', e.target.value)}
                                     placeholder={tx("Nachrichtentext eingeben...", "Enter message text...")}
-                                    className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 rounded-lg text-sm focus:ring-2 focus:ring-sky-500 outline-none resize-none mb-3"
+                                    className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm focus:ring-2 focus:ring-sky-500 outline-none resize-none mb-3"
                                     rows={3}
                                   />
                                 )}
                                 <div className="flex items-center gap-3">
                                   <div className="flex items-center gap-2">
                                     <Clock className="w-4 h-4 text-gray-400" />
-                                    <input type="number" min={0} value={step.delay.value} onChange={e => handleStepChange(i, 'delayValue', Number(e.target.value))} className="w-16 px-2 py-1.5 bg-gray-50 dark:bg-gray-800 rounded-lg text-sm focus:ring-2 focus:ring-sky-500 outline-none" />
+                                    <input type="number" min={0} value={step.delay.value} onChange={e => handleStepChange(i, 'delayValue', Number(e.target.value))} className="w-16 px-2 py-1.5 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm focus:ring-2 focus:ring-sky-500 outline-none" />
                                     <div className="relative">
                                       <select value={step.delay.unit} onChange={e => handleStepChange(i, 'delayUnit', e.target.value)} className="px-3 py-1.5 pr-8 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-medium focus:ring-2 focus:ring-sky-500 focus:border-sky-500 hover:border-sky-300 dark:hover:border-gray-500 outline-none transition-all appearance-none cursor-pointer shadow-sm">
                                         {unitOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
@@ -2414,6 +2445,7 @@ const LinkedInDashboardContent = () => {
                           ) : (
                             <button onClick={() => { setSequences(s => s.map(x => x.id === selectedSequence.id ? { ...x, status: "active" as const } : x)); setSelectedSequence(null); }} className="py-3 px-6 bg-emerald-100 text-emerald-700 font-medium rounded-xl hover:bg-emerald-200 flex items-center justify-center gap-2"><Play className="w-4 h-4" />{tx("Aktivieren", "Activate")}</button>
                           )}
+                          <button onClick={() => { const dup = { ...selectedSequence, id: Date.now().toString(), name: selectedSequence.name + ' (Copy)', status: 'draft' as const, totalLeads: 0, completedLeads: 0, replyRate: 0, steps: selectedSequence.steps.map(s => ({ ...s })), createdAt: new Date().toISOString() }; setSequences(s => [...s, dup]); setSelectedSequence(null); addToast(tx('Sequenz dupliziert', 'Sequence duplicated')); }} className="py-3 px-6 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-medium rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 flex items-center justify-center gap-2" title={tx("Sequenz duplizieren", "Duplicate sequence")}><Copy className="w-4 h-4" /></button>
                           <button onClick={() => setShowSeqDeleteConfirm(true)} className="py-3 px-6 bg-red-50 text-red-600 font-medium rounded-xl hover:bg-red-100 flex items-center justify-center gap-2" title={tx("Sequenz löschen", "Delete sequence")}><Trash2 className="w-4 h-4" /></button>
                         </div>
                         <ConfirmDialog
@@ -2518,7 +2550,7 @@ const LinkedInDashboardContent = () => {
                       { key: "unread" as const, label: tx("Ungelesen", "Unread") },
                       { key: "archived" as const, label: tx("Archiv", "Archived") },
                     ]).map(f => (
-                      <button key={f.key} onClick={() => setInboxFilter(f.key)} className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${inboxFilter === f.key ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm" : "text-gray-500"}`}>{f.label}</button>
+                      <button key={f.key} onClick={() => setInboxFilter(f.key)} className={`flex-1 py-2 rounded-xl text-sm font-medium transition-colors ${inboxFilter === f.key ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm" : "text-gray-500"}`}>{f.label}</button>
                     ))}
                   </div>
                 </div>
@@ -2805,7 +2837,7 @@ const LinkedInDashboardContent = () => {
                         <td className="py-3 px-4 text-gray-500">{entry.reason}</td>
                         <td className="py-3 px-4 text-gray-400 text-sm">{formatDate(entry.addedAt, lang)}</td>
                         <td className="py-3 px-4">
-                          <button onClick={() => setBlacklist(b => b.filter(x => x.id !== entry.id))} className="p-2 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg" title={tx("Entfernen", "Remove")}><Trash2 className="w-4 h-4 text-red-500" /></button>
+                          <button onClick={() => setPendingInlineDelete({ type: 'blacklist', id: entry.id })} className="p-2 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg" title={tx("Entfernen", "Remove")}><Trash2 className="w-4 h-4 text-red-500" /></button>
                         </td>
                       </tr>
                     ))}
@@ -2904,7 +2936,7 @@ const LinkedInDashboardContent = () => {
                   { key: "integrations" as const, label: tx("Integrationen", "Integrations") },
                   { key: "triggers" as const, label: "Triggers" },
                 ]).map(tab => (
-                  <button key={tab.key} onClick={() => setSettingsTab(tab.key)} className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${settingsTab === tab.key ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm" : "text-gray-500 hover:text-gray-700"}`}>{tab.label}</button>
+                  <button key={tab.key} onClick={() => setSettingsTab(tab.key)} className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${settingsTab === tab.key ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm" : "text-gray-500 hover:text-gray-700"}`}>{tab.label}</button>
                 ))}
               </div>
 
@@ -3013,15 +3045,15 @@ const LinkedInDashboardContent = () => {
                         <div className="grid grid-cols-3 gap-4">
                           <div>
                             <label className="text-xs text-gray-500 block mb-1">{tx("Start-Limit", "Start limit")}</label>
-                            <input type="number" value={safetySettings.warmupStartLimit} onChange={e => setSafetySettings(s => ({ ...s, warmupStartLimit: Number(e.target.value) }))} className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm focus:ring-2 focus:ring-sky-500 outline-none" />
+                            <input type="number" min={1} max={50} value={safetySettings.warmupStartLimit} onChange={e => setSafetySettings(s => ({ ...s, warmupStartLimit: Number(e.target.value) }))} className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm focus:ring-2 focus:ring-sky-500 outline-none" />
                           </div>
                           <div>
                             <label className="text-xs text-gray-500 block mb-1">{tx("Ziel-Limit", "Target limit")}</label>
-                            <input type="number" value={safetySettings.warmupTargetLimit} onChange={e => setSafetySettings(s => ({ ...s, warmupTargetLimit: Number(e.target.value) }))} className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm focus:ring-2 focus:ring-sky-500 outline-none" />
+                            <input type="number" min={1} max={500} value={safetySettings.warmupTargetLimit} onChange={e => setSafetySettings(s => ({ ...s, warmupTargetLimit: Number(e.target.value) }))} className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm focus:ring-2 focus:ring-sky-500 outline-none" />
                           </div>
                           <div>
                             <label className="text-xs text-gray-500 block mb-1">{tx("Tage", "Days")}</label>
-                            <input type="number" value={safetySettings.warmupDays} onChange={e => setSafetySettings(s => ({ ...s, warmupDays: Number(e.target.value) }))} className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm focus:ring-2 focus:ring-sky-500 outline-none" />
+                            <input type="number" min={1} max={90} value={safetySettings.warmupDays} onChange={e => setSafetySettings(s => ({ ...s, warmupDays: Number(e.target.value) }))} className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm focus:ring-2 focus:ring-sky-500 outline-none" />
                           </div>
                         </div>
                         <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-xl">
@@ -3038,11 +3070,11 @@ const LinkedInDashboardContent = () => {
                     <div className="grid grid-cols-2 gap-4 mb-4">
                       <div>
                         <label className="text-xs text-gray-500 block mb-1">{tx("Start", "Start")}</label>
-                        <input type="time" value={safetySettings.workingHoursStart} onChange={e => setSafetySettings(s => ({ ...s, workingHoursStart: e.target.value }))} className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm focus:ring-2 focus:ring-sky-500 outline-none" />
+                        <input type="time" value={safetySettings.workingHoursStart} onChange={e => setSafetySettings(s => ({ ...s, workingHoursStart: e.target.value }))} className="w-full px-3 py-2.5 bg-gray-50 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700/60 rounded-xl text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-sky-500/40 focus:border-sky-500 outline-none transition-colors" />
                       </div>
                       <div>
                         <label className="text-xs text-gray-500 block mb-1">{tx("Ende", "End")}</label>
-                        <input type="time" value={safetySettings.workingHoursEnd} onChange={e => setSafetySettings(s => ({ ...s, workingHoursEnd: e.target.value }))} className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm focus:ring-2 focus:ring-sky-500 outline-none" />
+                        <input type="time" value={safetySettings.workingHoursEnd} onChange={e => setSafetySettings(s => ({ ...s, workingHoursEnd: e.target.value }))} className="w-full px-3 py-2.5 bg-gray-50 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700/60 rounded-xl text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-sky-500/40 focus:border-sky-500 outline-none transition-colors" />
                       </div>
                     </div>
                     <div>
@@ -3132,27 +3164,27 @@ const LinkedInDashboardContent = () => {
                   <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 border border-gray-100 dark:border-gray-800">
                     <div className="flex items-center justify-between mb-4">
                       <h3 className="font-semibold">{tx("Webhook-Konfiguration", "Webhook Configuration")}</h3>
-                      <button onClick={() => setWebhooks(w => [...w, { id: Date.now().toString(), event: "new_lead", url: "", isActive: false }])} className="px-3 py-1.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-lg text-sm hover:bg-gray-200 flex items-center gap-1"><Plus className="w-3 h-3" />{tx("Hinzufügen", "Add")}</button>
+                      <button onClick={() => setWebhooks(w => [...w, { id: Date.now().toString(), event: "new_lead", url: "", isActive: false }])} className="px-3 py-1.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-xl text-sm hover:bg-gray-200 flex items-center gap-1"><Plus className="w-3 h-3" />{tx("Hinzufügen", "Add")}</button>
                     </div>
                     <div className="space-y-3">
                       {webhooks.map(wh => (
                         <div key={wh.id} className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-800 rounded-xl">
-                          <select value={wh.event} onChange={e => setWebhooks(w => w.map(x => x.id === wh.id ? { ...x, event: e.target.value } : x))} className="px-3 py-2 bg-white dark:bg-gray-900 rounded-lg text-sm border border-gray-200 dark:border-gray-700 w-48">
+                          <select value={wh.event} onChange={e => setWebhooks(w => w.map(x => x.id === wh.id ? { ...x, event: e.target.value } : x))} className="px-3 py-2 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm border border-gray-200 dark:border-gray-700 w-48">
                             <option value="new_lead">{tx("Neuer Lead", "New Lead")}</option>
                             <option value="reply_received">{tx("Antwort erhalten", "Reply Received")}</option>
                             <option value="connection_accepted">{tx("Anfrage akzeptiert", "Connection Accepted")}</option>
                           </select>
-                          <input type="text" value={wh.url} onChange={e => setWebhooks(w => w.map(x => x.id === wh.id ? { ...x, url: e.target.value } : x))} placeholder="https://..." className="flex-1 px-3 py-2 bg-white dark:bg-gray-900 rounded-lg text-sm border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-sky-500 outline-none" />
+                          <input type="text" value={wh.url} onChange={e => setWebhooks(w => w.map(x => x.id === wh.id ? { ...x, url: e.target.value } : x))} placeholder="https://..." className="flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-sky-500 outline-none" />
                           <button onClick={() => setWebhooks(w => w.map(x => x.id === wh.id ? { ...x, isActive: !x.isActive } : x))} className={`w-10 h-6 rounded-full relative transition-colors ${wh.isActive ? "bg-sky-500" : "bg-gray-300"}`}>
                             <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all ${wh.isActive ? "left-4" : "left-0.5"}`} />
                           </button>
                           <button
                             onClick={() => { setWebhookTestId(wh.id); setTimeout(() => setWebhookTestId(null), 2000); }}
-                            className={`px-3 py-2 rounded-lg text-sm ${webhookTestId === wh.id ? 'bg-emerald-100 text-emerald-600' : 'bg-sky-100 text-sky-600 hover:bg-sky-200'}`}
+                            className={`px-3 py-2 rounded-xl text-sm ${webhookTestId === wh.id ? 'bg-emerald-100 text-emerald-600' : 'bg-sky-100 text-sky-600 hover:bg-sky-200'}`}
                           >
                             {webhookTestId === wh.id ? tx("Gesendet!", "Sent!") : tx("Test", "Test")}
                           </button>
-                          <button onClick={() => setWebhooks(w => w.filter(x => x.id !== wh.id))} className="p-2 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg" title={tx("Webhook löschen", "Delete webhook")}><Trash2 className="w-4 h-4 text-red-500" /></button>
+                          <button onClick={() => setPendingInlineDelete({ type: 'webhook', id: wh.id })} className="p-2 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg" title={tx("Webhook löschen", "Delete webhook")}><Trash2 className="w-4 h-4 text-red-500" /></button>
                         </div>
                       ))}
                     </div>
@@ -3222,7 +3254,7 @@ const LinkedInDashboardContent = () => {
                             <div className="flex-1 grid grid-cols-3 gap-4">
                               <div>
                                 <label className="text-xs text-gray-500 block mb-1">{tx("Event", "Event")}</label>
-                                <select value={trigger.event} onChange={e => setEventTriggers(t => t.map(x => x.id === trigger.id ? { ...x, event: e.target.value as EventTrigger["event"] } : x))} className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:ring-2 focus:ring-sky-500 hover:border-gray-300 dark:hover:border-gray-600 outline-none transition-colors">
+                                <select value={trigger.event} onChange={e => setEventTriggers(t => t.map(x => x.id === trigger.id ? { ...x, event: e.target.value as EventTrigger["event"] } : x))} className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-sky-500 hover:border-gray-300 dark:hover:border-gray-600 outline-none transition-colors">
                                   {Object.entries(eventLabels).map(([key, label]) => (
                                     <option key={key} value={key}>{label}</option>
                                   ))}
@@ -3230,7 +3262,7 @@ const LinkedInDashboardContent = () => {
                               </div>
                               <div>
                                 <label className="text-xs text-gray-500 block mb-1">{tx("Aktion", "Action")}</label>
-                                <select value={trigger.action} onChange={e => setEventTriggers(t => t.map(x => x.id === trigger.id ? { ...x, action: e.target.value as EventTrigger["action"] } : x))} className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:ring-2 focus:ring-sky-500 hover:border-gray-300 dark:hover:border-gray-600 outline-none transition-colors">
+                                <select value={trigger.action} onChange={e => setEventTriggers(t => t.map(x => x.id === trigger.id ? { ...x, action: e.target.value as EventTrigger["action"] } : x))} className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-sky-500 hover:border-gray-300 dark:hover:border-gray-600 outline-none transition-colors">
                                   {Object.entries(actionLabels).map(([key, label]) => (
                                     <option key={key} value={key}>{label}</option>
                                   ))}
@@ -3238,7 +3270,7 @@ const LinkedInDashboardContent = () => {
                               </div>
                               <div>
                                 <label className="text-xs text-gray-500 block mb-1">{tx("Template", "Template")}</label>
-                                <select value={trigger.templateId} onChange={e => setEventTriggers(t => t.map(x => x.id === trigger.id ? { ...x, templateId: e.target.value } : x))} className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:ring-2 focus:ring-sky-500 hover:border-gray-300 dark:hover:border-gray-600 outline-none transition-colors">
+                                <select value={trigger.templateId} onChange={e => setEventTriggers(t => t.map(x => x.id === trigger.id ? { ...x, templateId: e.target.value } : x))} className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-sky-500 hover:border-gray-300 dark:hover:border-gray-600 outline-none transition-colors">
                                   {templates.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                                 </select>
                               </div>
@@ -3246,7 +3278,7 @@ const LinkedInDashboardContent = () => {
                             <button onClick={() => setEventTriggers(t => t.map(x => x.id === trigger.id ? { ...x, isActive: !x.isActive } : x))} className={`relative inline-flex h-7 w-12 shrink-0 items-center rounded-full transition-colors duration-200 ${trigger.isActive ? "bg-sky-500" : "bg-gray-200 dark:bg-gray-600"}`}>
                               <span className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-lg ring-1 ring-black/5 transition-transform duration-200 ease-in-out ${trigger.isActive ? "translate-x-6" : "translate-x-1"}`} />
                             </button>
-                            <button onClick={() => setEventTriggers(t => t.filter(x => x.id !== trigger.id))} className="p-2 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg" title={tx("Trigger löschen", "Delete trigger")}><Trash2 className="w-4 h-4 text-red-500" /></button>
+                            <button onClick={() => setPendingInlineDelete({ type: 'trigger', id: trigger.id })} className="p-2 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg" title={tx("Trigger löschen", "Delete trigger")}><Trash2 className="w-4 h-4 text-red-500" /></button>
                           </div>
                         );
                       })}
@@ -3258,6 +3290,26 @@ const LinkedInDashboardContent = () => {
           )}
         </div>
       </main>
+
+      {/* Inline delete confirmation */}
+      <ConfirmDialog
+        open={!!pendingInlineDelete}
+        title={tx("Element löschen?", "Delete element?")}
+        message={tx("Dieses Element wird unwiderruflich entfernt.", "This element will be permanently removed.")}
+        confirmLabel={tx("Löschen", "Delete")}
+        cancelLabel={tx("Abbrechen", "Cancel")}
+        variant="danger"
+        onConfirm={() => {
+          if (!pendingInlineDelete) return;
+          const { type, id } = pendingInlineDelete;
+          if (type === 'post') { handlePostAction("delete", id); }
+          else if (type === 'blacklist') { setBlacklist(b => b.filter(x => x.id !== id)); addToast(tx("Eintrag entfernt", "Entry removed")); }
+          else if (type === 'webhook') { setWebhooks(w => w.filter(x => x.id !== id)); addToast(tx("Webhook gelöscht", "Webhook deleted")); }
+          else if (type === 'trigger') { setEventTriggers(t => t.filter(x => x.id !== id)); addToast(tx("Trigger gelöscht", "Trigger deleted")); }
+          setPendingInlineDelete(null);
+        }}
+        onCancel={() => setPendingInlineDelete(null)}
+      />
     </div>
   );
 };

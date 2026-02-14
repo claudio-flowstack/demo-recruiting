@@ -30,7 +30,7 @@ export const EmpathyOpening = () => {
               ].map((step, index) => (
                 <div key={index} className="flex items-center gap-3 md:gap-4">
                   <div className={`
-                    px-4 py-3 rounded-lg font-medium text-center min-w-[140px]
+                    px-4 py-3 rounded-xl font-medium text-center min-w-[140px]
                     ${index === 3
                       ? "bg-red-500/20 border-2 border-red-500/50 text-red-400"
                       : "bg-muted/50 border border-border/50 text-foreground/80"

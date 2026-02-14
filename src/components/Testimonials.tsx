@@ -86,7 +86,7 @@ export const Testimonials = () => {
 
                   {/* Author Badge */}
                   <div className="absolute -bottom-4 left-4 right-4 md:left-6 md:right-6">
-                    <div className="bg-background rounded-lg border border-border p-3 shadow-md flex items-center gap-3">
+                    <div className="bg-background rounded-xl border border-border p-3 shadow-md flex items-center gap-3">
                       <Avatar className="h-10 w-10 border border-border">
                         <AvatarImage
                           alt={study.author.name}

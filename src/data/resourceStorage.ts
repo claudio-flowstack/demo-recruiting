@@ -29,6 +29,14 @@ export function addResource(resource: SystemResource): boolean {
   return saveResources(all);
 }
 
+export function updateResource(resourceId: string, updates: Partial<Omit<SystemResource, 'id' | 'systemId'>>): boolean {
+  const all = loadResources();
+  const idx = all.findIndex(r => r.id === resourceId);
+  if (idx < 0) return false;
+  all[idx] = { ...all[idx], ...updates };
+  return saveResources(all);
+}
+
 export function deleteResource(resourceId: string): boolean {
   const all = loadResources().filter(r => r.id !== resourceId);
   return saveResources(all);

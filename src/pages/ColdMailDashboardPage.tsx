@@ -462,11 +462,11 @@ const CampaignModal = ({ campaign, templates, lang, onClose, onSave, onDelete, a
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-xs text-gray-500 block mb-1">{tx('Start', 'Start')}</label>
-                <input type="time" value={editCampaign.sendingSchedule.startTime} onChange={e => setEditCampaign(prev => prev ? { ...prev, sendingSchedule: { ...prev.sendingSchedule, startTime: e.target.value } } : prev)} className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm focus:ring-2 focus:ring-sky-500 outline-none" />
+                <input type="time" value={editCampaign.sendingSchedule.startTime} onChange={e => setEditCampaign(prev => prev ? { ...prev, sendingSchedule: { ...prev.sendingSchedule, startTime: e.target.value } } : prev)} className="w-full px-3 py-2.5 bg-gray-50 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700/60 rounded-xl text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-sky-500/40 focus:border-sky-500 outline-none transition-colors" />
               </div>
               <div>
                 <label className="text-xs text-gray-500 block mb-1">{tx('Ende', 'End')}</label>
-                <input type="time" value={editCampaign.sendingSchedule.endTime} onChange={e => setEditCampaign(prev => prev ? { ...prev, sendingSchedule: { ...prev.sendingSchedule, endTime: e.target.value } } : prev)} className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm focus:ring-2 focus:ring-sky-500 outline-none" />
+                <input type="time" value={editCampaign.sendingSchedule.endTime} onChange={e => setEditCampaign(prev => prev ? { ...prev, sendingSchedule: { ...prev.sendingSchedule, endTime: e.target.value } } : prev)} className="w-full px-3 py-2.5 bg-gray-50 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700/60 rounded-xl text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-sky-500/40 focus:border-sky-500 outline-none transition-colors" />
               </div>
             </div>
             <div>
@@ -862,7 +862,10 @@ const ColdMailDashboardContent = () => {
   const [campaigns, setCampaigns] = useState<Campaign[]>(DEMO_CAMPAIGNS);
   const [leads, setLeads] = useState<Lead[]>(DEMO_LEADS);
   const [templates, setTemplates] = useState<EmailTemplate[]>(DEMO_TEMPLATES);
-  const [inboxMessages, setInboxMessages] = useState<InboxMessage[]>(DEMO_INBOX);
+  const [inboxMessages, setInboxMessages] = useState<InboxMessage[]>(() => {
+    try { const s = localStorage.getItem('flowstack-coldmail-inbox'); if (s) return JSON.parse(s); } catch {}
+    return DEMO_INBOX;
+  });
 
   // Modals
   const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null);
@@ -875,9 +878,18 @@ const ColdMailDashboardContent = () => {
   const [settingsTab, setSettingsTab] = useState<'general' | 'export' | 'data'>('general');
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [resetSuccess, setResetSuccess] = useState(false);
-  const [dailySendLimit, setDailySendLimit] = useState(50);
-  const [trackOpens, setTrackOpens] = useState(true);
-  const [trackClicks, setTrackClicks] = useState(true);
+  const [dailySendLimit, setDailySendLimit] = useState(() => {
+    try { const s = localStorage.getItem('flowstack-coldmail-dailylimit'); if (s) return Number(s); } catch {}
+    return 50;
+  });
+  const [trackOpens, setTrackOpens] = useState(() => {
+    try { const s = localStorage.getItem('flowstack-coldmail-trackopens'); if (s) return s === 'true'; } catch {}
+    return true;
+  });
+  const [trackClicks, setTrackClicks] = useState(() => {
+    try { const s = localStorage.getItem('flowstack-coldmail-trackclicks'); if (s) return s === 'true'; } catch {}
+    return true;
+  });
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   // Toast
@@ -903,6 +915,10 @@ const ColdMailDashboardContent = () => {
   useEffect(() => { saveCampaigns(campaigns); }, [campaigns]);
   useEffect(() => { saveLeads(leads); }, [leads]);
   useEffect(() => { saveTemplates(templates); }, [templates]);
+  useEffect(() => { try { localStorage.setItem('flowstack-coldmail-inbox', JSON.stringify(inboxMessages)); } catch {} }, [inboxMessages]);
+  useEffect(() => { try { localStorage.setItem('flowstack-coldmail-dailylimit', String(dailySendLimit)); } catch {} }, [dailySendLimit]);
+  useEffect(() => { try { localStorage.setItem('flowstack-coldmail-trackopens', String(trackOpens)); } catch {} }, [trackOpens]);
+  useEffect(() => { try { localStorage.setItem('flowstack-coldmail-trackclicks', String(trackClicks)); } catch {} }, [trackClicks]);
 
   // Stats
   const stats = useMemo(() => {

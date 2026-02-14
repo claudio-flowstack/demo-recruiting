@@ -754,14 +754,14 @@ function HubDashboardContent() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setLang(lang === 'de' ? 'en' : 'de')}
-              className="px-3 py-1.5 text-sm font-medium rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+              className="px-3 py-1.5 text-sm font-medium rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
               title={tx('Sprache wechseln', 'Switch language', lang)}
             >
               {lang === 'de' ? 'EN' : 'DE'}
             </button>
             <button
               onClick={() => setTheme(isDark ? 'light' : 'dark')}
-              className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+              className="p-2 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
               title={tx('Design wechseln', 'Toggle theme', lang)}
             >
               {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
@@ -1032,7 +1032,7 @@ function HubDashboardContent() {
                   </button>
                   <button
                     onClick={() => setWeekOffset(0)}
-                    className={`px-3 py-1 text-xs font-medium rounded-lg transition-colors ${
+                    className={`px-3 py-1 text-xs font-medium rounded-xl transition-colors ${
                       weekOffset === 0
                         ? 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 font-bold'
                         : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300'

@@ -18,7 +18,7 @@ export const Consequences = () => {
           {consequences.costPerDay.items.map((item, index) => (
             <div
               key={index}
-              className="p-6 rounded-lg border border-border/50 bg-card/30 text-center"
+              className="p-6 rounded-xl border border-border/50 bg-card/30 text-center"
             >
               <p className="text-xl font-semibold text-primary mb-2">
                 {item.metric}

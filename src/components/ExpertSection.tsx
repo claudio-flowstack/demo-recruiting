@@ -41,7 +41,7 @@ export const ExpertSection = () => {
             {expertContent.credentials && (
               <div className="grid grid-cols-2 gap-4 pt-4">
                 {expertContent.credentials.map((credential, index) => (
-                  <div key={index} className="bg-card border border-border/50 rounded-lg p-4">
+                  <div key={index} className="bg-card border border-border/50 rounded-xl p-4">
                     <p className="text-2xl font-semibold text-primary">{credential.value}</p>
                     <p className="text-sm text-muted-foreground">{credential.label}</p>
                   </div>

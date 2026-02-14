@@ -27,7 +27,7 @@ export const FalseSolutions = () => {
             return (
               <div
                 key={index}
-                className="flex items-start gap-4 p-6 rounded-lg border border-border/50 bg-card/30"
+                className="flex items-start gap-4 p-6 rounded-xl border border-border/50 bg-card/30"
               >
                 <div className="relative p-3 rounded-md bg-muted/50">
                   <Icon className="h-6 w-6 text-muted-foreground" />

@@ -12,6 +12,8 @@ export interface SystemNode {
   x: number;              // Pixel x-position on canvas
   y: number;              // Pixel y-position on canvas
   linkedResourceType?: ResourceType;  // Auto-link to resources of this type
+  linkedResourceId?: string;          // Specific resource item ID within the type
+  linkedPage?: string;    // Internal page path (e.g. '/onboarding') – clickable from canvas
 }
 
 export type PortDirection = 'top' | 'right' | 'bottom' | 'left';
@@ -62,7 +64,7 @@ export interface StickyNote {
 }
 
 // ── Resources ──────────────────────────────────────────
-export type ResourceType = 'transcript' | 'document' | 'note' | 'dataset';
+export type ResourceType = 'transcript' | 'document' | 'note' | 'dataset' | 'form' | 'page';
 
 export interface SystemResource {
   id: string;
@@ -76,17 +78,36 @@ export interface SystemResource {
 }
 
 export interface OnboardingFormData {
+  // Kundeninformationen
   clientName: string;
   companyName: string;
   email: string;
   phone: string;
+  position: string;
+  // Projekt-Details
   packageTier: string;
-  startDate: string;
-  industry: string;
-  targetAudience: string;
-  brandGuidelines: string;
+  contractStart: string;
+  contractDuration: string;
+  monthlyBudget: string;
+  // Kickoff-Call
+  kickoffDate: string;
+  kickoffTime: string;
+  kickoffParticipants: string;
+  kickoffNotes: string;
+  // Zugänge & Assets
   websiteUrl: string;
   socialMediaUrls: string;
+  existingTools: string;
+  hasBrandGuidelines: string;
+  googleAccess: string;
+  // Zielgruppe & Business
+  industry: string;
+  targetAudience: string;
+  currentChallenges: string;
+  previousMarketing: string;
+  // Interne Notizen
+  salesNotes: string;
+  priorities: string;
   specialRequirements: string;
 }
 

@@ -58,6 +58,7 @@ import {
   Timer,
   ChevronRight,
   ChevronLeft,
+  Menu,
 } from "lucide-react";
 import { LanguageProvider, useLanguage } from '../i18n/LanguageContext';
 import ConfirmDialog, { useModalEsc } from '../components/ui/ConfirmDialog';
@@ -608,7 +609,7 @@ const LeadDetailModal = ({ lead, onClose, onStatusChange, onEmail, onCall }: { l
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
       <div className="relative bg-white dark:bg-gray-900 rounded-3xl p-8 max-w-lg w-full mx-4 shadow-2xl">
-        <button onClick={onClose} className="absolute top-4 right-4 p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl" title={tx('Schließen', 'Close')}><X className="w-5 h-5 text-gray-400" /></button>
+        <button onClick={onClose} className="absolute top-4 right-4 p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors" title={tx('Schließen', 'Close')}><X className="w-5 h-5 text-gray-400" /></button>
         <div className="flex items-center gap-4 mb-6">
           <div className={`w-14 h-14 rounded-full ${colors.solid} flex items-center justify-center text-white text-xl font-bold`}>{lead.name.charAt(0)}</div>
           <div>
@@ -619,11 +620,11 @@ const LeadDetailModal = ({ lead, onClose, onStatusChange, onEmail, onCall }: { l
         <div className="space-y-4 mb-6">
           <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
             <Mail className="w-5 h-5 text-gray-400" />
-            <a href={`mailto:${lead.email}`} className="text-gray-900 dark:text-white hover:text-purple-500">{lead.email}</a>
+            <a href={`mailto:${lead.email}`} className="text-gray-900 dark:text-white hover:text-purple-500 transition-colors">{lead.email}</a>
           </div>
           <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
             <Phone className="w-5 h-5 text-gray-400" />
-            <a href={`tel:${lead.phone}`} className="text-gray-900 dark:text-white hover:text-purple-500">{lead.phone}</a>
+            <a href={`tel:${lead.phone}`} className="text-gray-900 dark:text-white hover:text-purple-500 transition-colors">{lead.phone}</a>
           </div>
           <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
             <Clock className="w-5 h-5 text-gray-400" />
@@ -639,7 +640,7 @@ const LeadDetailModal = ({ lead, onClose, onStatusChange, onEmail, onCall }: { l
           <p className="text-sm text-gray-500 mb-3">{tx("Status ändern", "Change status")}</p>
           <div className="flex flex-wrap gap-2">
             {(Object.keys(statusLabels) as LeadData["status"][]).map(s => (
-              <button key={s} onClick={() => { onStatusChange(lead.id, s); onClose(); }} className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${lead.status === s ? `${statusColors[s].bg} ${statusColors[s].text}` : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}>{statusLabels[s]}</button>
+              <button key={s} onClick={() => { onStatusChange(lead.id, s); onClose(); }} className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-colors ${lead.status === s ? `${statusColors[s].bg} ${statusColors[s].text}` : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}>{statusLabels[s]}</button>
             ))}
           </div>
         </div>
@@ -688,6 +689,55 @@ const CampaignActionsModal = ({ campaign, onClose, onAction }: { campaign: Campa
   );
 };
 
+// Campaign Edit Modal
+const CampaignEditModal = ({ campaign, onClose, onSave }: { campaign: CampaignData | null; onClose: () => void; onSave: (updated: CampaignData) => void }) => {
+  const { lang } = useLanguage();
+  const tx = (de: string, en: string) => lang === 'de' ? de : en;
+  useModalEsc(!!campaign, onClose);
+  const [name, setName] = useState('');
+  const [platform, setPlatform] = useState<CampaignData['platform']>('meta');
+  const [status, setStatus] = useState<CampaignData['status']>('paused');
+  useEffect(() => { if (campaign) { setName(campaign.name); setPlatform(campaign.platform); setStatus(campaign.status); } }, [campaign]);
+  if (!campaign) return null;
+  const inputCls = "w-full px-4 py-3 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500 transition-colors";
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative bg-white dark:bg-gray-900 rounded-3xl p-6 max-w-md w-full mx-4 shadow-2xl">
+        <button onClick={onClose} className="absolute top-4 right-4 p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"><X className="w-4 h-4 text-gray-400" /></button>
+        <h3 className="font-semibold text-gray-900 dark:text-white mb-6">{tx('Kampagne bearbeiten', 'Edit Campaign')}</h3>
+        <div className="space-y-4">
+          <div>
+            <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">{tx('Name', 'Name')}</label>
+            <input type="text" value={name} onChange={e => setName(e.target.value)} className={inputCls} placeholder={tx('Kampagnen-Name', 'Campaign name')} />
+          </div>
+          <div>
+            <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">{tx('Plattform', 'Platform')}</label>
+            <select value={platform} onChange={e => setPlatform(e.target.value as CampaignData['platform'])} className={inputCls}>
+              <option value="meta">Meta Ads</option>
+              <option value="google">Google Ads</option>
+              <option value="tiktok">TikTok Ads</option>
+              <option value="linkedin">LinkedIn Ads</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Status</label>
+            <select value={status} onChange={e => setStatus(e.target.value as CampaignData['status'])} className={inputCls}>
+              <option value="active">{tx('Aktiv', 'Active')}</option>
+              <option value="paused">{tx('Pausiert', 'Paused')}</option>
+              <option value="ended">{tx('Beendet', 'Ended')}</option>
+            </select>
+          </div>
+        </div>
+        <div className="flex gap-3 mt-6">
+          <button onClick={onClose} className="flex-1 py-2.5 rounded-xl text-sm font-medium border border-gray-200 dark:border-gray-700 text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">{tx('Abbrechen', 'Cancel')}</button>
+          <button onClick={() => { onSave({ ...campaign, name: name.trim() || campaign.name, platform, status }); onClose(); }} className="flex-1 py-2.5 rounded-xl text-sm font-medium bg-purple-600 text-white hover:bg-purple-500 transition-colors">{tx('Speichern', 'Save')}</button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // Campaign Detail View
 const CampaignDetailModal = ({ campaign, onClose }: { campaign: CampaignData | null; onClose: () => void }) => {
   const { lang } = useLanguage();
@@ -699,7 +749,7 @@ const CampaignDetailModal = ({ campaign, onClose }: { campaign: CampaignData | n
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
       <div className="relative bg-white dark:bg-gray-900 rounded-3xl p-8 max-w-2xl w-full mx-4 shadow-2xl max-h-[90vh] overflow-y-auto">
-        <button onClick={onClose} className="absolute top-4 right-4 p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl" title={tx('Schließen', 'Close')}><X className="w-5 h-5 text-gray-400" /></button>
+        <button onClick={onClose} className="absolute top-4 right-4 p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors" title={tx('Schließen', 'Close')}><X className="w-5 h-5 text-gray-400" /></button>
         <div className="flex items-center gap-4 mb-6">
           <div className={`w-3 h-3 rounded-full ${campaign.status === "active" ? "bg-emerald-500" : "bg-yellow-500"}`} />
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{campaign.name}</h2>
@@ -713,7 +763,7 @@ const CampaignDetailModal = ({ campaign, onClose }: { campaign: CampaignData | n
         <h3 className="font-semibold text-gray-900 dark:text-white mb-4">{tx("Performance Details", "Performance Details")}</h3>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           {[{ label: tx("Impressionen", "Impressions"), value: formatNumber(campaign.impressions) }, { label: tx("Klicks", "Clicks"), value: formatNumber(campaign.clicks) }, { label: "CTR", value: formatPercent(campaign.ctr) }, { label: "CPL", value: `€${campaign.cpl.toFixed(2)}` }, { label: "Conversions", value: campaign.conversions.toString() }, { label: "CVR", value: formatPercent(campaign.cvr) }].map((s, i) => (
-            <div key={i} className="flex justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"><span className="text-gray-500">{s.label}</span><span className="font-medium text-gray-900 dark:text-white">{s.value}</span></div>
+            <div key={i} className="flex justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-xl"><span className="text-gray-500">{s.label}</span><span className="font-medium text-gray-900 dark:text-white">{s.value}</span></div>
           ))}
         </div>
       </div>
@@ -742,7 +792,7 @@ const ConnectionModal = ({ isOpen, onClose, connection }: { isOpen: boolean; onC
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
       <div className="relative bg-white dark:bg-gray-900 rounded-3xl p-8 max-w-lg w-full mx-4 shadow-2xl max-h-[90vh] overflow-y-auto">
-        <button onClick={onClose} className="absolute top-4 right-4 p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl" title={tx('Schließen', 'Close')}><X className="w-5 h-5 text-gray-400" /></button>
+        <button onClick={onClose} className="absolute top-4 right-4 p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors" title={tx('Schließen', 'Close')}><X className="w-5 h-5 text-gray-400" /></button>
         {step === "intro" && (
           <>
             <div className={`w-16 h-16 rounded-2xl ${connection.color} flex items-center justify-center mb-6`}>{connection.icon}</div>
@@ -958,7 +1008,7 @@ const GoalEditModal = ({ goal, onClose, onSave }: { goal: Goal | null; onClose: 
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
       <div className="relative bg-white dark:bg-gray-900 rounded-3xl p-8 max-w-md w-full mx-4 shadow-2xl">
-        <button onClick={onClose} className="absolute top-4 right-4 p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl" title={tx('Schließen', 'Close')}><X className="w-5 h-5 text-gray-400" /></button>
+        <button onClick={onClose} className="absolute top-4 right-4 p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors" title={tx('Schließen', 'Close')}><X className="w-5 h-5 text-gray-400" /></button>
         <div className="flex items-center gap-4 mb-6">
           <div className={`w-14 h-14 rounded-xl ${goal.color} flex items-center justify-center`}>{goal.icon}</div>
           <div>
@@ -971,6 +1021,8 @@ const GoalEditModal = ({ goal, onClose, onSave }: { goal: Goal | null; onClose: 
           <div className="flex items-center gap-4">
             <input
               type="number"
+              min={0}
+              step={1}
               value={target}
               onChange={e => setTarget(Number(e.target.value))}
               className="flex-1 px-4 py-3 bg-gray-50 dark:bg-gray-800 rounded-xl text-lg font-medium focus:ring-2 focus:ring-purple-500 outline-none"
@@ -1012,6 +1064,7 @@ const DashboardContent = () => {
   const [highlightedMonitorItem, setHighlightedMonitorItem] = useState<number | null>(null);
   const [reportToast, setReportToast] = useState<string | null>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   // Toast system
   const [toasts, setToasts] = useState<{id:string;msg:string;type:string}[]>([]);
@@ -1025,27 +1078,47 @@ const DashboardContent = () => {
   // Modals
   const [selectedCampaign, setSelectedCampaign] = useState<CampaignData | null>(null);
   const [actionCampaign, setActionCampaign] = useState<CampaignData | null>(null);
+  const [editingCampaign, setEditingCampaign] = useState<CampaignData | null>(null);
   const [selectedLead, setSelectedLead] = useState<LeadData | null>(null);
   const [connectionModal, setConnectionModal] = useState<ApiConnection | null>(null);
   const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
 
   // Data
-  const [notifications, setNotifications] = useState(initialNotifications);
+  const [notifications, setNotifications] = useState<Notification[]>(() => {
+    try { const s = localStorage.getItem('flowstack-dashboard-notifications'); if (s) return JSON.parse(s); } catch {}
+    return initialNotifications;
+  });
   const [leads, setLeads] = useState(() => { const s = loadMarketingLeads<LeadData>(); return s.length ? s : allLeads; });
   const [campaigns, setCampaigns] = useState(() => { const s = loadMarketingCampaigns<CampaignData>(); return s.length ? s : allCampaigns; });
-  const [settings, setSettings] = useState({ emailLeads: true, dailyReport: true, budgetAlerts: true, roasAlerts: false });
+  const [settings, setSettings] = useState<{ emailLeads: boolean; dailyReport: boolean; budgetAlerts: boolean; roasAlerts: boolean }>(() => {
+    try { const s = localStorage.getItem('flowstack-dashboard-settings'); if (s) return JSON.parse(s); } catch {}
+    return { emailLeads: true, dailyReport: true, budgetAlerts: true, roasAlerts: false };
+  });
 
   // Goals
-  const [goals, setGoals] = useState<Goal[]>([
-    { id: "1", name: tx("Monatliche Leads", "Monthly Leads"), target: 500, current: 342, unit: "Leads", icon: <Users className="w-6 h-6 text-white" />, color: "bg-purple-500" },
-    { id: "2", name: tx("ROAS Ziel", "ROAS Target"), target: 4.0, current: 3.6, unit: "x", icon: <Target className="w-6 h-6 text-white" />, color: "bg-emerald-500" },
-    { id: "3", name: tx("Umsatz Ziel", "Revenue Target"), target: 150000, current: 89460, unit: "€", icon: <DollarSign className="w-6 h-6 text-white" />, color: "bg-blue-500" },
-    { id: "4", name: "Conversions", target: 250, current: 171, unit: "Conv.", icon: <ShoppingCart className="w-6 h-6 text-white" />, color: "bg-orange-500" },
-  ]);
+  const [goals, setGoals] = useState<Goal[]>(() => {
+    const defaults = [
+      { id: "1", name: tx("Monatliche Leads", "Monthly Leads"), target: 500, current: 342, unit: "Leads", icon: <Users className="w-6 h-6 text-white" />, color: "bg-purple-500" },
+      { id: "2", name: tx("ROAS Ziel", "ROAS Target"), target: 4.0, current: 3.6, unit: "x", icon: <Target className="w-6 h-6 text-white" />, color: "bg-emerald-500" },
+      { id: "3", name: tx("Umsatz Ziel", "Revenue Target"), target: 150000, current: 89460, unit: "€", icon: <DollarSign className="w-6 h-6 text-white" />, color: "bg-blue-500" },
+      { id: "4", name: "Conversions", target: 250, current: 171, unit: "Conv.", icon: <ShoppingCart className="w-6 h-6 text-white" />, color: "bg-orange-500" },
+    ];
+    try {
+      const saved = localStorage.getItem('flowstack-dashboard-goals');
+      if (saved) {
+        const parsed = JSON.parse(saved) as { id: string; target: number; current: number }[];
+        return defaults.map(d => { const s = parsed.find(p => p.id === d.id); return s ? { ...d, target: s.target, current: s.current } : d; });
+      }
+    } catch {}
+    return defaults;
+  });
 
   // Persist data to localStorage
   useEffect(() => { saveMarketingCampaigns(campaigns); }, [campaigns]);
   useEffect(() => { saveMarketingLeads(leads); }, [leads]);
+  useEffect(() => { try { localStorage.setItem('flowstack-dashboard-goals', JSON.stringify(goals.map(g => ({ id: g.id, target: g.target, current: g.current })))); } catch {} }, [goals]);
+  useEffect(() => { try { localStorage.setItem('flowstack-dashboard-settings', JSON.stringify(settings)); } catch {} }, [settings]);
+  useEffect(() => { try { localStorage.setItem('flowstack-dashboard-notifications', JSON.stringify(notifications)); } catch {} }, [notifications]);
 
   // Budget Data
   const budgetData: BudgetData[] = [
@@ -1154,12 +1227,23 @@ const DashboardContent = () => {
     };
   }, [darkMode]);
 
-  const [connections, setConnections] = useState<ApiConnection[]>([
-    { id: "meta", name: "Meta Ads", platform: "meta", connected: true, lastSync: tx("Vor 5 Min", "5 min ago"), accountName: "Flowstack GmbH", icon: <svg className="w-6 h-6" fill="white" viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.879V14.89h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.989C18.343 21.129 22 16.99 22 12c0-5.523-4.477-10-10-10z"/></svg>, color: "bg-blue-500" },
-    { id: "google", name: "Google Ads", platform: "google", connected: true, lastSync: tx("Vor 12 Min", "12 min ago"), accountName: "Flowstack", icon: <svg className="w-6 h-6" fill="white" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>, color: "bg-emerald-500" },
-    { id: "tiktok", name: "TikTok Ads", platform: "tiktok", connected: false, icon: <svg className="w-6 h-6" fill="white" viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/></svg>, color: "bg-pink-500" },
-    { id: "linkedin", name: "LinkedIn Ads", platform: "linkedin", connected: false, icon: <svg className="w-6 h-6" fill="white" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>, color: "bg-sky-500" },
-  ]);
+  const [connections, setConnections] = useState<ApiConnection[]>(() => {
+    const defaults: ApiConnection[] = [
+      { id: "meta", name: "Meta Ads", platform: "meta", connected: true, lastSync: tx("Vor 5 Min", "5 min ago"), accountName: "Flowstack GmbH", icon: <svg className="w-6 h-6" fill="white" viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.879V14.89h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.989C18.343 21.129 22 16.99 22 12c0-5.523-4.477-10-10-10z"/></svg>, color: "bg-blue-500" },
+      { id: "google", name: "Google Ads", platform: "google", connected: true, lastSync: tx("Vor 12 Min", "12 min ago"), accountName: "Flowstack", icon: <svg className="w-6 h-6" fill="white" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>, color: "bg-emerald-500" },
+      { id: "tiktok", name: "TikTok Ads", platform: "tiktok", connected: false, icon: <svg className="w-6 h-6" fill="white" viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/></svg>, color: "bg-pink-500" },
+      { id: "linkedin", name: "LinkedIn Ads", platform: "linkedin", connected: false, icon: <svg className="w-6 h-6" fill="white" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>, color: "bg-sky-500" },
+    ];
+    try {
+      const s = localStorage.getItem('flowstack-dashboard-connections');
+      if (s) {
+        const saved = JSON.parse(s) as { id: string; connected: boolean; lastSync?: string; accountName?: string }[];
+        return defaults.map(d => { const sv = saved.find(x => x.id === d.id); return sv ? { ...d, connected: sv.connected, lastSync: sv.lastSync, accountName: sv.accountName } : d; });
+      }
+    } catch {}
+    return defaults;
+  });
+  useEffect(() => { try { localStorage.setItem('flowstack-dashboard-connections', JSON.stringify(connections.map(c => ({ id: c.id, connected: c.connected, lastSync: c.lastSync, accountName: c.accountName })))); } catch {} }, [connections]);
 
   // Computed
   const customDays = useMemo(() => {
@@ -1211,6 +1295,7 @@ const DashboardContent = () => {
     if (action === "view") setSelectedCampaign(campaigns.find(c => c.id === id) || null);
     else if (action === "toggle") setCampaigns(c => c.map(x => x.id === id ? { ...x, status: x.status === "active" ? "paused" : "active" } : x));
     else if (action === "duplicate") { const orig = campaigns.find(c => c.id === id); if (orig) setCampaigns(c => [...c, { ...orig, id: Date.now().toString(), name: orig.name + (lang === 'de' ? " (Kopie)" : " (Copy)") }]); }
+    else if (action === "edit") { const c = campaigns.find(x => x.id === id); if (c) setEditingCampaign(c); }
     else if (action === "delete") setDeleteCampaignId(id);
     else if (action === "export") exportToCSV([campaigns.find(c => c.id === id)!], `campaign-${id}.csv`);
   };
@@ -1247,7 +1332,7 @@ const DashboardContent = () => {
       cvr: 0,
     };
     setCampaigns(c => [newCampaign, ...c]);
-    setActionCampaign(newCampaign);
+    setEditingCampaign(newCampaign);
   };
 
   // Report generation handler
@@ -1284,6 +1369,7 @@ const DashboardContent = () => {
       <LeadDetailModal lead={selectedLead} onClose={() => setSelectedLead(null)} onStatusChange={handleLeadStatusChange} onEmail={handleEmailLead} onCall={handleCallLead} />
       <ConnectionModal isOpen={!!connectionModal} onClose={() => setConnectionModal(null)} connection={connectionModal} />
       <GoalEditModal goal={editingGoal} onClose={() => setEditingGoal(null)} onSave={handleSaveGoal} />
+      <CampaignEditModal campaign={editingCampaign} onClose={() => setEditingCampaign(null)} onSave={(updated) => { setCampaigns(c => c.map(x => x.id === updated.id ? updated : x)); addToast(tx('Kampagne aktualisiert', 'Campaign updated')); }} />
 
       {/* Confirm Dialogs */}
       <ConfirmDialog
@@ -1328,15 +1414,18 @@ const DashboardContent = () => {
         </div>
       )}
 
+      {/* Mobile sidebar overlay */}
+      {mobileSidebarOpen && <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-30 lg:hidden" onClick={() => setMobileSidebarOpen(false)} />}
+
       {/* Sidebar */}
-      <aside className={`fixed left-0 top-0 bottom-0 w-64 bg-white dark:bg-gray-900 border-r border-gray-100 dark:border-gray-800 z-40 hidden ${sidebarCollapsed ? '' : 'lg:flex'} flex-col transition-transform duration-300`}>
+      <aside className={`fixed left-0 top-0 bottom-0 w-64 bg-white dark:bg-gray-900 border-r border-gray-100 dark:border-gray-800 z-40 flex flex-col transition-transform duration-300 ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'} ${sidebarCollapsed ? 'lg:-translate-x-full' : 'lg:translate-x-0'}`}>
         <div className="p-6 flex items-center justify-between">
           <h1 className="text-xl font-bold flex items-center gap-2"><div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center"><Zap className="w-5 h-5 text-white" /></div>Flowstack</h1>
           <div className="flex items-center gap-1">
             <button onClick={() => setDarkMode(!darkMode)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors" title={tx('Design umschalten', 'Toggle theme')}>
               {darkMode ? <Sun className="w-5 h-5 text-yellow-500" /> : <Moon className="w-5 h-5 text-gray-500" />}
             </button>
-            <button onClick={() => setSidebarCollapsed(true)} className="hidden lg:flex p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors" title={tx("Sidebar einklappen", "Collapse sidebar")}>
+            <button onClick={() => { setSidebarCollapsed(true); setMobileSidebarOpen(false); }} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors" title={tx("Sidebar einklappen", "Collapse sidebar")}>
               <ChevronLeft className="w-4 h-4 text-gray-400" />
             </button>
           </div>
@@ -1348,7 +1437,7 @@ const DashboardContent = () => {
             { icon: <Layers className="w-5 h-5" />, label: tx("Kampagnen", "Campaigns"), key: "campaigns" },
             { icon: <Users className="w-5 h-5" />, label: "Leads", key: "leads" },
           ] as const).map(i => (
-            <button key={i.key} onClick={() => { setSection(i.key); setPage(1); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${section === i.key ? "bg-purple-50 dark:bg-purple-500/10 text-purple-600 font-medium" : "text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"}`}>{i.icon}{i.label}</button>
+            <button key={i.key} onClick={() => { setSection(i.key); setPage(1); setMobileSidebarOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${section === i.key ? "bg-purple-50 dark:bg-purple-500/10 text-purple-600 font-medium" : "text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"}`}>{i.icon}{i.label}</button>
           ))}
           <p className="text-xs text-gray-400 uppercase font-medium px-4 mt-6 mb-2">{tx("Analyse", "Analysis")}</p>
           {([
@@ -1358,7 +1447,7 @@ const DashboardContent = () => {
             { icon: <GitCompare className="w-5 h-5" />, label: tx("Vergleich", "Compare"), key: "compare" },
             { icon: <DollarSign className="w-5 h-5" />, label: tx("Umsatz", "Revenue"), key: "revenue" },
           ] as const).map(i => (
-            <button key={i.key} onClick={() => { setSection(i.key); setPage(1); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${section === i.key ? "bg-purple-50 dark:bg-purple-500/10 text-purple-600 font-medium" : "text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"}`}>{i.icon}{i.label}</button>
+            <button key={i.key} onClick={() => { setSection(i.key); setPage(1); setMobileSidebarOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${section === i.key ? "bg-purple-50 dark:bg-purple-500/10 text-purple-600 font-medium" : "text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"}`}>{i.icon}{i.label}</button>
           ))}
           <p className="text-xs text-gray-400 uppercase font-medium px-4 mt-6 mb-2">{tx("System", "System")}</p>
           {([
@@ -1366,7 +1455,7 @@ const DashboardContent = () => {
             { icon: <Activity className="w-5 h-5" />, label: "Live Monitor", key: "monitor" },
             { icon: <Settings className="w-5 h-5" />, label: tx("Einstellungen", "Settings"), key: "settings" },
           ] as const).map(i => (
-            <button key={i.key} onClick={() => { setSection(i.key); setPage(1); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${section === i.key ? "bg-purple-50 dark:bg-purple-500/10 text-purple-600 font-medium" : "text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"}`}>{i.icon}{i.label}</button>
+            <button key={i.key} onClick={() => { setSection(i.key); setPage(1); setMobileSidebarOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${section === i.key ? "bg-purple-50 dark:bg-purple-500/10 text-purple-600 font-medium" : "text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"}`}>{i.icon}{i.label}</button>
           ))}
         </nav>
         <div className="p-4">
@@ -1384,6 +1473,7 @@ const DashboardContent = () => {
         <header className="sticky top-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-b border-gray-100 dark:border-gray-800 z-30">
           <div className="flex items-center justify-between px-6 py-4">
             <div className="flex items-center gap-2">
+              <button onClick={() => setMobileSidebarOpen(true)} className="lg:hidden p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors" title={tx('Menü öffnen', 'Open menu')}><Menu className="w-5 h-5 text-gray-500" /></button>
               {sidebarCollapsed && <button onClick={() => setSidebarCollapsed(false)} className="hidden lg:flex p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors" title={tx('Sidebar ausklappen', 'Expand sidebar')}><ChevronRight className="w-5 h-5 text-gray-500" /></button>}
               <div>
               <h1 className="text-2xl font-bold">{{ dashboard: "Dashboard", campaigns: tx("Kampagnen", "Campaigns"), leads: "Leads", funnel: tx("Funnel-Analyse", "Funnel Analysis"), goals: tx("Ziele & Tracking", "Goals & Tracking"), budget: "Budget Pacing", compare: tx("Zeitraum-Vergleich", "Period Comparison"), revenue: tx("Umsatz & Sales", "Revenue & Sales"), reports: "Reports", monitor: "Live Monitor", settings: tx("Einstellungen", "Settings") }[section]}</h1>
@@ -1392,7 +1482,7 @@ const DashboardContent = () => {
             </div>
             <div className="flex items-center gap-4">
               <div className="relative hidden md:block"><Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" /><input type="text" placeholder={tx("Suchen...", "Search...")} value={search} onChange={e => { setSearch(e.target.value); setPage(1); }} className="pl-10 pr-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm w-64 focus:ring-2 focus:ring-purple-500 outline-none" /></div>
-              <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-0.5">
+              <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-xl p-0.5">
                 <button onClick={() => setLang('de')} className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${lang === 'de' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}`}>DE</button>
                 <button onClick={() => setLang('en')} className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${lang === 'en' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}`}>EN</button>
               </div>
@@ -1418,9 +1508,9 @@ const DashboardContent = () => {
               />
               {dateRange === "custom" && (
                 <div className="flex items-center gap-2">
-                  <input type="date" value={customDateFrom} onChange={e => setCustomDateFrom(e.target.value)} className="px-3 py-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 outline-none" />
+                  <input type="date" value={customDateFrom} onChange={e => setCustomDateFrom(e.target.value)} className="px-3 py-2 bg-white dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700/60 rounded-xl text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500/40 focus:border-purple-500 outline-none transition-colors" />
                   <span className="text-gray-400 text-sm">–</span>
-                  <input type="date" value={customDateTo} onChange={e => setCustomDateTo(e.target.value)} className="px-3 py-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 outline-none" />
+                  <input type="date" value={customDateTo} onChange={e => setCustomDateTo(e.target.value)} className="px-3 py-2 bg-white dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700/60 rounded-xl text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500/40 focus:border-purple-500 outline-none transition-colors" />
                 </div>
               )}
               <CustomDropdown
@@ -1473,7 +1563,7 @@ const DashboardContent = () => {
               <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden">
                 <div className="p-6 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
                   <div><h3 className="font-semibold">{{ campaigns: tx("Kampagnen", "Campaigns"), adsets: "Ad Sets", ads: "Ads" }[viewMode]}</h3><p className="text-sm text-gray-500">{viewMode === "campaigns" ? `${filteredCampaigns.length} ${tx("Kampagnen", "campaigns")}` : viewMode === "adsets" ? `${filteredCampaigns.length * 2} Ad Sets` : `${filteredCampaigns.length * 4} Ads`}</p></div>
-                  <div className="flex items-center gap-2">{(["campaigns", "adsets", "ads"] as const).map(m => (<button key={m} onClick={() => setViewMode(m)} className={`px-4 py-2 text-sm font-medium rounded-lg ${viewMode === m ? "bg-purple-100 dark:bg-purple-500/20 text-purple-600" : "text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"}`}>{m === "campaigns" ? tx("Kampagnen", "Campaigns") : m === "adsets" ? "Ad Sets" : "Ads"}</button>))}</div>
+                  <div className="flex items-center gap-2">{(["campaigns", "adsets", "ads"] as const).map(m => (<button key={m} onClick={() => setViewMode(m)} className={`px-4 py-2 text-sm font-medium rounded-xl ${viewMode === m ? "bg-purple-100 dark:bg-purple-500/20 text-purple-600" : "text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"}`}>{m === "campaigns" ? tx("Kampagnen", "Campaigns") : m === "adsets" ? "Ad Sets" : "Ads"}</button>))}</div>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full">
@@ -1531,9 +1621,9 @@ const DashboardContent = () => {
                 <div className="p-4 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between">
                   <p className="text-sm text-gray-500">{tx("Seite", "Page")} {page} {tx("von", "of")} {totalPages}</p>
                   <div className="flex items-center gap-2">
-                    <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="px-3 py-1 text-sm rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed">{tx("Zurück", "Back")}</button>
-                    {Array.from({ length: totalPages }, (_, i) => (<button key={i} onClick={() => setPage(i + 1)} className={`px-3 py-1 text-sm rounded-lg ${page === i + 1 ? "bg-purple-100 text-purple-600" : "hover:bg-gray-100"}`}>{i + 1}</button>))}
-                    <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="px-3 py-1 text-sm rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed">{tx("Weiter", "Next")}</button>
+                    <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="px-3 py-1 text-sm rounded-xl hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed">{tx("Zurück", "Back")}</button>
+                    {Array.from({ length: totalPages }, (_, i) => (<button key={i} onClick={() => setPage(i + 1)} className={`px-3 py-1 text-sm rounded-xl ${page === i + 1 ? "bg-purple-100 text-purple-600" : "hover:bg-gray-100"}`}>{i + 1}</button>))}
+                    <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="px-3 py-1 text-sm rounded-xl hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed">{tx("Weiter", "Next")}</button>
                   </div>
                 </div>
               </div>
@@ -1617,7 +1707,9 @@ const DashboardContent = () => {
               <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden">
                 <table className="w-full">
                   <thead><tr className="border-b border-gray-100 dark:border-gray-800 text-left text-sm text-gray-500"><th className="py-3 px-4 font-medium">{tx("Name", "Name")}</th><th className="py-3 px-4 font-medium">{tx("E-Mail", "Email")}</th><th className="py-3 px-4 font-medium">{tx("Quelle", "Source")}</th><th className="py-3 px-4 font-medium">{tx("Kampagne", "Campaign")}</th><th className="py-3 px-4 font-medium">{tx("Status", "Status")}</th><th className="py-3 px-4 font-medium">{tx("Wert", "Value")}</th><th className="py-3 px-4 font-medium">{tx("Datum", "Date")}</th></tr></thead>
-                  <tbody>{filteredLeads.map(l => {
+                  <tbody>{filteredLeads.length === 0 ? (
+                    <tr><td colSpan={7} className="py-8 text-center text-gray-400">{tx("Keine Leads gefunden.", "No leads found.")}</td></tr>
+                  ) : filteredLeads.map(l => {
                     const col = platformColors[l.source], sc = statusColors[l.status];
                     return (
                       <tr key={l.id} onClick={() => setSelectedLead(l)} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer">
@@ -1695,9 +1787,7 @@ const DashboardContent = () => {
                   <h2 className="text-xl font-semibold">{tx("Monatliche Ziele", "Monthly Goals")}</h2>
                   <p className="text-gray-500">{tx("Fortschritt für Januar 2025", "Progress for January 2025")}</p>
                 </div>
-                <button onClick={() => setEditingGoal(goals[0])} className="px-4 py-2 bg-purple-500 text-white rounded-xl font-medium hover:bg-purple-600 flex items-center gap-2">
-                  <Edit3 className="w-4 h-4" />{tx("Ziele bearbeiten", "Edit goals")}
-                </button>
+                <p className="text-xs text-gray-400">{tx("Klicke auf ein Ziel um es zu bearbeiten", "Click a goal to edit it")}</p>
               </div>
               <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {goals.map(goal => (

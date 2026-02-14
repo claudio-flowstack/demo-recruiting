@@ -5,7 +5,7 @@ import {
   Sparkles, Users, FileText, Globe,
   Mail, Target, BarChart3, Database, Search, Image,
   FolderOpen, Send, TrendingUp, Eye, Play, Mic, Type,
-  Clipboard, Sun, Moon, Menu, ExternalLink, AlertCircle, Wrench, Trash2, ChevronLeft, ChevronRight,
+  Clipboard, Sun, Moon, Menu, ExternalLink, AlertCircle, Wrench, Trash2, ChevronLeft, ChevronRight, Copy,
   Edit3, ChevronDown, ChevronUp, Check, Settings, Bell, Shield, RefreshCw, X, Maximize2, Minimize2,
 } from 'lucide-react';
 import { useTheme } from '@/components/theme-provider';
@@ -13,7 +13,7 @@ import WorkflowCanvas from '@/components/automation/WorkflowCanvas';
 import FunnelCanvas from '@/components/automation/FunnelCanvas';
 import type { AutomationSystem, SystemOutput, OutputType, SystemResource, ResourceType } from '@/types/automation';
 import { DEMO_SYSTEMS, loadUserSystems, saveUserSystems, getVisibleDemoSystems, hideDemoSystem } from '@/data/automationSystems';
-import { getResourcesForSystem, addResource, deleteResource } from '@/data/resourceStorage';
+import { getResourcesForSystem, addResource, updateResource, deleteResource } from '@/data/resourceStorage';
 import { WORKFLOW_TEMPLATES, loadUserTemplates, saveUserTemplates, deleteUserTemplate, getLocalizedTemplate } from '@/data/automationTemplates';
 import { createMockEventSource } from '@/services/mockEventSource';
 import { useWorkflowExecution } from '@/hooks/useWorkflowExecution';
@@ -130,7 +130,7 @@ function ToastContainer({ toasts, onDismiss }: { toasts: ToastMessage[]; onDismi
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-[9999] flex flex-col gap-2">
+    <div className="fixed bottom-6 right-6 z-[110] flex flex-col gap-2">
       {toasts.map(toast => {
         const Icon = iconMap[toast.type];
         return (
@@ -159,7 +159,20 @@ function OutputTable({ outputs, onToast }: { outputs: SystemOutput[]; onToast?: 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editedTexts, setEditedTexts] = useState<Record<string, string>>({});
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
+  const [filterType, setFilterType] = useState<OutputType | 'all'>('all');
   const dateLang = lang === 'de' ? 'de-DE' : 'en-US';
+
+  // Collect available categories from actual outputs
+  const availableTypes = useMemo(() => {
+    const types = new Set<OutputType>();
+    outputs.forEach(o => types.add(o.type));
+    return Array.from(types);
+  }, [outputs]);
+
+  const filteredOutputs = useMemo(() =>
+    filterType === 'all' ? outputs : outputs.filter(o => o.type === filterType),
+    [outputs, filterType]
+  );
 
   const toggleExpand = (id: string) => {
     setExpandedIds(prev => {
@@ -197,8 +210,47 @@ function OutputTable({ outputs, onToast }: { outputs: SystemOutput[]; onToast?: 
   }
 
   return (
-    <div className="divide-y divide-gray-100 dark:divide-zinc-800/50">
-      {outputs.map(output => {
+    <div>
+      {/* Category filter tabs */}
+      {availableTypes.length > 1 && (
+        <div className="flex items-center gap-1 mb-3 pb-3 border-b border-gray-100 dark:border-zinc-800/50 flex-wrap">
+          <button
+            onClick={() => setFilterType('all')}
+            className={`flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-xl transition-colors ${
+              filterType === 'all'
+                ? 'bg-purple-100 dark:bg-purple-500/15 text-purple-600 dark:text-purple-400 font-semibold'
+                : 'text-gray-500 dark:text-zinc-500 hover:bg-gray-100 dark:hover:bg-zinc-800'
+            }`}
+          >
+            <Layers size={11} />
+            {lang === 'de' ? 'Alle' : 'All'}
+            <span className="text-[10px] opacity-60">{outputs.length}</span>
+          </button>
+          {availableTypes.map(type => {
+            const info = OUTPUT_ICONS[type] || OUTPUT_ICONS.other;
+            const TypeFilterIcon = info.icon;
+            const count = outputs.filter(o => o.type === type).length;
+            return (
+              <button
+                key={type}
+                onClick={() => setFilterType(type)}
+                className={`flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-xl transition-colors ${
+                  filterType === type
+                    ? 'bg-purple-100 dark:bg-purple-500/15 text-purple-600 dark:text-purple-400 font-semibold'
+                    : 'text-gray-500 dark:text-zinc-500 hover:bg-gray-100 dark:hover:bg-zinc-800'
+                }`}
+              >
+                <TypeFilterIcon size={11} />
+                {t(info.tKey)}
+                <span className="text-[10px] opacity-60">{count}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      <div className="divide-y divide-gray-100 dark:divide-zinc-800/50">
+      {filteredOutputs.map(output => {
         const typeInfo = OUTPUT_ICONS[output.type] || OUTPUT_ICONS.other;
         const TypeIcon = typeInfo.icon;
         const isTextType = output.artifactType === 'text';
@@ -208,7 +260,7 @@ function OutputTable({ outputs, onToast }: { outputs: SystemOutput[]; onToast?: 
         const displayText = editedTexts[output.id] || output.contentPreview || '';
 
         return (
-          <div key={output.id} className="py-4 px-2 hover:bg-gray-50 dark:hover:bg-zinc-800/20 rounded-lg transition-colors group">
+          <div key={output.id} className="py-4 px-2 hover:bg-gray-50 dark:hover:bg-zinc-800/20 rounded-xl transition-colors group">
             {/* Header row */}
             <div className="flex items-center gap-4">
               <div className="w-9 h-9 rounded-lg bg-gray-100 dark:bg-zinc-800/60 flex items-center justify-center shrink-0">
@@ -230,7 +282,7 @@ function OutputTable({ outputs, onToast }: { outputs: SystemOutput[]; onToast?: 
               {isTextType && hasPreview ? (
                 <button
                   onClick={() => toggleExpand(output.id)}
-                  className="flex items-center gap-1.5 text-xs text-purple-600 dark:text-purple-400 hover:text-purple-500 dark:hover:text-purple-300 opacity-0 group-hover:opacity-100 transition-all px-3 py-1.5 rounded-lg hover:bg-purple-50 dark:hover:bg-purple-500/10"
+                  className="flex items-center gap-1.5 text-xs text-purple-600 dark:text-purple-400 hover:text-purple-500 dark:hover:text-purple-300 opacity-0 group-hover:opacity-100 transition-all px-3 py-1.5 rounded-xl hover:bg-purple-50 dark:hover:bg-purple-500/10"
                 >
                   {isExpanded ? t('outputs.collapse') : t('outputs.show')}
                   {isExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
@@ -238,7 +290,7 @@ function OutputTable({ outputs, onToast }: { outputs: SystemOutput[]; onToast?: 
               ) : (
                 <a
                   href={output.link} target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 text-xs text-purple-600 dark:text-purple-400 hover:text-purple-500 dark:hover:text-purple-300 opacity-0 group-hover:opacity-100 transition-all px-3 py-1.5 rounded-lg hover:bg-purple-50 dark:hover:bg-purple-500/10"
+                  className="flex items-center gap-1.5 text-xs text-purple-600 dark:text-purple-400 hover:text-purple-500 dark:hover:text-purple-300 opacity-0 group-hover:opacity-100 transition-all px-3 py-1.5 rounded-xl hover:bg-purple-50 dark:hover:bg-purple-500/10"
                 >
                   {t('outputs.open')} <ExternalLink size={12} />
                 </a>
@@ -258,13 +310,13 @@ function OutputTable({ outputs, onToast }: { outputs: SystemOutput[]; onToast?: 
                     <div className="flex justify-end mt-2.5 gap-2">
                       <button
                         onClick={() => setEditingId(null)}
-                        className="text-xs text-gray-400 dark:text-zinc-500 hover:text-gray-600 dark:hover:text-zinc-300 px-3 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
+                        className="text-xs text-gray-400 dark:text-zinc-500 hover:text-gray-600 dark:hover:text-zinc-300 px-3 py-1.5 rounded-xl hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
                       >
                         {t('outputs.cancel')}
                       </button>
                       <button
                         onClick={() => saveEdit(output.id)}
-                        className="flex items-center gap-1.5 text-xs text-white bg-purple-600 hover:bg-purple-500 px-3.5 py-1.5 rounded-lg transition-colors"
+                        className="flex items-center gap-1.5 text-xs text-white bg-purple-600 hover:bg-purple-500 px-3.5 py-1.5 rounded-xl transition-colors"
                       >
                         <Check size={12} /> {t('outputs.save')}
                       </button>
@@ -300,6 +352,7 @@ function OutputTable({ outputs, onToast }: { outputs: SystemOutput[]; onToast?: 
           </div>
         );
       })}
+      </div>
     </div>
   );
 }
@@ -370,7 +423,7 @@ function DashboardOverview({ systems, onSelect }: { systems: AutomationSystem[];
             </button>
           )}
         </div>
-        <div className="flex items-center bg-gray-100 dark:bg-zinc-800 rounded-lg p-0.5">
+        <div className="flex items-center bg-gray-100 dark:bg-zinc-800 rounded-xl p-0.5">
           {(['all', 'active', 'draft'] as const).map(f => (
             <button
               key={f}
@@ -444,52 +497,107 @@ const RESOURCE_TYPE_CONFIG: Record<ResourceType, { icon: typeof FileText; color:
   document: { icon: FileText, color: 'blue' },
   note: { icon: Clipboard, color: 'amber' },
   dataset: { icon: Database, color: 'emerald' },
+  form: { icon: Edit3, color: 'pink' },
+  page: { icon: Globe, color: 'cyan' },
 };
 
-const ALL_RESOURCE_TYPES: ResourceType[] = ['transcript', 'document', 'note', 'dataset'];
+const ALL_RESOURCE_TYPES: ResourceType[] = ['transcript', 'document', 'note', 'dataset', 'form', 'page'];
 
 function ResourcesPanel({ systemId, onToast }: { systemId: string; onToast?: (text: string, type?: ToastMessage['type']) => void }) {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const [resources, setResources] = useState<SystemResource[]>([]);
   const [filterType, setFilterType] = useState<ResourceType | 'all'>('all');
   const [showAddModal, setShowAddModal] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState<'date' | 'name'>('date');
+  const [pendingDeleteResourceId, setPendingDeleteResourceId] = useState<string | null>(null);
 
-  // Add-form state
+  // Add/Edit form state
+  const [editingResource, setEditingResource] = useState<SystemResource | null>(null);
   const [newTitle, setNewTitle] = useState('');
   const [newType, setNewType] = useState<ResourceType>('document');
   const [newContent, setNewContent] = useState('');
   const [newFileRef, setNewFileRef] = useState('');
 
+  const dateLang = lang === 'de' ? 'de-DE' : 'en-US';
+
   useEffect(() => {
     setResources(getResourcesForSystem(systemId));
   }, [systemId]);
 
-  const filtered = filterType === 'all' ? resources : resources.filter(r => r.type === filterType);
+  const filtered = useMemo(() => {
+    let result = resources;
+    if (filterType !== 'all') result = result.filter(r => r.type === filterType);
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(r => r.title.toLowerCase().includes(q) || r.content.toLowerCase().includes(q));
+    }
+    return [...result].sort((a, b) =>
+      sortBy === 'name' ? a.title.localeCompare(b.title) : new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+  }, [resources, filterType, searchQuery, sortBy]);
 
-  const handleAdd = () => {
-    if (!newTitle.trim() || !newContent.trim()) return;
-    const res: SystemResource = {
-      id: `res-${Date.now()}-${Math.random().toString(36).slice(2, 5)}`,
-      systemId,
-      title: newTitle.trim(),
-      type: newType,
-      content: newContent.trim(),
-      fileReference: newFileRef.trim() || undefined,
-      createdAt: new Date().toISOString(),
-      source: 'manual',
-    };
-    addResource(res);
-    setResources(prev => [...prev, res]);
+  const openAddModal = () => {
+    setEditingResource(null);
     setNewTitle(''); setNewType('document'); setNewContent(''); setNewFileRef('');
+    setShowAddModal(true);
+  };
+
+  const openEditModal = (res: SystemResource) => {
+    setEditingResource(res);
+    setNewTitle(res.title);
+    setNewType(res.type);
+    setNewContent(res.content);
+    setNewFileRef(res.fileReference || '');
+    setShowAddModal(true);
+  };
+
+  const handleSave = () => {
+    if (!newTitle.trim() || !newContent.trim()) return;
+    if (editingResource) {
+      // Update existing
+      const updates = {
+        title: newTitle.trim(),
+        type: newType,
+        content: newContent.trim(),
+        fileReference: newFileRef.trim() || undefined,
+      };
+      updateResource(editingResource.id, updates);
+      setResources(prev => prev.map(r => r.id === editingResource.id ? { ...r, ...updates } : r));
+      onToast?.(t('resource.updated'), 'success');
+    } else {
+      // Add new
+      const res: SystemResource = {
+        id: `res-${Date.now()}-${Math.random().toString(36).slice(2, 5)}`,
+        systemId,
+        title: newTitle.trim(),
+        type: newType,
+        content: newContent.trim(),
+        fileReference: newFileRef.trim() || undefined,
+        createdAt: new Date().toISOString(),
+        source: 'manual',
+      };
+      addResource(res);
+      setResources(prev => [...prev, res]);
+      onToast?.(t('resource.saved'), 'success');
+    }
+    setNewTitle(''); setNewType('document'); setNewContent(''); setNewFileRef('');
+    setEditingResource(null);
     setShowAddModal(false);
-    onToast?.(t('resource.saved'), 'success');
   };
 
   const handleDelete = (id: string) => {
     deleteResource(id);
     setResources(prev => prev.filter(r => r.id !== id));
+    if (expandedId === id) setExpandedId(null);
     onToast?.(t('resource.deleted'), 'success');
+  };
+
+  const handleCopy = (content: string) => {
+    navigator.clipboard.writeText(content).then(() => {
+      onToast?.(t('resource.copied'), 'success');
+    });
   };
 
   useModalEsc(showAddModal, () => setShowAddModal(false));
@@ -510,31 +618,69 @@ function ResourcesPanel({ systemId, onToast }: { systemId: string; onToast?: (te
           </div>
         </div>
         <button
-          onClick={() => setShowAddModal(true)}
+          onClick={openAddModal}
           className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium transition-colors"
         >
           <Plus size={14} /> {t('resource.add')}
         </button>
       </div>
 
+      {/* Search + Sort */}
+      {resources.length > 0 && (
+        <div className="flex items-center gap-3 mb-4">
+          <div className="relative flex-1 max-w-sm">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-zinc-500" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              placeholder={t('resource.search')}
+              className="w-full pl-9 pr-8 py-2 rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/50 text-sm text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-zinc-500 focus:ring-2 focus:ring-purple-500/30 focus:border-purple-400 outline-none transition-colors"
+            />
+            {searchQuery && (
+              <button onClick={() => setSearchQuery('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-zinc-300">
+                <X size={13} />
+              </button>
+            )}
+          </div>
+          <div className="flex items-center gap-1 bg-gray-100 dark:bg-zinc-800 rounded-xl p-0.5">
+            <button
+              onClick={() => setSortBy('date')}
+              className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors ${sortBy === 'date' ? 'bg-white dark:bg-zinc-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-zinc-400 hover:text-gray-700'}`}
+            >
+              <Clock size={11} /> {t('resource.sortDate')}
+            </button>
+            <button
+              onClick={() => setSortBy('name')}
+              className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors ${sortBy === 'name' ? 'bg-white dark:bg-zinc-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-zinc-400 hover:text-gray-700'}`}
+            >
+              <FileText size={11} /> {t('resource.sortName')}
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Filter */}
       {resources.length > 0 && (
-        <div className="flex items-center gap-1.5 mb-5">
+        <div className="flex items-center gap-1.5 mb-5 flex-wrap">
           <button
             onClick={() => setFilterType('all')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${filterType === 'all' ? 'bg-purple-100 dark:bg-purple-500/15 text-purple-700 dark:text-purple-300' : 'text-gray-500 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-zinc-800'}`}
+            className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-colors ${filterType === 'all' ? 'bg-purple-100 dark:bg-purple-500/15 text-purple-700 dark:text-purple-300' : 'text-gray-500 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-zinc-800'}`}
           >
-            {t('resource.type.all')}
+            {t('resource.type.all')} <span className="text-[10px] opacity-60 ml-1">{resources.length}</span>
           </button>
           {ALL_RESOURCE_TYPES.map(rt => {
             const cfg = RESOURCE_TYPE_CONFIG[rt];
+            const count = resources.filter(r => r.type === rt).length;
+            if (count === 0) return null;
             return (
               <button
                 key={rt}
                 onClick={() => setFilterType(rt)}
-                className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${filterType === rt ? 'bg-purple-100 dark:bg-purple-500/15 text-purple-700 dark:text-purple-300' : 'text-gray-500 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-zinc-800'}`}
+                className={`flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-medium transition-colors ${filterType === rt ? 'bg-purple-100 dark:bg-purple-500/15 text-purple-700 dark:text-purple-300' : 'text-gray-500 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-zinc-800'}`}
               >
                 <cfg.icon size={12} /> {t(`resource.type.${rt}` as keyof typeof t)}
+                <span className="text-[10px] opacity-60">{count}</span>
               </button>
             );
           })}
@@ -547,8 +693,8 @@ function ResourcesPanel({ systemId, onToast }: { systemId: string; onToast?: (te
           <div className="w-14 h-14 rounded-2xl bg-gray-100 dark:bg-zinc-800/40 flex items-center justify-center mx-auto mb-4">
             <FolderOpen size={28} className="text-gray-400 dark:text-zinc-600" />
           </div>
-          <p className="text-sm text-gray-500 dark:text-zinc-500 font-medium">{t('resource.empty')}</p>
-          <p className="text-xs text-gray-400 dark:text-zinc-600 mt-1">{t('resource.emptyHint')}</p>
+          <p className="text-sm text-gray-500 dark:text-zinc-500 font-medium">{searchQuery ? (lang === 'de' ? 'Keine Ergebnisse' : 'No results') : t('resource.empty')}</p>
+          <p className="text-xs text-gray-400 dark:text-zinc-600 mt-1">{searchQuery ? (lang === 'de' ? 'Versuche einen anderen Suchbegriff' : 'Try a different search term') : t('resource.emptyHint')}</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -575,10 +721,24 @@ function ResourcesPanel({ systemId, onToast }: { systemId: string; onToast?: (te
                       )}
                     </div>
                     <span className="text-[11px] text-gray-400 dark:text-zinc-600">
-                      {new Date(res.createdAt).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                      {new Date(res.createdAt).toLocaleDateString(dateLang, { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                     </span>
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
+                    <button
+                      onClick={() => handleCopy(res.content)}
+                      className="p-1.5 rounded-lg text-gray-400 hover:text-purple-500 dark:text-zinc-500 dark:hover:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-500/10 transition-colors"
+                      title={t('resource.copy')}
+                    >
+                      <Copy size={13} />
+                    </button>
+                    <button
+                      onClick={() => openEditModal(res)}
+                      className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:text-zinc-500 dark:hover:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
+                      title={t('resource.edit')}
+                    >
+                      <Edit3 size={13} />
+                    </button>
                     <button
                       onClick={() => setExpandedId(isExpanded ? null : res.id)}
                       className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:text-zinc-500 dark:hover:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
@@ -587,7 +747,7 @@ function ResourcesPanel({ systemId, onToast }: { systemId: string; onToast?: (te
                       {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                     </button>
                     <button
-                      onClick={() => handleDelete(res.id)}
+                      onClick={() => setPendingDeleteResourceId(res.id)}
                       className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 dark:text-zinc-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
                       title={t('resource.delete')}
                     >
@@ -611,12 +771,14 @@ function ResourcesPanel({ systemId, onToast }: { systemId: string; onToast?: (te
         </div>
       )}
 
-      {/* Add Resource Modal */}
+      {/* Add/Edit Resource Modal */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowAddModal(false)} />
           <div className="relative bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-zinc-800 w-full max-w-lg p-6">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-5">{t('resource.addTitle')}</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-5">
+              {editingResource ? t('resource.editTitle') : t('resource.addTitle')}
+            </h3>
 
             {/* Title */}
             <label className="block text-xs font-medium text-gray-500 dark:text-zinc-400 mb-1.5">{t('resource.titleLabel')}</label>
@@ -624,12 +786,12 @@ function ResourcesPanel({ systemId, onToast }: { systemId: string; onToast?: (te
 
             {/* Type */}
             <label className="block text-xs font-medium text-gray-500 dark:text-zinc-400 mb-1.5">{t('resource.typeLabel')}</label>
-            <div className="flex items-center gap-1.5 mb-4">
+            <div className="flex items-center gap-1.5 mb-4 flex-wrap">
               {ALL_RESOURCE_TYPES.map(rt => (
                 <button
                   key={rt}
                   onClick={() => setNewType(rt)}
-                  className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${newType === rt ? 'bg-purple-100 dark:bg-purple-500/15 text-purple-700 dark:text-purple-300' : 'text-gray-500 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-zinc-800 border border-gray-200 dark:border-zinc-700'}`}
+                  className={`flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-medium transition-colors ${newType === rt ? 'bg-purple-100 dark:bg-purple-500/15 text-purple-700 dark:text-purple-300' : 'text-gray-500 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-zinc-800 border border-gray-200 dark:border-zinc-700'}`}
                 >
                   {t(`resource.type.${rt}` as keyof typeof t)}
                 </button>
@@ -650,7 +812,7 @@ function ResourcesPanel({ systemId, onToast }: { systemId: string; onToast?: (te
                 {t('resource.cancel')}
               </button>
               <button
-                onClick={handleAdd}
+                onClick={handleSave}
                 disabled={!newTitle.trim() || !newContent.trim()}
                 className="px-5 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-medium transition-colors"
               >
@@ -660,6 +822,17 @@ function ResourcesPanel({ systemId, onToast }: { systemId: string; onToast?: (te
           </div>
         </div>
       )}
+      {/* Resource delete confirmation */}
+      <ConfirmDialog
+        open={!!pendingDeleteResourceId}
+        title={t('resource.delete')}
+        message={lang === 'en' ? 'This resource will be permanently removed.' : 'Diese Ressource wird unwiderruflich entfernt.'}
+        confirmLabel={lang === 'en' ? 'Delete' : 'Löschen'}
+        cancelLabel={lang === 'en' ? 'Cancel' : 'Abbrechen'}
+        variant="danger"
+        onConfirm={() => { if (pendingDeleteResourceId) handleDelete(pendingDeleteResourceId); setPendingDeleteResourceId(null); }}
+        onCancel={() => setPendingDeleteResourceId(null)}
+      />
     </>
   );
 }
@@ -806,7 +979,7 @@ function SystemDetailView({ system, onSave, onExecute, onDelete, onToggleStatus,
 
       {/* Detail Tabs */}
       <div className="flex items-center gap-4 mb-6">
-        <div className="flex items-center bg-gray-100 dark:bg-zinc-800 rounded-lg p-0.5">
+        <div className="flex items-center bg-gray-100 dark:bg-zinc-800 rounded-xl p-0.5">
           <button
             onClick={() => setDetailTab('workflow')}
             className={`flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium transition-colors ${detailTab === 'workflow' ? 'bg-white dark:bg-zinc-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-zinc-400 hover:text-gray-700 dark:hover:text-zinc-300'}`}
@@ -871,7 +1044,7 @@ function SystemDetailView({ system, onSave, onExecute, onDelete, onToggleStatus,
           </div>
           {/* Edit / Live Mode Toggle */}
           <div className="flex items-center gap-2">
-            <div className="flex items-center bg-gray-100 dark:bg-zinc-800 rounded-lg p-0.5">
+            <div className="flex items-center bg-gray-100 dark:bg-zinc-800 rounded-xl p-0.5">
               <button
                 onClick={() => setCanvasMode('edit')}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${canvasMode === 'edit' ? 'bg-white dark:bg-zinc-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-zinc-400 hover:text-gray-700 dark:hover:text-zinc-300'}`}
@@ -887,7 +1060,7 @@ function SystemDetailView({ system, onSave, onExecute, onDelete, onToggleStatus,
             </div>
           </div>
         </div>
-        <div className="rounded-2xl border border-gray-200 dark:border-zinc-800/40 overflow-hidden">
+        <div className="rounded-2xl border border-gray-200 dark:border-zinc-800/40 overflow-hidden mr-3">
           <CanvasErrorBoundary>
             <WorkflowCanvas initialSystem={system} onSave={onSave} onExecute={handleExecuteWithEvents} nodeStates={nodeStates} style={{ height: canvasHeight }} />
           </CanvasErrorBoundary>
@@ -1055,6 +1228,10 @@ function TemplatePickerView({ onCreated }: { onCreated: (system: AutomationSyste
       outputs: [],
       executionCount: 0,
       lastExecuted: undefined,
+      nodes: structuredClone(template.nodes || []),
+      connections: structuredClone(template.connections || []),
+      groups: structuredClone(template.groups || []),
+      stickyNotes: structuredClone(template.stickyNotes || []),
     };
     onCreated(system);
   };
@@ -1142,7 +1319,7 @@ function TemplatePickerView({ onCreated }: { onCreated: (system: AutomationSyste
               <button
                 key={cat}
                 onClick={() => setNewCategory(cat)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${newCategory === cat ? 'bg-purple-100 dark:bg-purple-500/15 text-purple-600 dark:text-purple-400 ring-1 ring-purple-300 dark:ring-purple-500/30' : 'bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400 hover:text-gray-700 dark:hover:text-zinc-300'}`}
+                className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-colors ${newCategory === cat ? 'bg-purple-100 dark:bg-purple-500/15 text-purple-600 dark:text-purple-400 ring-1 ring-purple-300 dark:ring-purple-500/30' : 'bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400 hover:text-gray-700 dark:hover:text-zinc-300'}`}
               >
                 {cat}
               </button>
@@ -1311,7 +1488,7 @@ function TemplatePickerView({ onCreated }: { onCreated: (system: AutomationSyste
             <button
               key={cat}
               onClick={() => setCategoryFilter(cat)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${categoryFilter === cat ? 'bg-purple-100 dark:bg-purple-500/15 text-purple-600 dark:text-purple-400' : 'bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400 hover:text-gray-700 dark:hover:text-zinc-300'}`}
+              className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-colors ${categoryFilter === cat ? 'bg-purple-100 dark:bg-purple-500/15 text-purple-600 dark:text-purple-400' : 'bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400 hover:text-gray-700 dark:hover:text-zinc-300'}`}
             >
               {cat === 'all' ? t('dashboard.filterAll') : cat}
             </button>
@@ -1439,13 +1616,12 @@ function AutomationDashboardContent() {
   // Confirm dialog state for system deletion
   const [confirmDeleteSystemId, setConfirmDeleteSystemId] = useState<string | null>(null);
 
-  // Settings state
-  const [settingsData, setSettingsData] = useState({
-    autoExecute: false,
-    notifications: true,
-    webhookLogs: true,
-    compactView: false,
+  // Settings state (persisted)
+  const [settingsData, setSettingsData] = useState<{ autoExecute: boolean; notifications: boolean; webhookLogs: boolean; compactView: boolean }>(() => {
+    try { const s = localStorage.getItem('fs_automation_settings'); if (s) return JSON.parse(s); } catch {}
+    return { autoExecute: false, notifications: true, webhookLogs: true, compactView: false };
   });
+  useEffect(() => { try { localStorage.setItem('fs_automation_settings', JSON.stringify(settingsData)); } catch {} }, [settingsData]);
 
   useEffect(() => { setUserSystems(loadUserSystems()); }, []);
 
@@ -1740,7 +1916,7 @@ function AutomationDashboardContent() {
             </div>
             <div className="flex items-center gap-3">
               {/* Language Toggle */}
-              <div className="flex items-center bg-gray-100 dark:bg-zinc-800 rounded-lg p-0.5">
+              <div className="flex items-center bg-gray-100 dark:bg-zinc-800 rounded-xl p-0.5">
                 <button
                   onClick={() => setLang('de')}
                   className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${lang === 'de' ? 'bg-white dark:bg-zinc-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-zinc-400 hover:text-gray-700 dark:hover:text-zinc-300'}`}

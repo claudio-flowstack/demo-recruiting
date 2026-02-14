@@ -99,7 +99,7 @@ export const LandingPage = () => {
           <div className="mb-16">
             <a
               href="#formular"
-              className="inline-block px-8 py-4 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition-all shadow-[0_0_30px_rgba(147,51,234,0.4)] hover:shadow-[0_0_40px_rgba(147,51,234,0.6)]"
+              className="inline-block px-8 py-4 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-xl transition-all shadow-[0_0_30px_rgba(147,51,234,0.4)] hover:shadow-[0_0_40px_rgba(147,51,234,0.6)]"
             >
               Jetzt kostenlos sichern
             </a>
@@ -110,7 +110,7 @@ export const LandingPage = () => {
             <div className="relative">
               {/* Screen */}
               <div className="bg-[#1a1a20] rounded-t-xl p-2 border border-gray-800">
-                <div className="bg-[#0f0f14] rounded-lg overflow-hidden">
+                <div className="bg-[#0f0f14] rounded-xl overflow-hidden">
                   {/* Browser dots */}
                   <div className="flex items-center gap-2 px-4 py-2 bg-[#1a1a20] border-b border-gray-800">
                     <div className="w-3 h-3 rounded-full bg-red-500/80"></div>
@@ -121,7 +121,7 @@ export const LandingPage = () => {
                   <div className="aspect-[16/9] p-4 bg-[#0f0f14]">
                     <div className="grid grid-cols-4 gap-3 h-full">
                       {/* Sidebar */}
-                      <div className="col-span-1 bg-[#1a1a24] rounded-lg p-3 space-y-3">
+                      <div className="col-span-1 bg-[#1a1a24] rounded-xl p-3 space-y-3">
                         <div className="h-8 bg-purple-600/30 rounded"></div>
                         <div className="h-4 bg-gray-700/30 rounded w-3/4"></div>
                         <div className="h-4 bg-gray-700/30 rounded"></div>
@@ -132,21 +132,21 @@ export const LandingPage = () => {
                       <div className="col-span-3 space-y-3">
                         {/* Stats */}
                         <div className="grid grid-cols-3 gap-3">
-                          <div className="bg-purple-600/20 border border-purple-500/30 rounded-lg p-3">
+                          <div className="bg-purple-600/20 border border-purple-500/30 rounded-xl p-3">
                             <div className="h-3 bg-purple-500/40 rounded w-1/2 mb-2"></div>
                             <div className="h-6 bg-white/20 rounded w-3/4"></div>
                           </div>
-                          <div className="bg-[#1a1a24] rounded-lg p-3">
+                          <div className="bg-[#1a1a24] rounded-xl p-3">
                             <div className="h-3 bg-gray-600/40 rounded w-1/2 mb-2"></div>
                             <div className="h-6 bg-white/10 rounded w-2/3"></div>
                           </div>
-                          <div className="bg-[#1a1a24] rounded-lg p-3">
+                          <div className="bg-[#1a1a24] rounded-xl p-3">
                             <div className="h-3 bg-gray-600/40 rounded w-1/2 mb-2"></div>
                             <div className="h-6 bg-white/10 rounded w-3/4"></div>
                           </div>
                         </div>
                         {/* Chart */}
-                        <div className="bg-[#1a1a24] rounded-lg p-3 flex-1">
+                        <div className="bg-[#1a1a24] rounded-xl p-3 flex-1">
                           <div className="h-3 bg-gray-700/30 rounded w-1/4 mb-3"></div>
                           <div className="flex items-end gap-1 h-20">
                             {[40, 65, 45, 80, 55, 90, 70, 85, 60, 75, 95, 80].map((h, i) => (
@@ -206,7 +206,7 @@ export const LandingPage = () => {
               <div className="relative">
                 {/* Screen */}
                 <div className="bg-[#1a1a20] rounded-t-xl p-2 border border-gray-800">
-                  <div className="bg-[#0f0f14] rounded-lg overflow-hidden">
+                  <div className="bg-[#0f0f14] rounded-xl overflow-hidden">
                     {/* Browser dots */}
                     <div className="flex items-center gap-2 px-4 py-2 bg-[#1a1a20] border-b border-gray-800">
                       <div className="w-3 h-3 rounded-full bg-red-500/80"></div>
@@ -217,7 +217,7 @@ export const LandingPage = () => {
                     <div className="aspect-[16/10] p-4 bg-[#0f0f14]">
                       <div className="grid grid-cols-4 gap-3 h-full">
                         {/* Sidebar */}
-                        <div className="col-span-1 bg-[#1a1a24] rounded-lg p-3 space-y-3">
+                        <div className="col-span-1 bg-[#1a1a24] rounded-xl p-3 space-y-3">
                           <div className="h-8 bg-purple-600/30 rounded"></div>
                           <div className="h-4 bg-gray-700/30 rounded w-3/4"></div>
                           <div className="h-4 bg-gray-700/30 rounded"></div>
@@ -228,21 +228,21 @@ export const LandingPage = () => {
                         <div className="col-span-3 space-y-3">
                           {/* Stats */}
                           <div className="grid grid-cols-3 gap-3">
-                            <div className="bg-purple-600/20 border border-purple-500/30 rounded-lg p-3">
+                            <div className="bg-purple-600/20 border border-purple-500/30 rounded-xl p-3">
                               <div className="h-3 bg-purple-500/40 rounded w-1/2 mb-2"></div>
                               <div className="h-6 bg-white/20 rounded w-3/4"></div>
                             </div>
-                            <div className="bg-[#1a1a24] rounded-lg p-3">
+                            <div className="bg-[#1a1a24] rounded-xl p-3">
                               <div className="h-3 bg-gray-600/40 rounded w-1/2 mb-2"></div>
                               <div className="h-6 bg-white/10 rounded w-2/3"></div>
                             </div>
-                            <div className="bg-[#1a1a24] rounded-lg p-3">
+                            <div className="bg-[#1a1a24] rounded-xl p-3">
                               <div className="h-3 bg-gray-600/40 rounded w-1/2 mb-2"></div>
                               <div className="h-6 bg-white/10 rounded w-3/4"></div>
                             </div>
                           </div>
                           {/* Chart */}
-                          <div className="bg-[#1a1a24] rounded-lg p-3 flex-1">
+                          <div className="bg-[#1a1a24] rounded-xl p-3 flex-1">
                             <div className="h-3 bg-gray-700/30 rounded w-1/4 mb-3"></div>
                             <div className="flex items-end gap-1 h-16">
                               {[40, 65, 45, 80, 55, 90, 70, 85, 60, 75, 95, 80].map((h, i) => (
@@ -284,7 +284,7 @@ export const LandingPage = () => {
               <div className="pt-6">
                 <a
                   href="#formular"
-                  className="inline-block w-full text-center px-8 py-4 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition-all shadow-[0_0_30px_rgba(147,51,234,0.4)] hover:shadow-[0_0_40px_rgba(147,51,234,0.6)]"
+                  className="inline-block w-full text-center px-8 py-4 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-xl transition-all shadow-[0_0_30px_rgba(147,51,234,0.4)] hover:shadow-[0_0_40px_rgba(147,51,234,0.6)]"
                 >
                   Jetzt Funnel-Vorlagen gratis sichern!
                   <span className="block text-sm font-normal mt-1 opacity-80">Inklusive Videoanleitung</span>
@@ -414,7 +414,7 @@ export const LandingPage = () => {
           {/* CTA Button */}
           <a
             href="#formular"
-            className="inline-block px-10 py-5 bg-purple-600 hover:bg-purple-700 text-white font-bold text-lg rounded-lg transition-all shadow-[0_0_40px_rgba(147,51,234,0.4)] hover:shadow-[0_0_50px_rgba(147,51,234,0.6)]"
+            className="inline-block px-10 py-5 bg-purple-600 hover:bg-purple-700 text-white font-bold text-lg rounded-xl transition-all shadow-[0_0_40px_rgba(147,51,234,0.4)] hover:shadow-[0_0_50px_rgba(147,51,234,0.6)]"
           >
             Jetzt kostenlos sichern
           </a>

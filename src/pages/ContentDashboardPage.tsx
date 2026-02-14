@@ -626,9 +626,9 @@ function useToast() {
 }
 
 const ToastContainer = ({ toasts, onDismiss }: { toasts: Toast[]; onDismiss: (id: string) => void }) => (
-  <div className="fixed bottom-6 right-6 z-[100] space-y-2">
+  <div className="fixed bottom-6 right-6 z-[110] space-y-2">
     {toasts.map(t => (
-      <div key={t.id} onClick={() => onDismiss(t.id)} className={`px-5 py-3 rounded-2xl text-white text-sm font-medium shadow-2xl cursor-pointer animate-slide-in-right ${t.type === 'success' ? 'bg-emerald-500' : t.type === 'error' ? 'bg-red-500' : 'bg-purple-500'}`}>
+      <div key={t.id} onClick={() => onDismiss(t.id)} className={`px-5 py-3 rounded-2xl text-white text-sm font-medium shadow-2xl cursor-pointer hover:opacity-80 transition-opacity animate-slide-in-right ${t.type === 'success' ? 'bg-emerald-500' : t.type === 'error' ? 'bg-red-500' : 'bg-purple-500'}`}>
         {t.message}
       </div>
     ))}
@@ -1240,7 +1240,7 @@ const ContentItemModal = ({ item, lang, onClose, onSave, onDelete, onDuplicate, 
         {/* Tabs */}
         <div className="flex gap-1 mb-6 bg-gray-100 dark:bg-gray-800 rounded-xl p-1">
           {(['details', 'preview', 'versions', ...(editItem.platform === 'youtube' ? ['thumbnails'] : [])] as ('details' | 'preview' | 'versions' | 'thumbnails')[]).map(t => (
-            <button key={t} onClick={() => setTab(t)} className={`flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${tab === t ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
+            <button key={t} onClick={() => setTab(t)} className={`flex-1 px-4 py-2 rounded-xl text-sm font-medium transition-colors ${tab === t ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
               {t === 'details' ? tx('Details', 'Details') : t === 'preview' ? tx('Vorschau', 'Preview') : t === 'versions' ? tx('Versionen', 'Versions') : 'Thumbnails'}
             </button>
           ))}
@@ -1251,15 +1251,15 @@ const ContentItemModal = ({ item, lang, onClose, onSave, onDelete, onDuplicate, 
           <div className="space-y-4">
             <div>
               <label className="text-sm text-gray-500 block mb-2">{tx('Titel', 'Title')}</label>
-              <input type="text" value={editItem.title} onChange={e => updateField('title', e.target.value)} className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm focus:ring-2 focus:ring-sky-500 outline-none" />
+              <input type="text" value={editItem.title} onChange={e => updateField('title', e.target.value)} className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm dark:text-white focus:ring-2 focus:ring-sky-500 outline-none" />
             </div>
             <div>
               <label className="text-sm text-gray-500 block mb-2">{tx('Konzept / Idee', 'Concept / Idea')}</label>
-              <textarea value={editItem.concept} onChange={e => updateField('concept', e.target.value)} className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm focus:ring-2 focus:ring-sky-500 outline-none resize-none h-24" />
+              <textarea value={editItem.concept} onChange={e => updateField('concept', e.target.value)} className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm dark:text-white focus:ring-2 focus:ring-sky-500 outline-none resize-none h-24" />
             </div>
             <div>
               <label className="text-sm text-gray-500 block mb-2">{tx('Angle / Hook', 'Angle / Hook')}</label>
-              <input type="text" value={editItem.angle} onChange={e => updateField('angle', e.target.value)} className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm focus:ring-2 focus:ring-sky-500 outline-none" />
+              <input type="text" value={editItem.angle} onChange={e => updateField('angle', e.target.value)} className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm dark:text-white focus:ring-2 focus:ring-sky-500 outline-none" />
             </div>
 
             {/* Status */}
@@ -1302,7 +1302,7 @@ const ContentItemModal = ({ item, lang, onClose, onSave, onDelete, onDuplicate, 
             {(editItem.status === 'scheduled' || editItem.status === 'ready') && (
               <div>
                 <label className="text-sm text-gray-500 block mb-2">{tx('Geplantes Datum', 'Scheduled Date')}</label>
-                <input type="datetime-local" value={editItem.scheduledDate?.slice(0, 16) || ''} onChange={e => updateField('scheduledDate', e.target.value ? new Date(e.target.value).toISOString() : undefined)} className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm focus:ring-2 focus:ring-sky-500 outline-none" />
+                <input type="datetime-local" value={editItem.scheduledDate?.slice(0, 16) || ''} onChange={e => updateField('scheduledDate', e.target.value ? new Date(e.target.value).toISOString() : undefined)} className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm dark:text-white focus:ring-2 focus:ring-sky-500 outline-none" />
               </div>
             )}
 
@@ -1317,7 +1317,7 @@ const ContentItemModal = ({ item, lang, onClose, onSave, onDelete, onDuplicate, 
                 ))}
               </div>
               <div className="flex gap-2">
-                <input type="text" value={newTag} onChange={e => setNewTag(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleAddTag()} placeholder={tx('Tag hinzufügen...', 'Add tag...')} className="flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm focus:ring-2 focus:ring-sky-500 outline-none" />
+                <input type="text" value={newTag} onChange={e => setNewTag(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleAddTag()} placeholder={tx('Tag hinzufügen...', 'Add tag...')} className="flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm dark:text-white focus:ring-2 focus:ring-sky-500 outline-none" />
                 <button onClick={handleAddTag} className="px-3 py-2 bg-sky-500 text-white rounded-xl text-sm hover:bg-sky-600"><Plus className="w-4 h-4" /></button>
               </div>
             </div>
@@ -1330,9 +1330,9 @@ const ContentItemModal = ({ item, lang, onClose, onSave, onDelete, onDuplicate, 
                   {editItem.media!.map(m => (
                     <div key={m.id} className="relative group w-20 h-20">
                       {m.type === 'image' ? (
-                        <img src={m.dataUrl} alt={m.name} className="w-20 h-20 object-cover rounded-lg" />
+                        <img src={m.dataUrl} alt={m.name} className="w-20 h-20 object-cover rounded-xl" />
                       ) : (
-                        <div className="w-20 h-20 bg-gray-800 rounded-lg flex items-center justify-center"><Play className="w-6 h-6 text-white" /></div>
+                        <div className="w-20 h-20 bg-gray-800 rounded-xl flex items-center justify-center"><Play className="w-6 h-6 text-white" /></div>
                       )}
                       <button onClick={() => removeMedia(m.id)} className="absolute -top-1.5 -right-1.5 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"><X className="w-3 h-3" /></button>
                     </div>
@@ -1354,12 +1354,12 @@ const ContentItemModal = ({ item, lang, onClose, onSave, onDelete, onDuplicate, 
                 <p className="text-sm font-semibold text-red-500 flex items-center gap-2"><Video className="w-4 h-4" /> YouTube</p>
                 <div>
                   <label className="text-sm text-gray-500 block mb-2">{tx('Video-Titel', 'Video Title')}</label>
-                  <input type="text" value={editItem.yt.videoTitle} onChange={e => updateYt('videoTitle', e.target.value)} className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm focus:ring-2 focus:ring-sky-500 outline-none" />
+                  <input type="text" value={editItem.yt.videoTitle} onChange={e => updateYt('videoTitle', e.target.value)} className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm dark:text-white focus:ring-2 focus:ring-sky-500 outline-none" />
                   <p className="text-xs text-gray-400 mt-1">{editItem.yt.videoTitle.length}/100 {tx('Zeichen', 'characters')}</p>
                 </div>
                 <div>
                   <label className="text-sm text-gray-500 block mb-2">{tx('Video-Beschreibung', 'Video Description')}</label>
-                  <textarea value={editItem.yt.videoDescription} onChange={e => updateYt('videoDescription', e.target.value)} className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm focus:ring-2 focus:ring-sky-500 outline-none resize-y min-h-[8rem]" />
+                  <textarea value={editItem.yt.videoDescription} onChange={e => updateYt('videoDescription', e.target.value)} className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm dark:text-white focus:ring-2 focus:ring-sky-500 outline-none resize-y min-h-[8rem]" />
                 </div>
                 <div>
                   <label className="text-sm text-gray-500 block mb-2">Keywords</label>
@@ -1371,20 +1371,20 @@ const ContentItemModal = ({ item, lang, onClose, onSave, onDelete, onDuplicate, 
                     ))}
                   </div>
                   <div className="flex gap-2">
-                    <input type="text" value={newKeyword} onChange={e => setNewKeyword(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleAddKeyword()} placeholder={tx('Keyword hinzufügen...', 'Add keyword...')} className="flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm focus:ring-2 focus:ring-sky-500 outline-none" />
+                    <input type="text" value={newKeyword} onChange={e => setNewKeyword(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleAddKeyword()} placeholder={tx('Keyword hinzufügen...', 'Add keyword...')} className="flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm dark:text-white focus:ring-2 focus:ring-sky-500 outline-none" />
                     <button onClick={handleAddKeyword} className="px-3 py-2 bg-red-500 text-white rounded-xl text-sm hover:bg-red-600"><Plus className="w-4 h-4" /></button>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="text-sm text-gray-500 block mb-2">{tx('Kategorie', 'Category')}</label>
-                    <select value={editItem.yt.category} onChange={e => updateYt('category', e.target.value)} className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-sky-500 hover:border-gray-300 dark:hover:border-gray-600 outline-none transition-colors">
+                    <select value={editItem.yt.category} onChange={e => updateYt('category', e.target.value)} className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm dark:text-white focus:ring-2 focus:ring-sky-500 hover:border-gray-300 dark:hover:border-gray-600 outline-none transition-colors">
                       {ytCategories.map(c => <option key={c} value={c}>{c}</option>)}
                     </select>
                   </div>
                   <div>
                     <label className="text-sm text-gray-500 block mb-2">{tx('Zielgruppe', 'Target Audience')}</label>
-                    <input type="text" value={editItem.yt.targetAudience} onChange={e => updateYt('targetAudience', e.target.value)} className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm focus:ring-2 focus:ring-sky-500 outline-none" />
+                    <input type="text" value={editItem.yt.targetAudience} onChange={e => updateYt('targetAudience', e.target.value)} className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm dark:text-white focus:ring-2 focus:ring-sky-500 outline-none" />
                   </div>
                 </div>
               </div>
@@ -1406,7 +1406,7 @@ const ContentItemModal = ({ item, lang, onClose, onSave, onDelete, onDuplicate, 
                 </div>
                 <div>
                   <label className="text-sm text-gray-500 block mb-2">{tx('Beitragstext', 'Post Text')}</label>
-                  <textarea value={editItem.ig.caption} onChange={e => updateIg('caption', e.target.value)} className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm focus:ring-2 focus:ring-sky-500 outline-none resize-y min-h-[8rem]" />
+                  <textarea value={editItem.ig.caption} onChange={e => updateIg('caption', e.target.value)} className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm dark:text-white focus:ring-2 focus:ring-sky-500 outline-none resize-y min-h-[8rem]" />
                   <p className="text-xs text-gray-400 mt-1">{editItem.ig.caption.length}/2200 {tx('Zeichen', 'characters')}</p>
                 </div>
                 <div>
@@ -1419,13 +1419,13 @@ const ContentItemModal = ({ item, lang, onClose, onSave, onDelete, onDuplicate, 
                     ))}
                   </div>
                   <div className="flex gap-2">
-                    <input type="text" value={newHashtag} onChange={e => setNewHashtag(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleAddHashtag()} placeholder="#hashtag" className="flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm focus:ring-2 focus:ring-sky-500 outline-none" />
+                    <input type="text" value={newHashtag} onChange={e => setNewHashtag(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleAddHashtag()} placeholder="#hashtag" className="flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm dark:text-white focus:ring-2 focus:ring-sky-500 outline-none" />
                     <button onClick={handleAddHashtag} className="px-3 py-2 bg-pink-500 text-white rounded-xl text-sm hover:bg-pink-600"><Plus className="w-4 h-4" /></button>
                   </div>
                 </div>
                 <div>
                   <label className="text-sm text-gray-500 block mb-2">{tx('Audio / Musik', 'Audio / Music')}</label>
-                  <input type="text" value={editItem.ig.audioReference} onChange={e => updateIg('audioReference', e.target.value)} placeholder={tx('z.B. Trending Audio Name', 'e.g. Trending Audio Name')} className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm focus:ring-2 focus:ring-sky-500 outline-none" />
+                  <input type="text" value={editItem.ig.audioReference} onChange={e => updateIg('audioReference', e.target.value)} placeholder={tx('z.B. Trending Audio Name', 'e.g. Trending Audio Name')} className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm dark:text-white focus:ring-2 focus:ring-sky-500 outline-none" />
                 </div>
                 {/* Cover Image Upload */}
                 <div>
@@ -1461,7 +1461,7 @@ const ContentItemModal = ({ item, lang, onClose, onSave, onDelete, onDuplicate, 
                 </div>
                 <div>
                   <label className="text-sm text-gray-500 block mb-2">{tx('Beitragstext', 'Post Text')}</label>
-                  <textarea value={editItem.fb.caption} onChange={e => updateFb('caption', e.target.value)} className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm focus:ring-2 focus:ring-sky-500 outline-none resize-y min-h-[8rem]" />
+                  <textarea value={editItem.fb.caption} onChange={e => updateFb('caption', e.target.value)} className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm dark:text-white focus:ring-2 focus:ring-sky-500 outline-none resize-y min-h-[8rem]" />
                   <p className="text-xs text-gray-400 mt-1">{editItem.fb.caption.length}/3000 {tx('Zeichen', 'characters')}</p>
                 </div>
                 <div>
@@ -1474,13 +1474,13 @@ const ContentItemModal = ({ item, lang, onClose, onSave, onDelete, onDuplicate, 
                     ))}
                   </div>
                   <div className="flex gap-2">
-                    <input type="text" value={newHashtag} onChange={e => setNewHashtag(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleAddHashtag()} placeholder="#hashtag" className="flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm focus:ring-2 focus:ring-sky-500 outline-none" />
+                    <input type="text" value={newHashtag} onChange={e => setNewHashtag(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleAddHashtag()} placeholder="#hashtag" className="flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm dark:text-white focus:ring-2 focus:ring-sky-500 outline-none" />
                     <button onClick={handleAddHashtag} className="px-3 py-2 bg-blue-500 text-white rounded-xl text-sm hover:bg-blue-600"><Plus className="w-4 h-4" /></button>
                   </div>
                 </div>
                 <div>
                   <label className="text-sm text-gray-500 block mb-2">Link URL</label>
-                  <input type="text" value={editItem.fb.linkUrl} onChange={e => updateFb('linkUrl', e.target.value)} placeholder="https://..." className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm focus:ring-2 focus:ring-sky-500 outline-none" />
+                  <input type="text" value={editItem.fb.linkUrl} onChange={e => updateFb('linkUrl', e.target.value)} placeholder="https://..." className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm dark:text-white focus:ring-2 focus:ring-sky-500 outline-none" />
                 </div>
               </div>
             )}
@@ -1529,7 +1529,7 @@ const ContentItemModal = ({ item, lang, onClose, onSave, onDelete, onDuplicate, 
             {/* Notes */}
             <div>
               <label className="text-sm text-gray-500 block mb-2">{tx('Notizen', 'Notes')}</label>
-              <textarea value={editItem.notes} onChange={e => updateField('notes', e.target.value)} className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm focus:ring-2 focus:ring-sky-500 outline-none resize-none h-20" />
+              <textarea value={editItem.notes} onChange={e => updateField('notes', e.target.value)} className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm dark:text-white focus:ring-2 focus:ring-sky-500 outline-none resize-none h-20" />
             </div>
           </div>
         )}
@@ -1648,7 +1648,7 @@ const ContentItemModal = ({ item, lang, onClose, onSave, onDelete, onDuplicate, 
                   {bold && <span className="font-semibold mr-1">{bold}</span>}
                   {formatText(shown)}
                   {needsTrunc && <span className="text-gray-400">... </span>}
-                  {text.length > TRUNC && <button onClick={e => { e.stopPropagation(); setPreviewTextExpanded(!previewTextExpanded); }} className="text-gray-400 text-sm hover:text-gray-600 ml-0.5">{previewTextExpanded ? tx('weniger', 'less') : tx('mehr', 'more')}</button>}
+                  {text.length > TRUNC && <button onClick={e => { e.stopPropagation(); setPreviewTextExpanded(!previewTextExpanded); }} className="text-gray-400 text-sm hover:text-gray-600 transition-colors ml-0.5">{previewTextExpanded ? tx('weniger', 'less') : tx('mehr', 'more')}</button>}
                 </p>
               </div>
             );
@@ -1661,7 +1661,7 @@ const ContentItemModal = ({ item, lang, onClose, onSave, onDelete, onDuplicate, 
                 onChange={e => setCurrentText(e.target.value)}
                 onBlur={() => setPreviewEditing(false)}
                 autoFocus
-                className="w-full text-sm whitespace-pre-wrap leading-relaxed bg-transparent border border-sky-300 dark:border-sky-500/50 rounded-lg p-2 outline-none focus:ring-2 focus:ring-sky-500/30 resize-y min-h-[4rem]"
+                className="w-full text-sm whitespace-pre-wrap leading-relaxed bg-transparent border border-sky-300 dark:border-sky-500/50 rounded-xl p-2 outline-none focus:ring-2 focus:ring-sky-500/30 resize-y min-h-[4rem]"
               />
               <p className="text-xs text-gray-400 mt-1 text-right">{currentText.length} {tx('Zeichen', 'chars')}</p>
             </div>
@@ -1685,13 +1685,13 @@ const ContentItemModal = ({ item, lang, onClose, onSave, onDelete, onDuplicate, 
               {/* Toolbar */}
               <div className="flex items-center gap-2">
                 {editItem.platform === 'facebook-linkedin' && (
-                  <div className="flex bg-gray-100 dark:bg-gray-800 rounded-lg p-0.5">
+                  <div className="flex bg-gray-100 dark:bg-gray-800 rounded-xl p-0.5">
                     <button onClick={() => setPreviewFbLi('facebook')} className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${!isLI ? 'bg-blue-500 text-white' : 'text-gray-500 hover:text-gray-700'}`}>Facebook</button>
                     <button onClick={() => setPreviewFbLi('linkedin')} className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${isLI ? 'bg-sky-600 text-white' : 'text-gray-500 hover:text-gray-700'}`}>LinkedIn</button>
                   </div>
                 )}
                 <div className="flex-1" />
-                <button onClick={handleAutoFormat} className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-50 dark:bg-purple-500/10 text-purple-600 rounded-lg text-xs font-medium hover:bg-purple-100 dark:hover:bg-purple-500/20 transition-colors">
+                <button onClick={handleAutoFormat} className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-50 dark:bg-purple-500/10 text-purple-600 rounded-xl text-xs font-medium hover:bg-purple-100 dark:hover:bg-purple-500/20 transition-colors">
                   <Sparkles className="w-3.5 h-3.5" />{tx('Auto-Format', 'Auto-Format')}
                 </button>
               </div>
@@ -1801,7 +1801,7 @@ const ContentItemModal = ({ item, lang, onClose, onSave, onDelete, onDuplicate, 
         {tab === 'versions' && (
           <div className="space-y-4">
             <div className="flex gap-2">
-              <input type="text" value={versionLabel} onChange={e => setVersionLabel(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleSaveVersion()} placeholder={tx('Versions-Name (z.B. "v2", "Final")', 'Version name (e.g. "v2", "Final")')} className="flex-1 px-4 py-3 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm focus:ring-2 focus:ring-sky-500 outline-none" />
+              <input type="text" value={versionLabel} onChange={e => setVersionLabel(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleSaveVersion()} placeholder={tx('Versions-Name (z.B. "v2", "Final")', 'Version name (e.g. "v2", "Final")')} className="flex-1 px-4 py-3 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm dark:text-white focus:ring-2 focus:ring-sky-500 outline-none" />
               <button onClick={handleSaveVersion} disabled={!versionLabel.trim()} className="px-4 py-3 bg-sky-500 text-white rounded-xl text-sm font-medium hover:bg-sky-600 disabled:opacity-50">{tx('Version speichern', 'Save version')}</button>
             </div>
             {editItem.versions.length === 0 ? (
@@ -1814,7 +1814,7 @@ const ContentItemModal = ({ item, lang, onClose, onSave, onDelete, onDuplicate, 
                       <p className="font-medium text-sm">{v.label}</p>
                       <p className="text-xs text-gray-500">{new Date(v.createdAt).toLocaleDateString('de-DE')} – {v.title}</p>
                     </div>
-                    <button onClick={() => handleLoadVersion(v)} className="px-3 py-1.5 bg-sky-100 dark:bg-sky-500/20 text-sky-600 rounded-lg text-xs font-medium hover:bg-sky-200">{tx('Laden', 'Load')}</button>
+                    <button onClick={() => handleLoadVersion(v)} className="px-3 py-1.5 bg-sky-100 dark:bg-sky-500/20 text-sky-600 rounded-xl text-xs font-medium hover:bg-sky-200">{tx('Laden', 'Load')}</button>
                   </div>
                 ))}
               </div>
@@ -1912,11 +1912,11 @@ const NewContentModal = ({ isOpen, lang, onClose, onCreate }: {
           </div>
           <div>
             <label className="text-sm text-gray-500 block mb-2">{tx('Titel / Arbeitstitel', 'Title / Working Title')}</label>
-            <input type="text" value={title} onChange={e => setTitle(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleCreate()} placeholder={tx('z.B. 5 KI-Tools für mehr Umsatz', 'e.g. 5 AI Tools for More Revenue')} className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm focus:ring-2 focus:ring-sky-500 outline-none" />
+            <input type="text" value={title} onChange={e => setTitle(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleCreate()} placeholder={tx('z.B. 5 KI-Tools für mehr Umsatz', 'e.g. 5 AI Tools for More Revenue')} className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm dark:text-white focus:ring-2 focus:ring-sky-500 outline-none" />
           </div>
           <div>
             <label className="text-sm text-gray-500 block mb-2">{tx('Konzept (optional)', 'Concept (optional)')}</label>
-            <textarea value={concept} onChange={e => setConcept(e.target.value)} placeholder={tx('Worum geht es in dem Video/Reel?', 'What is the video/reel about?')} className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm focus:ring-2 focus:ring-sky-500 outline-none resize-none h-24" />
+            <textarea value={concept} onChange={e => setConcept(e.target.value)} placeholder={tx('Worum geht es in dem Video/Reel?', 'What is the video/reel about?')} className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm dark:text-white focus:ring-2 focus:ring-sky-500 outline-none resize-none h-24" />
           </div>
         </div>
         <div className="flex gap-3 mt-6">
@@ -1979,7 +1979,7 @@ const ResearchNoteModal = ({ note, lang, onClose, onSave, onDelete, addToast }: 
         <div className="space-y-4">
           <div>
             <label className="text-sm text-gray-500 block mb-2">{tx('Titel', 'Title')}</label>
-            <input type="text" value={editNote.title} onChange={e => setEditNote(prev => prev ? { ...prev, title: e.target.value } : prev)} className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm focus:ring-2 focus:ring-sky-500 outline-none" />
+            <input type="text" value={editNote.title} onChange={e => setEditNote(prev => prev ? { ...prev, title: e.target.value } : prev)} className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm dark:text-white focus:ring-2 focus:ring-sky-500 outline-none" />
           </div>
           <div>
             <label className="text-sm text-gray-500 block mb-2">{tx('Plattform', 'Platform')}</label>
@@ -1993,18 +1993,18 @@ const ResearchNoteModal = ({ note, lang, onClose, onSave, onDelete, addToast }: 
           </div>
           <div>
             <label className="text-sm text-gray-500 block mb-2">{tx('Inhalt', 'Content')}</label>
-            <textarea value={editNote.content} onChange={e => setEditNote(prev => prev ? { ...prev, content: e.target.value } : prev)} className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm focus:ring-2 focus:ring-sky-500 outline-none resize-none h-48" />
+            <textarea value={editNote.content} onChange={e => setEditNote(prev => prev ? { ...prev, content: e.target.value } : prev)} className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm dark:text-white focus:ring-2 focus:ring-sky-500 outline-none resize-none h-48" />
           </div>
           <div>
             <label className="text-sm text-gray-500 block mb-2">Links</label>
             {editNote.links.map((link, i) => (
               <div key={i} className="flex items-center gap-2 mb-2">
                 <a href={link} target="_blank" rel="noopener noreferrer" className="flex-1 text-sm text-sky-500 hover:underline truncate">{link}</a>
-                <button onClick={() => setEditNote(prev => prev ? { ...prev, links: prev.links.filter((_, idx) => idx !== i) } : prev)} className="text-red-400 hover:text-red-500" title={tx('Link entfernen', 'Remove link')}><X className="w-4 h-4" /></button>
+                <button onClick={() => setEditNote(prev => prev ? { ...prev, links: prev.links.filter((_, idx) => idx !== i) } : prev)} className="text-red-400 hover:text-red-500 transition-colors" title={tx('Link entfernen', 'Remove link')}><X className="w-4 h-4" /></button>
               </div>
             ))}
             <div className="flex gap-2">
-              <input type="text" value={newLink} onChange={e => setNewLink(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleAddLink()} placeholder="https://..." className="flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm focus:ring-2 focus:ring-sky-500 outline-none" />
+              <input type="text" value={newLink} onChange={e => setNewLink(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleAddLink()} placeholder="https://..." className="flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm dark:text-white focus:ring-2 focus:ring-sky-500 outline-none" />
               <button onClick={handleAddLink} className="px-3 py-2 bg-sky-500 text-white rounded-xl text-sm hover:bg-sky-600"><Plus className="w-4 h-4" /></button>
             </div>
           </div>
@@ -2013,12 +2013,12 @@ const ResearchNoteModal = ({ note, lang, onClose, onSave, onDelete, addToast }: 
             <div className="flex flex-wrap gap-2 mb-2">
               {editNote.tags.map(tag => (
                 <span key={tag} className="inline-flex items-center gap-1 px-2.5 py-1 bg-purple-100 dark:bg-purple-500/20 text-purple-600 rounded-full text-xs font-medium">
-                  {tag}<button onClick={() => setEditNote(prev => prev ? { ...prev, tags: prev.tags.filter(t => t !== tag) } : prev)} className="hover:text-red-500"><X className="w-3 h-3" /></button>
+                  {tag}<button onClick={() => setEditNote(prev => prev ? { ...prev, tags: prev.tags.filter(t => t !== tag) } : prev)} className="hover:text-red-500 transition-colors"><X className="w-3 h-3" /></button>
                 </span>
               ))}
             </div>
             <div className="flex gap-2">
-              <input type="text" value={newTag} onChange={e => setNewTag(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && newTag.trim()) { setEditNote(prev => prev && !prev.tags.includes(newTag.trim()) ? { ...prev, tags: [...prev.tags, newTag.trim()] } : prev); setNewTag(''); }}} placeholder={tx('Tag hinzufügen...', 'Add tag...')} className="flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm focus:ring-2 focus:ring-sky-500 outline-none" />
+              <input type="text" value={newTag} onChange={e => setNewTag(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && newTag.trim()) { setEditNote(prev => prev && !prev.tags.includes(newTag.trim()) ? { ...prev, tags: [...prev.tags, newTag.trim()] } : prev); setNewTag(''); }}} placeholder={tx('Tag hinzufügen...', 'Add tag...')} className="flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm dark:text-white focus:ring-2 focus:ring-sky-500 outline-none" />
               <button onClick={() => { if (newTag.trim()) { setEditNote(prev => prev && !prev.tags.includes(newTag.trim()) ? { ...prev, tags: [...prev.tags, newTag.trim()] } : prev); setNewTag(''); }}} className="px-3 py-2 bg-purple-500 text-white rounded-xl text-sm hover:bg-purple-600"><Plus className="w-4 h-4" /></button>
             </div>
           </div>
@@ -2066,6 +2066,9 @@ const ContentDashboardContent = () => {
   const [series] = useState<ContentSeries[]>(DEMO_SERIES);
   const [templates] = useState<ContentTemplate[]>(DEMO_TEMPLATES);
   const [previewTemplate, setPreviewTemplate] = useState<ContentTemplate | null>(null);
+
+  // Inline delete confirmation (replaces window.confirm)
+  const [pendingDelete, setPendingDelete] = useState<{ action: () => void; message: string } | null>(null);
 
   // Filters
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -2202,6 +2205,7 @@ const ContentDashboardContent = () => {
   useModalEsc(!!previewTemplate, closePreviewTemplate);
   useModalEsc(showPlanBuilder, closePlanBuilder);
   useModalEsc(showNotifications, closeNotifications);
+  useModalEsc(mobileSidebarOpen, () => setMobileSidebarOpen(false));
 
   // Keyboard shortcuts for planning
   useEffect(() => {
@@ -2452,7 +2456,7 @@ const ContentDashboardContent = () => {
               <StatusBadge status={item.status} lang={lang} />
             </button>
           </div>
-          <button onClick={(e) => togglePinned(item.id, e)} className={`p-1 rounded-lg transition-colors ${item.pinned ? 'text-amber-500' : 'text-gray-300 dark:text-gray-600 opacity-0 group-hover:opacity-100'}`} title={tx(item.pinned ? 'Loslösen' : 'Anpinnen', item.pinned ? 'Unpin' : 'Pin')}>
+          <button onClick={(e) => togglePinned(item.id, e)} className={`p-1 rounded-lg transition-colors ${item.pinned ? 'text-amber-500' : 'text-gray-300 dark:text-gray-500 opacity-0 group-hover:opacity-100'}`} title={tx(item.pinned ? 'Loslösen' : 'Anpinnen', item.pinned ? 'Unpin' : 'Pin')}>
             <Star className={`w-4 h-4 ${item.pinned ? 'fill-amber-500' : ''}`} />
           </button>
         </div>
@@ -2598,7 +2602,7 @@ const ContentDashboardContent = () => {
                   </>
                 )}
               </div>
-              <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-0.5">
+              <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-xl p-0.5">
                 <button onClick={() => setLang('de')} className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${lang === 'de' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700'}`}>DE</button>
                 <button onClick={() => setLang('en')} className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${lang === 'en' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700'}`}>EN</button>
               </div>
@@ -2629,21 +2633,21 @@ const ContentDashboardContent = () => {
           {/* Bulk actions bar */}
           {bulkMode && (
             <div className="flex items-center gap-3 px-6 py-2 bg-sky-50 dark:bg-sky-500/10 border-t border-sky-100 dark:border-sky-500/20">
-              <button onClick={() => { const allIds = filteredItems.map(i => i.id); const allSelected = allIds.length > 0 && allIds.every(id => bulkSelected.has(id)); setBulkSelected(allSelected ? new Set() : new Set(allIds)); }} className="px-2.5 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+              <button onClick={() => { const allIds = filteredItems.map(i => i.id); const allSelected = allIds.length > 0 && allIds.every(id => bulkSelected.has(id)); setBulkSelected(allSelected ? new Set() : new Set(allIds)); }} className="px-2.5 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                 {filteredItems.length > 0 && filteredItems.every(i => bulkSelected.has(i.id)) ? tx('Alle abwählen', 'Deselect all') : tx('Alle auswählen', 'Select all')} ({filteredItems.length})
               </button>
               <span className="text-sm font-medium text-sky-600">{bulkSelected.size} {tx('ausgewählt', 'selected')}</span>
               <div className="flex-1" />
               {bulkSelected.size > 0 && (<>
-              <select onChange={e => { if (e.target.value) { setContentItems(prev => prev.map(i => bulkSelected.has(i.id) ? { ...i, status: e.target.value as ContentStatus, updatedAt: new Date().toISOString() } : i)); addToast(tx(`Status auf "${statusConfig[e.target.value as ContentStatus]?.de}" geändert`, `Status changed to "${statusConfig[e.target.value as ContentStatus]?.en}"`)); setBulkSelected(new Set()); } }} className="px-3 py-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs" defaultValue="">
+              <select onChange={e => { if (e.target.value) { setContentItems(prev => prev.map(i => bulkSelected.has(i.id) ? { ...i, status: e.target.value as ContentStatus, updatedAt: new Date().toISOString() } : i)); addToast(tx(`Status auf "${statusConfig[e.target.value as ContentStatus]?.de}" geändert`, `Status changed to "${statusConfig[e.target.value as ContentStatus]?.en}"`)); setBulkSelected(new Set()); } }} className="px-3 py-1.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs" defaultValue="">
                 <option value="" disabled>{tx('Status ändern...', 'Change status...')}</option>
                 {statusOrder.map(s => <option key={s} value={s}>{lang === 'de' ? statusConfig[s].de : statusConfig[s].en}</option>)}
               </select>
-              <select onChange={e => { if (e.target.value) { setContentItems(prev => prev.map(i => bulkSelected.has(i.id) ? { ...i, priority: e.target.value as Priority, updatedAt: new Date().toISOString() } : i)); addToast(tx('Priorität geändert', 'Priority changed')); setBulkSelected(new Set()); } }} className="px-3 py-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs" defaultValue="">
+              <select onChange={e => { if (e.target.value) { setContentItems(prev => prev.map(i => bulkSelected.has(i.id) ? { ...i, priority: e.target.value as Priority, updatedAt: new Date().toISOString() } : i)); addToast(tx('Priorität geändert', 'Priority changed')); setBulkSelected(new Set()); } }} className="px-3 py-1.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs" defaultValue="">
                 <option value="" disabled>{tx('Priorität...', 'Priority...')}</option>
                 {(['high', 'medium', 'low'] as Priority[]).map(p => <option key={p} value={p}>{lang === 'de' ? contentPriorityConfig[p].de : contentPriorityConfig[p].en}</option>)}
               </select>
-              <button onClick={() => { if (!window.confirm(tx(`${bulkSelected.size} Items wirklich löschen?`, `Delete ${bulkSelected.size} items?`))) return; setContentItems(prev => prev.filter(i => !bulkSelected.has(i.id))); addToast(tx(`${bulkSelected.size} Items gelöscht`, `${bulkSelected.size} items deleted`)); setBulkSelected(new Set()); setBulkMode(false); }} className="px-3 py-1.5 bg-red-50 dark:bg-red-500/10 text-red-600 rounded-lg text-xs font-medium hover:bg-red-100"><Trash2 className="w-3.5 h-3.5 inline mr-1" />{tx('Löschen', 'Delete')}</button>
+              <button onClick={() => setPendingDelete({ action: () => { setContentItems(prev => prev.filter(i => !bulkSelected.has(i.id))); addToast(tx(`${bulkSelected.size} Items gelöscht`, `${bulkSelected.size} items deleted`)); setBulkSelected(new Set()); setBulkMode(false); }, message: tx(`${bulkSelected.size} Items werden unwiderruflich entfernt.`, `${bulkSelected.size} items will be permanently removed.`) })} className="px-3 py-1.5 bg-red-50 dark:bg-red-500/10 text-red-600 rounded-lg text-xs font-medium hover:bg-red-100"><Trash2 className="w-3.5 h-3.5 inline mr-1" />{tx('Löschen', 'Delete')}</button>
               </>)}
             </div>
           )}
@@ -2719,7 +2723,9 @@ const ContentDashboardContent = () => {
               <div>
                 <h3 className="font-semibold mb-4">{tx('Zuletzt bearbeitet', 'Recently Updated')}</h3>
                 <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
-                  {[...contentItems].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()).slice(0, 6).map(renderContentCard)}
+                  {contentItems.length === 0 ? (
+                    <p className="col-span-full text-center text-gray-400 py-8">{tx('Noch keine Inhalte erstellt.', 'No content created yet.')}</p>
+                  ) : [...contentItems].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()).slice(0, 6).map(renderContentCard)}
                 </div>
               </div>
             </>
@@ -2730,7 +2736,7 @@ const ContentDashboardContent = () => {
             <>
               {filteredItems.length === 0 ? (
                 <div className="text-center py-20">
-                  <Lightbulb className="w-16 h-16 mx-auto text-gray-300 dark:text-gray-600 mb-4" />
+                  <Lightbulb className="w-16 h-16 mx-auto text-gray-300 dark:text-gray-500 mb-4" />
                   <h3 className="text-lg font-semibold text-gray-400">{tx('Keine Inhalte gefunden', 'No content found')}</h3>
                   <p className="text-sm text-gray-400 mt-1">{tx('Erstelle eine neue Idee oder ändere die Filter.', 'Create a new idea or adjust filters.')}</p>
                   <button onClick={() => setShowNewModal(true)} className="mt-4 px-6 py-3 bg-sky-500 text-white rounded-xl font-medium hover:bg-sky-600"><Plus className="w-4 h-4 inline mr-2" />{tx('Neue Idee', 'New Idea')}</button>
@@ -2797,7 +2803,7 @@ const ContentDashboardContent = () => {
                           </div>
                         ))}
                         {colItems.length === 0 && (
-                          <div className="text-center py-8 text-gray-300 dark:text-gray-600 text-xs">{tx('Keine Items', 'No items')}</div>
+                          <div className="text-center py-8 text-gray-300 dark:text-gray-500 text-xs">{tx('Keine Items', 'No items')}</div>
                         )}
                       </div>
                     </div>
@@ -2815,7 +2821,7 @@ const ContentDashboardContent = () => {
                 <h2 className="text-xl font-semibold">{tx('Content Kalender', 'Content Calendar')}</h2>
                 <div className="flex items-center gap-2">
                   <button onClick={() => setCalendarWeek(prev => { const d = new Date(prev); d.setDate(d.getDate() - 7); return d; })} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors" title={tx('Vorherige Woche', 'Previous week')}><ChevronLeft className="w-5 h-5" /></button>
-                  <button onClick={() => setCalendarWeek(new Date())} className="px-3 py-1.5 text-sm font-medium rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">{tx('Heute', 'Today')}</button>
+                  <button onClick={() => setCalendarWeek(new Date())} className="px-3 py-1.5 text-sm font-medium rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">{tx('Heute', 'Today')}</button>
                   <button onClick={() => setCalendarWeek(prev => { const d = new Date(prev); d.setDate(d.getDate() + 7); return d; })} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors" title={tx('Nächste Woche', 'Next week')}><ChevronRight className="w-5 h-5" /></button>
                   <button onClick={() => setShowNewModal(true)} className="ml-2 px-4 py-2 bg-sky-500 text-white rounded-xl font-medium hover:bg-sky-600 flex items-center gap-2"><Plus className="w-4 h-4" />{tx('Content planen', 'Schedule Content')}</button>
                 </div>
@@ -2846,7 +2852,7 @@ const ContentDashboardContent = () => {
                             );
                           })}
                           {items.length === 0 && (
-                            <button onClick={() => setShowNewModal(true)} className="w-full p-2 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg text-gray-400 hover:border-sky-300 hover:text-sky-500 transition-colors text-xs">+ Content</button>
+                            <button onClick={() => setShowNewModal(true)} className="w-full p-2 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl text-gray-400 hover:border-sky-300 hover:text-sky-500 transition-colors text-xs">+ Content</button>
                           )}
                         </div>
                       </div>
@@ -2871,7 +2877,7 @@ const ContentDashboardContent = () => {
                       <PlatformBadge platform={item.platform} />
                       <div className="flex items-center gap-2">
                         <button onClick={() => setSelectedItem(item)} className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg" title={tx('Bearbeiten', 'Edit')}><Edit3 className="w-4 h-4 text-gray-500" /></button>
-                        <button onClick={() => handleDeleteItem(item.id)} className="p-2 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg" title={tx('Löschen', 'Delete')}><Trash2 className="w-4 h-4 text-red-500" /></button>
+                        <button onClick={() => setPendingDelete({ action: () => handleDeleteItem(item.id), message: tx('Dieses Content-Element wird unwiderruflich entfernt.', 'This content item will be permanently removed.') })} className="p-2 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg" title={tx('Löschen', 'Delete')}><Trash2 className="w-4 h-4 text-red-500" /></button>
                       </div>
                     </div>
                   ))}
@@ -3122,8 +3128,8 @@ const ContentDashboardContent = () => {
                             </div>
                             {/* Custom label input */}
                             <div className="flex items-center gap-2 mt-2.5">
-                              <input value={modalCustomLabel} onChange={e => setModalCustomLabel(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); const v = modalCustomLabel.trim(); if (v && !modalLabels.includes(v)) { setModalLabels(prev => [...prev, v]); setModalCustomLabel(''); } } }} placeholder={tx('Eigenes Label...', 'Custom label...')} className="flex-1 px-2.5 py-1.5 text-xs bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500/30" />
-                              <button type="button" onClick={() => { const v = modalCustomLabel.trim(); if (v && !modalLabels.includes(v)) { setModalLabels(prev => [...prev, v]); setModalCustomLabel(''); } }} className="px-2.5 py-1.5 text-xs font-medium text-sky-600 hover:bg-sky-50 dark:hover:bg-sky-500/10 rounded-lg transition-colors"><Plus className="w-3.5 h-3.5" /></button>
+                              <input value={modalCustomLabel} onChange={e => setModalCustomLabel(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); const v = modalCustomLabel.trim(); if (v && !modalLabels.includes(v)) { setModalLabels(prev => [...prev, v]); setModalCustomLabel(''); } } }} placeholder={tx('Eigenes Label...', 'Custom label...')} className="flex-1 px-2.5 py-1.5 text-xs bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500/30" />
+                              <button type="button" onClick={() => { const v = modalCustomLabel.trim(); if (v && !modalLabels.includes(v)) { setModalLabels(prev => [...prev, v]); setModalCustomLabel(''); } }} className="px-2.5 py-1.5 text-xs font-medium text-sky-600 hover:bg-sky-50 dark:hover:bg-sky-500/10 rounded-xl transition-colors"><Plus className="w-3.5 h-3.5" /></button>
                             </div>
                           </div>
                         </div>
@@ -3213,13 +3219,13 @@ const ContentDashboardContent = () => {
                   {/* Search */}
                   <div className="relative">
                     <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
-                    <input value={planSearch} onChange={e => setPlanSearch(e.target.value)} placeholder={tx('Suchen...', 'Search...')} className="pl-8 pr-3 py-1.5 w-36 rounded-lg text-xs bg-gray-100 dark:bg-gray-800 border-none focus:outline-none focus:ring-2 focus:ring-sky-500/30 text-gray-900 dark:text-white placeholder-gray-400" />
+                    <input value={planSearch} onChange={e => setPlanSearch(e.target.value)} placeholder={tx('Suchen...', 'Search...')} className="pl-8 pr-3 py-1.5 w-36 rounded-xl text-xs bg-gray-100 dark:bg-gray-800 border-none focus:outline-none focus:ring-2 focus:ring-sky-500/30 text-gray-900 dark:text-white placeholder-gray-400" />
                   </div>
                   <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-xl p-0.5">
-                    <button onClick={() => setV2Mode('plan')} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${v2Mode === 'plan' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}><ClipboardList className="w-3.5 h-3.5" />{tx('Plan', 'Plan')}</button>
-                    <button onClick={() => setV2Mode('week')} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${v2Mode === 'week' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}><Calendar className="w-3.5 h-3.5" />{tx('Woche', 'Week')}</button>
-                    <button onClick={() => setV2Mode('todos')} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${v2Mode === 'todos' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}><CheckSquare className="w-3.5 h-3.5" />Todos</button>
-                    <button onClick={() => setV2Mode('mindmap')} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${v2Mode === 'mindmap' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}><GitBranch className="w-3.5 h-3.5" />Mindmap</button>
+                    <button onClick={() => setV2Mode('plan')} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-colors ${v2Mode === 'plan' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}><ClipboardList className="w-3.5 h-3.5" />{tx('Plan', 'Plan')}</button>
+                    <button onClick={() => setV2Mode('week')} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-colors ${v2Mode === 'week' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}><Calendar className="w-3.5 h-3.5" />{tx('Woche', 'Week')}</button>
+                    <button onClick={() => setV2Mode('todos')} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-colors ${v2Mode === 'todos' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}><CheckSquare className="w-3.5 h-3.5" />Todos</button>
+                    <button onClick={() => setV2Mode('mindmap')} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-colors ${v2Mode === 'mindmap' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}><GitBranch className="w-3.5 h-3.5" />Mindmap</button>
                   </div>
                 </div>
               </div>
@@ -3237,7 +3243,7 @@ const ContentDashboardContent = () => {
                             <textarea value={activePlan.description} onChange={e => { const ta = e.target; setPlans(prev => prev.map(p => p.id === activePlanId ? { ...p, description: ta.value } : p)); ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; }} onFocus={e => { e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px'; }} rows={1} placeholder={tx('Kurzbeschreibung...', 'Short description...')} className="text-sm text-gray-500 bg-transparent border-none focus:outline-none focus:ring-0 w-full resize-none overflow-hidden" />
                           </div>
                         </div>
-                        <button onClick={() => { if (!window.confirm(tx('Plan wirklich löschen?', 'Really delete this plan?'))) return; const remaining = plans.filter(p => p.id !== activePlanId); setPlans(remaining); if (remaining.length > 0) { setActivePlanId(remaining[0].id); } else { setV2SelectedPlan(null); setActivePlanId(''); } addToast(tx('Plan gelöscht', 'Plan deleted')); }} className="p-2 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg" title={tx('Plan löschen', 'Delete plan')}><Trash2 className="w-4 h-4 text-red-500" /></button>
+                        <button onClick={() => setPendingDelete({ action: () => { const remaining = plans.filter(p => p.id !== activePlanId); setPlans(remaining); if (remaining.length > 0) { setActivePlanId(remaining[0].id); } else { setV2SelectedPlan(null); setActivePlanId(''); } addToast(tx('Plan gelöscht', 'Plan deleted')); }, message: tx('Dieser Plan wird unwiderruflich entfernt.', 'This plan will be permanently removed.') })} className="p-2 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg" title={tx('Plan löschen', 'Delete plan')}><Trash2 className="w-4 h-4 text-red-500" /></button>
                       </div>
 
                       {/* Meta row: Deadline + Stats */}
@@ -3245,7 +3251,7 @@ const ContentDashboardContent = () => {
                         <div className="flex items-center gap-2 bg-white dark:bg-gray-900 rounded-xl px-3 py-2 border border-gray-200 dark:border-gray-700">
                           <Calendar className="w-4 h-4 text-gray-400" />
                           <span className="text-xs text-gray-500">{tx('Deadline', 'Deadline')}:</span>
-                          <input type="date" value={activePlan.deadline || ''} onChange={e => setPlans(prev => prev.map(p => p.id === activePlanId ? { ...p, deadline: e.target.value } : p))} className="text-sm bg-transparent border-none focus:outline-none focus:ring-0 text-gray-900 dark:text-white" />
+                          <input type="date" value={activePlan.deadline || ''} onChange={e => setPlans(prev => prev.map(p => p.id === activePlanId ? { ...p, deadline: e.target.value } : p))} className="text-sm bg-transparent border-none focus:outline-none focus:ring-0 text-gray-900 dark:text-white cursor-pointer" />
                         </div>
                         {(() => {
                           const totalTasks = activePlan.sections.reduce((s, sec) => s + sec.tasks.length, 0);
@@ -3374,7 +3380,7 @@ const ContentDashboardContent = () => {
                                           <span className="font-medium text-gray-700 dark:text-gray-300">{cb.label}</span>
                                           <span className="flex items-center gap-1.5">
                                             <span className="text-gray-400">{cb.perDay}/{tx('Tag', 'd')}</span>
-                                            <span className="text-gray-300 dark:text-gray-600">→</span>
+                                            <span className="text-gray-300 dark:text-gray-500">→</span>
                                             <span className="text-emerald-600 font-bold">{cb.custD < 0.01 ? cb.custD.toFixed(3) : cb.custD < 0.1 ? cb.custD.toFixed(2) : cb.custD.toFixed(1)} {tx('Kunden/Tag', 'cust./day')}</span>
                                           </span>
                                         </div>
@@ -3496,9 +3502,9 @@ const ContentDashboardContent = () => {
                       { key: 'week' as const, label: tx('Diese Woche', 'This Week') },
                       { key: 'mine' as const, label: tx('Meine', 'Mine') },
                     ].map(f => (
-                      <button key={f.key} onClick={() => setPlanQuickFilter(f.key)} className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${planQuickFilter === f.key ? 'bg-indigo-500 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-700'}`}>{f.label}</button>
+                      <button key={f.key} onClick={() => setPlanQuickFilter(f.key)} className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-colors ${planQuickFilter === f.key ? 'bg-indigo-500 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-700'}`}>{f.label}</button>
                     ))}
-                    {planQuickFilter !== 'all' && <button onClick={() => setPlanQuickFilter('all')} className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400" title={tx('Filter zurücksetzen', 'Reset filter')}><X className="w-3.5 h-3.5" /></button>}
+                    {planQuickFilter !== 'all' && <button onClick={() => setPlanQuickFilter('all')} className="p-1 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400" title={tx('Filter zurücksetzen', 'Reset filter')}><X className="w-3.5 h-3.5" /></button>}
                   </div>
 
                   {/* ── SECTIONS + TASKS (with detail panel) ── */}
@@ -3569,7 +3575,7 @@ const ContentDashboardContent = () => {
                                   {/* Section notes */}
                                   {(sec.notes || isExpanded) && (
                                     <div className="px-4 pt-2 pb-1">
-                                      <input value={sec.notes || ''} onChange={e => setPlans(prev => prev.map(p => p.id === activePlanId ? { ...p, updatedAt: new Date().toISOString(), sections: p.sections.map(s => s.id === sec.id ? { ...s, notes: e.target.value } : s) } : p))} placeholder={tx('Notiz für diese Sektion...', 'Note for this section...')} className="w-full text-xs text-gray-400 bg-transparent border-none focus:outline-none focus:ring-0 placeholder-gray-300 dark:placeholder-gray-600 italic" />
+                                      <input value={sec.notes || ''} onChange={e => setPlans(prev => prev.map(p => p.id === activePlanId ? { ...p, updatedAt: new Date().toISOString(), sections: p.sections.map(s => s.id === sec.id ? { ...s, notes: e.target.value } : s) } : p))} placeholder={tx('Notiz für diese Sektion...', 'Note for this section...')} className="w-full text-xs text-gray-400 bg-transparent border-none focus:outline-none focus:ring-0 placeholder-gray-300 dark:placeholder-gray-500 italic" />
                                     </div>
                                   )}
                                   {allTasks.map(task => {
@@ -3603,12 +3609,12 @@ const ContentDashboardContent = () => {
                                   {/* Inline quick-add */}
                                   <form onSubmit={e => { e.preventDefault(); const input = (e.target as HTMLFormElement).elements.namedItem(`qa-${sec.id}`) as HTMLInputElement; const val = input.value.trim(); if (!val) return; const taskId = Date.now().toString(36) + Math.random().toString(36).slice(2, 5); setPlans(prev => prev.map(p => p.id === activePlanId ? { ...p, updatedAt: new Date().toISOString(), sections: p.sections.map(s => s.id === sec.id ? { ...s, tasks: [...s.tasks, { id: taskId, title: val, description: '', frequency: 'once' as TaskFrequency, done: false, order: s.tasks.length, priority: 'medium' as TaskPriority, status: 'todo' as TaskStatus }] } : s) } : p)); input.value = ''; }} className="flex items-center gap-2 px-4 py-2.5 border-t border-gray-50 dark:border-gray-800/50">
                                     <Plus className="w-3.5 h-3.5 text-gray-300 flex-shrink-0" />
-                                    <input name={`qa-${sec.id}`} placeholder={tx('Aufgabe hinzufügen + Enter', 'Add task + Enter')} className="flex-1 text-sm bg-transparent border-none focus:outline-none focus:ring-0 text-gray-900 dark:text-white placeholder-gray-300 dark:placeholder-gray-600" />
+                                    <input name={`qa-${sec.id}`} placeholder={tx('Aufgabe hinzufügen + Enter', 'Add task + Enter')} className="flex-1 text-sm bg-transparent border-none focus:outline-none focus:ring-0 text-gray-900 dark:text-white placeholder-gray-300 dark:placeholder-gray-500" />
                                   </form>
                                   <div className="flex gap-2 px-4 py-2 border-t border-gray-50 dark:border-gray-800/50">
                                     <button onClick={() => { const taskId = Date.now().toString(36) + Math.random().toString(36).slice(2, 5); const newTask: PlanTask = { id: taskId, title: '', description: '', frequency: 'once', done: false, order: sec.tasks.length, priority: 'medium', status: 'todo' }; setPlans(prev => prev.map(p => p.id === activePlanId ? { ...p, updatedAt: new Date().toISOString(), sections: p.sections.map(s => s.id === sec.id ? { ...s, tasks: [...s.tasks, newTask] } : s) } : p)); setV2DetailTask({ sectionId: sec.id, task: newTask }); }} className="px-3 py-1.5 text-xs font-medium text-gray-400 hover:text-sky-500 hover:bg-sky-50 dark:hover:bg-sky-500/10 rounded-lg transition-colors flex items-center gap-1"><Plus className="w-3 h-3" />{tx('Detail', 'Detail')}</button>
                                     <div className="flex-1" />
-                                    <button onClick={() => { if (window.confirm(tx('Sektion wirklich löschen?', 'Really delete this section?'))) { setPlans(prev => prev.map(p => p.id === activePlanId ? { ...p, updatedAt: new Date().toISOString(), sections: p.sections.filter(s => s.id !== sec.id) } : p)); addToast(tx('Sektion gelöscht', 'Section deleted')); } }} className="px-2 py-1 text-xs text-red-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors" title={tx('Sektion löschen', 'Delete section')}><Trash2 className="w-3 h-3" /></button>
+                                    <button onClick={() => setPendingDelete({ action: () => { setPlans(prev => prev.map(p => p.id === activePlanId ? { ...p, updatedAt: new Date().toISOString(), sections: p.sections.filter(s => s.id !== sec.id) } : p)); addToast(tx('Sektion gelöscht', 'Section deleted')); }, message: tx('Diese Sektion wird unwiderruflich entfernt.', 'This section will be permanently removed.') })} className="px-2 py-1 text-xs text-red-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors" title={tx('Sektion löschen', 'Delete section')}><Trash2 className="w-3 h-3" /></button>
                                   </div>
                                 </div>
                               )}
@@ -3680,7 +3686,7 @@ const ContentDashboardContent = () => {
                                   {/* Due date */}
                                   <div className="flex items-center gap-3 px-4 py-2.5">
                                     <span className="text-xs font-medium text-gray-500 w-24 flex-shrink-0">{tx('Deadline', 'Due Date')}</span>
-                                    <input type="date" value={task.dueDate || ''} onChange={e => updateTask({ dueDate: e.target.value })} className="px-3 py-1.5 rounded-lg text-sm bg-transparent border-none focus:outline-none focus:ring-0 text-gray-900 dark:text-white" />
+                                    <input type="date" value={task.dueDate || ''} onChange={e => updateTask({ dueDate: e.target.value })} className="px-3 py-1.5 rounded-xl text-sm bg-gray-50 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700/60 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 text-gray-900 dark:text-white transition-colors cursor-pointer" />
                                   </div>
                                   {/* Frequency */}
                                   <div className="flex items-center gap-3 px-4 py-2.5">
@@ -3921,8 +3927,8 @@ const ContentDashboardContent = () => {
                                       <label className="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1.5">{tx('Unteraufgaben', 'Subtasks')} {totalCount > 0 && <span className="text-[10px] font-medium text-gray-400">({doneCount}/{totalCount})</span>}</label>
                                       {subs.length > 0 && renderTree(subs, 0)}
                                       <form onSubmit={e => { e.preventDefault(); const input = (e.target as HTMLFormElement).elements.namedItem('subtask-input') as HTMLInputElement; const val = input.value.trim(); if (!val) return; updateTask({ subtasks: [...subs, { id: uid(), title: val, done: false }] }); input.value = ''; }} className="flex items-center gap-2">
-                                        <input name="subtask-input" placeholder={tx('Unteraufgabe hinzufügen...', 'Add subtask...')} className="flex-1 px-3 py-2 text-sm bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500/30" />
-                                        <button type="submit" className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-sky-100 dark:hover:bg-sky-500/10 text-gray-500 hover:text-sky-500 transition-colors"><Plus className="w-3.5 h-3.5" /></button>
+                                        <input name="subtask-input" placeholder={tx('Unteraufgabe hinzufügen...', 'Add subtask...')} className="flex-1 px-3 py-2 text-sm bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500/30" />
+                                        <button type="submit" className="p-2 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-sky-100 dark:hover:bg-sky-500/10 text-gray-500 hover:text-sky-500 transition-colors"><Plus className="w-3.5 h-3.5" /></button>
                                       </form>
                                     </div>
                                   );
@@ -3962,7 +3968,7 @@ const ContentDashboardContent = () => {
                                               const fCat = categoryConfig[f.category];
                                               const FIcon = fCat.icon;
                                               return (
-                                                <button key={f.id} disabled={linked} onClick={() => { updateTask({ linkedFiles: [...(task.linkedFiles || []), f.id] }); setV2ShowFilePicker(false); }} className={`w-full flex items-center gap-2.5 px-4 py-2 text-sm transition-colors ${linked ? 'text-gray-300 dark:text-gray-600 cursor-not-allowed' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>
+                                                <button key={f.id} disabled={linked} onClick={() => { updateTask({ linkedFiles: [...(task.linkedFiles || []), f.id] }); setV2ShowFilePicker(false); }} className={`w-full flex items-center gap-2.5 px-4 py-2 text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${linked ? 'text-gray-300 dark:text-gray-500' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>
                                                   <span className={`p-1 rounded ${fCat.bg}`}><FIcon className={`w-3 h-3 ${fCat.text.split(' ')[0]}`} /></span>
                                                   <span className="truncate flex-1 text-left">{translateFilePrefix(f.name, lang)}</span>
                                                   {linked && <Check className="w-3.5 h-3.5 text-emerald-500" />}
@@ -4010,7 +4016,7 @@ const ContentDashboardContent = () => {
                                               const plat = platformConfig[ci.platform];
                                               const PIcon = plat.icon;
                                               return (
-                                                <button key={ci.id} disabled={linked} onClick={() => { updateTask({ linkedContentIds: [...(task.linkedContentIds || []), ci.id] }); setV2ShowContentPicker(false); }} className={`w-full flex items-center gap-2.5 px-4 py-2 text-sm transition-colors ${linked ? 'text-gray-300 dark:text-gray-600 cursor-not-allowed' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>
+                                                <button key={ci.id} disabled={linked} onClick={() => { updateTask({ linkedContentIds: [...(task.linkedContentIds || []), ci.id] }); setV2ShowContentPicker(false); }} className={`w-full flex items-center gap-2.5 px-4 py-2 text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${linked ? 'text-gray-300 dark:text-gray-500' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>
                                                   <span className={`p-1 rounded ${plat.bg}`}><PIcon className={`w-3 h-3 ${plat.text.split(' ')[0]}`} /></span>
                                                   <span className="truncate flex-1 text-left">{ci.title}</span>
                                                   {linked && <Check className="w-3.5 h-3.5 text-emerald-500" />}
@@ -4373,7 +4379,7 @@ const ContentDashboardContent = () => {
                             {day.isToday && <span className="ml-1.5 px-1.5 py-0.5 bg-sky-500 text-white rounded text-[9px]">{tx('Heute', 'Today')}</span>}
                           </div>
                           <div className="p-2 space-y-1 min-h-[80px]">
-                            {day.tasks.length === 0 && <p className="text-[10px] text-gray-300 dark:text-gray-600 text-center py-4">—</p>}
+                            {day.tasks.length === 0 && <p className="text-[10px] text-gray-300 dark:text-gray-500 text-center py-4">—</p>}
                             {day.tasks.map(task => {
                               const pc = task.priority ? priorityConfig[task.priority] : null;
                               return (
@@ -5024,7 +5030,7 @@ const ContentDashboardContent = () => {
           };
           const toggleCh = (ch: PlanChannel) => setPbChannels(prev => prev.includes(ch) ? prev.filter(x => x !== ch) : [...prev, ch]);
           const setCfg = (ch: string, key: string, val: unknown) => setPbConfig(prev => ({ ...prev, [ch]: { ...prev[ch], [key]: val } }));
-          const inputCls = "w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500/30 outline-none text-gray-900 dark:text-white";
+          const inputCls = "w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700/60 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 outline-none text-gray-900 dark:text-white transition-colors";
           const hasContentCh = pbChannels.some(ch => channelMeta[ch].category === 'content');
           const hasYTSel = pbChannels.includes('youtube');
 
@@ -5284,11 +5290,11 @@ const ContentDashboardContent = () => {
                             <label className="text-[10px] text-gray-500 mb-1 block">{tx('Posting-Frequenz', 'Posting Frequency')}</label>
                             <div className="flex flex-wrap gap-1.5 items-center">
                               {[{v:'1x-week',l:'1x/'+tx('Wo','Wk')},{v:'2x-week',l:'2x/'+tx('Wo','Wk')},{v:'3x-week',l:'3x/'+tx('Wo','Wk')},{v:'daily',l:tx('Täglich','Daily')},{v:'custom',l:tx('Eigene','Custom')}].map(f => (
-                                <button key={f.v} onClick={() => setCfg(ch, 'postingFrequency', f.v)} className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${(pbConfig[ch]?.postingFrequency || '1x-week') === f.v ? 'bg-indigo-500 text-white' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`}>{f.l}</button>
+                                <button key={f.v} onClick={() => setCfg(ch, 'postingFrequency', f.v)} className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-colors ${(pbConfig[ch]?.postingFrequency || '1x-week') === f.v ? 'bg-indigo-500 text-white' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`}>{f.l}</button>
                               ))}
                               {pbConfig[ch]?.postingFrequency === 'custom' && (
                                 <div className="flex items-center gap-1.5 ml-1">
-                                  <input type="number" min={1} max={20} value={pbConfig[ch]?.countPerDay ?? ''} onChange={e => { const n = parseInt(e.target.value); setCfg(ch, 'countPerDay', isNaN(n) ? undefined : n); }} className="w-14 px-2 py-1.5 bg-white dark:bg-gray-800 rounded-lg text-sm text-center focus:ring-2 focus:ring-indigo-500/30 outline-none text-gray-900 dark:text-white" />
+                                  <input type="number" min={1} max={20} value={pbConfig[ch]?.countPerDay ?? ''} onChange={e => { const n = parseInt(e.target.value); setCfg(ch, 'countPerDay', isNaN(n) ? undefined : n); }} className="w-14 px-2 py-1.5 bg-white dark:bg-gray-800 rounded-xl text-sm text-center focus:ring-2 focus:ring-indigo-500/30 outline-none text-gray-900 dark:text-white" />
                                   <span className="text-xs text-gray-500">x/{tx('Tag', 'Day')}</span>
                                 </div>
                               )}
@@ -5338,11 +5344,11 @@ const ContentDashboardContent = () => {
                                 <>
                                   <div>
                                     <label className="text-[10px] text-gray-500 mb-1.5 block">{tx('Von', 'From')}</label>
-                                    <input type="time" value={pbConfig[ch]?.timeStart || '09:00'} onChange={e => setCfg(ch, 'timeStart', e.target.value)} className="w-full px-3 py-2 bg-white dark:bg-gray-800 rounded-xl text-sm font-medium focus:ring-2 focus:ring-indigo-500/30 outline-none text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700" />
+                                    <input type="time" value={pbConfig[ch]?.timeStart || '09:00'} onChange={e => setCfg(ch, 'timeStart', e.target.value)} className="w-full px-3 py-2.5 bg-white dark:bg-gray-800/80 rounded-xl text-sm font-medium focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 outline-none text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700/60 transition-colors" />
                                   </div>
                                   <div>
                                     <label className="text-[10px] text-gray-500 mb-1.5 block">{tx('Bis', 'To')}</label>
-                                    <input type="time" value={pbConfig[ch]?.timeEnd || '12:00'} onChange={e => setCfg(ch, 'timeEnd', e.target.value)} className="w-full px-3 py-2 bg-white dark:bg-gray-800 rounded-xl text-sm font-medium focus:ring-2 focus:ring-indigo-500/30 outline-none text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700" />
+                                    <input type="time" value={pbConfig[ch]?.timeEnd || '12:00'} onChange={e => setCfg(ch, 'timeEnd', e.target.value)} className="w-full px-3 py-2.5 bg-white dark:bg-gray-800/80 rounded-xl text-sm font-medium focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 outline-none text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700/60 transition-colors" />
                                   </div>
                                 </>
                               )}
@@ -5355,7 +5361,7 @@ const ContentDashboardContent = () => {
                                 <span className="text-[10px] font-bold text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 px-2 py-1 rounded-lg border border-gray-200 dark:border-gray-700">{cnt} {startLabel}</span>
                                 {steps.map((step, si) => (
                                   <div key={si} className="flex items-center gap-1">
-                                    <span className="text-gray-300 dark:text-gray-600">→</span>
+                                    <span className="text-gray-300 dark:text-gray-500">→</span>
                                     <div className="flex items-center gap-0.5">
                                       <input type="number" min={0.1} max={100} step={0.5} value={step.rate || ''} onChange={e => { const n = parseFloat(e.target.value); updateStep(si, isNaN(n) ? 0 : n); }} className={`${inputSmall} w-14`} />
                                       <span className="text-[9px] text-gray-400">%</span>
@@ -5423,6 +5429,18 @@ const ContentDashboardContent = () => {
           );
         })()}
       </main>
+
+      {/* Shared inline delete confirmation */}
+      <ConfirmDialog
+        open={!!pendingDelete}
+        title={tx('Element löschen?', 'Delete element?')}
+        message={pendingDelete?.message || ''}
+        confirmLabel={tx('Löschen', 'Delete')}
+        cancelLabel={tx('Abbrechen', 'Cancel')}
+        variant="danger"
+        onConfirm={() => { pendingDelete?.action(); setPendingDelete(null); }}
+        onCancel={() => setPendingDelete(null)}
+      />
     </div>
   );
 };

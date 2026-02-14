@@ -977,7 +977,7 @@ export const HomePageV3 = () => {
                 <div className="flex flex-col md:flex-row items-center justify-center gap-3 md:gap-4 mb-8">
                   {["Mehr Kunden", "Mehr Arbeit", "Mehr Kosten", "Weniger Umsatzrendite"].map((step, index) => (
                     <div key={index} className="flex items-center gap-3 md:gap-4">
-                      <div className={`px-4 py-3 rounded-lg font-medium text-center min-w-[140px] ${index === 3 ? "bg-red-500/20 border-2 border-red-500/50 text-red-400" : "bg-gray-800/50 border border-gray-700/50 text-gray-300"}`}>
+                      <div className={`px-4 py-3 rounded-xl font-medium text-center min-w-[140px] ${index === 3 ? "bg-red-500/20 border-2 border-red-500/50 text-red-400" : "bg-gray-800/50 border border-gray-700/50 text-gray-300"}`}>
                         {step}
                       </div>
                       {index < 3 && <ArrowRight className="w-5 h-5 text-gray-600 hidden md:block" />}

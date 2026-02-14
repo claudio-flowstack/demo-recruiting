@@ -23,11 +23,23 @@ import {
   MessageSquare, Gauge, Lock, Cpu, Layers, Settings,
   ChevronLeft, ChevronRight, ChevronUp,
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useTheme } from '@/components/theme-provider';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import type { AutomationSystem, SystemNode, NodeConnection, NodeType, CanvasGroup, StickyNote, StickyNoteColor, PortDirection } from '@/types/automation';
+import { getResourcesForSystem } from '@/data/resourceStorage';
 import type { NodeExecutionStatus } from '@/types/workflowEvents';
 import { TOOL_LOGOS, getToolLogosByCategory, renderNodeIcon } from './ToolLogos';
 import { useLanguage } from '@/i18n/LanguageContext';
+
+/** Internal pages that can be linked to a node */
+const LINKABLE_PAGES = [
+  { value: '', label: { de: 'Keine', en: 'None' } },
+  { value: '/onboarding', label: { de: 'Onboarding-Formular', en: 'Onboarding Form' } },
+  { value: '/kostenlose-beratung', label: { de: 'Erstgespräch-Formular', en: 'Consultation Form' } },
+  { value: '/dashboard', label: { de: 'Marketing-Dashboard', en: 'Marketing Dashboard' } },
+  { value: '/systems', label: { de: 'System-Übersicht', en: 'Systems Overview' } },
+] as const;
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -391,6 +403,7 @@ interface WorkflowCanvasProps {
 
 export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readOnly, className, style, nodeStates: externalNodeStates }: WorkflowCanvasProps) {
   const { t, lang } = useLanguage();
+  const navigate = useNavigate();
   const viewportRef = useRef<HTMLDivElement>(null);
   const { theme } = useTheme();
   const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches);
@@ -427,8 +440,8 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
   const [scrollSpeed, setScrollSpeed] = useState(3); // 1-5, default 3
   const [phaseDropdownOpen, setPhaseDropdownOpen] = useState(false);
   const [showCanvasSettings, setShowCanvasSettings] = useState(false);
-  const [groupTransparency, setGroupTransparency] = useState(0);   // 0=voll sichtbar, 100=unsichtbar
-  const [nodeTransparency, setNodeTransparency] = useState(0);    // 0=voll sichtbar, 100=unsichtbar
+  const groupTransparency = 0;   // fully visible (slider removed)
+  const nodeTransparency = 0;    // fully visible (slider removed)
   const [phaseZoomAuto, setPhaseZoomAuto] = useState(true);  // true=auto-fit, false=fixed zoom
   const [phaseZoomLevel, setPhaseZoomLevel] = useState(70); // 10-100, percentage of auto-fit zoom (used when auto=false)
   const [phaseAnimated, setPhaseAnimated] = useState(true); // smooth scroll vs instant jump
@@ -445,14 +458,29 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
   // Node design themes
   type NodeDesignTheme = 'default' | 'glass' | 'minimal' | 'outlined' | 'neon' | 'gradient' | 'solid' | 'wire';
   const [nodeDesignTheme, setNodeDesignTheme] = useState<NodeDesignTheme>('default');
+  type NodeLayout = 'standard' | 'centered' | 'compact' | 'icon-focus';
+  const [nodeLayout, setNodeLayout] = useState<NodeLayout>('standard');
 
   // Presentation mode
   const [isPresentationMode, setIsPresentationMode] = useState(false);
+  const [presBarVisible, setPresBarVisible] = useState(true);
+
+  // Auto-fade presentation bar after 3 seconds
+  useEffect(() => {
+    if (isPresentationMode) {
+      setPresBarVisible(true);
+      const timer = setTimeout(() => setPresBarVisible(false), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [isPresentationMode]);
 
   const [editNode, setEditNode] = useState<string | null>(null);
+  const [insertPopover, setInsertPopover] = useState<{ connIdx: number; x: number; y: number } | null>(null);
   const [editLabel, setEditLabel] = useState('');
   const [editDesc, setEditDesc] = useState('');
   const [editLinkedResource, setEditLinkedResource] = useState<string>('');
+  const [editLinkedResourceId, setEditLinkedResourceId] = useState<string>('');
+  const [editLinkedPage, setEditLinkedPage] = useState<string>('');
   const [editGroupId, setEditGroupId] = useState<string | null>(null);
   const [editGroupLabel, setEditGroupLabel] = useState('');
 
@@ -496,7 +524,8 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
   const [showShortcuts, setShowShortcuts] = useState(false);
 
   // #21 – Context menu
-  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; nodeId?: string; groupId?: string; connIdx?: number } | null>(null);
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; nodeId?: string; groupId?: string; connIdx?: number; stickyId?: string } | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<{ type: 'node' | 'nodes' | 'connection' | 'group' | 'sticky'; ids?: string[]; connIdx?: number } | null>(null);
 
   // #10 – Connection hover
   const [hoveredConnId, setHoveredConnId] = useState<number | null>(null);
@@ -838,34 +867,20 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
       if ((e.key === 'Delete' || e.key === 'Backspace') && !editNode && !editGroupId && !editStickyId && !readOnly && !searchOpen) {
         // Multi-select delete
         if (multiSelectedIds.size > 0) {
-          pushHistory();
-          setNodes(prev => prev.filter(n => !multiSelectedIds.has(n.id)));
-          // #2 – clean orphaned connections
-          setConnections(prev => prev.filter(c => !multiSelectedIds.has(c.from) && !multiSelectedIds.has(c.to)));
-          setMultiSelectedIds(new Set());
+          setDeleteConfirm({ type: 'nodes', ids: Array.from(multiSelectedIds) });
           return;
         }
         if (selectedNodeId) {
-          pushHistory();
-          setNodes(prev => prev.filter(n => n.id !== selectedNodeId));
-          // #2 – clean orphaned connections
-          setConnections(prev => prev.filter(c => c.from !== selectedNodeId && c.to !== selectedNodeId));
-          setSelectedNodeId(null);
+          setDeleteConfirm({ type: 'node', ids: [selectedNodeId] });
         }
         if (selectedConnId !== null) {
-          pushHistory();
-          setConnections(prev => prev.filter((_, i) => i !== selectedConnId));
-          setSelectedConnId(null);
+          setDeleteConfirm({ type: 'connection', connIdx: selectedConnId });
         }
         if (selectedGroupId) {
-          pushHistory();
-          setGroups(prev => prev.filter(g => g.id !== selectedGroupId));
-          setSelectedGroupId(null);
+          setDeleteConfirm({ type: 'group', ids: [selectedGroupId] });
         }
         if (selectedStickyId) {
-          pushHistory();
-          setStickyNotes(prev => prev.filter(s => s.id !== selectedStickyId));
-          setSelectedStickyId(null);
+          setDeleteConfirm({ type: 'sticky', ids: [selectedStickyId] });
         }
       }
     };
@@ -883,8 +898,9 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
   // ─── Viewport Mouse Handlers ───────────────────────────────────────────────
 
   const handleViewportMouseDown = useCallback((e: React.MouseEvent) => {
-    // Close context menu on click
+    // Close context menu / popover on click
     if (contextMenu) { setContextMenu(null); return; }
+    if (insertPopover) { setInsertPopover(null); return; }
 
     // Middle mouse or space+click: always pan
     if (e.button === 1 || (e.button === 0 && spaceHeld)) {
@@ -1465,7 +1481,7 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
 
   // ─── Edit Operations ───────────────────────────────────────────────────────
 
-  const startNodeEdit = (nodeId: string) => {
+  const startNodeEdit = useCallback((nodeId: string) => {
     if (readOnly) return;
     const node = nodes.find(n => n.id === nodeId);
     if (!node) return;
@@ -1474,20 +1490,34 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
     setEditDesc(node.description);
     setEditIcon(node.icon);
     setEditLinkedResource(node.linkedResourceType || '');
+    setEditLinkedResourceId(node.linkedResourceId || '');
+    setEditLinkedPage(node.linkedPage || '');
     setShowIconPicker(false);
-  };
+  }, [readOnly, nodes]);
 
   const saveNodeEdit = () => {
     if (editNode) {
       pushHistory();
-      setNodes(prev => prev.map(n => n.id === editNode ? { ...n, label: editLabel, description: editDesc, icon: editIcon, linkedResourceType: (editLinkedResource || undefined) as SystemNode['linkedResourceType'] } : n));
+      setNodes(prev => prev.map(n => n.id === editNode ? { ...n, label: editLabel, description: editDesc, icon: editIcon, linkedResourceType: (editLinkedResource || undefined) as SystemNode['linkedResourceType'], linkedResourceId: editLinkedResourceId || undefined, linkedPage: editLinkedPage || undefined } : n));
       setEditNode(null);
       setShowIconPicker(false);
     }
   };
 
   // ─── Insert Node on Connection ─────────────────────────────────────────────
-  const insertNodeOnConnection = useCallback((connIdx: number) => {
+  const showInsertPopover = useCallback((connIdx: number) => {
+    const conn = connections[connIdx];
+    if (!conn) return;
+    const fromNode = nodes.find(n => n.id === conn.from);
+    const toNode = nodes.find(n => n.id === conn.to);
+    if (!fromNode || !toNode) return;
+    const fp = conn.fromPort || 'right';
+    const tp = conn.toPort || 'left';
+    const mid = getPathMidpoint(fromNode, toNode, fp, tp, connCurveStyle);
+    setInsertPopover({ connIdx, x: mid.x, y: mid.y });
+  }, [connections, nodes, connCurveStyle]);
+
+  const insertNodeOnConnection = useCallback((connIdx: number, item?: PaletteItem) => {
     const conn = connections[connIdx];
     if (!conn) return;
     const fromNode = nodes.find(n => n.id === conn.from);
@@ -1498,32 +1528,40 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
     const mid = getPathMidpoint(fromNode, toNode, fp, tp, connCurveStyle);
     pushHistory();
     const id = `node-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
-    const newNode: SystemNode = {
-      id, label: '', description: '', icon: 'sparkles', type: 'process',
-      x: mid.x - NODE_W / 2, y: mid.y - NODE_H / 2,
-    };
+    // Place below the midpoint to avoid overlapping the connection line + existing nodes
+    let newY = mid.y + 15;
+    const newX = mid.x - NODE_W / 2;
+    // Check overlap with existing nodes and push further down
+    const hasOverlap = () => nodes.some(n => Math.abs(n.x - newX) < NODE_W && Math.abs(n.y - newY) < NODE_H);
+    let attempts = 0;
+    while (hasOverlap() && attempts < 5) { newY += NODE_H + 20; attempts++; }
+    const icon = item?.icon || 'sparkles';
+    const type = item?.type || 'process';
+    const label = item?.tKey ? t(item.tKey) : item?.label || '';
+    const newNode: SystemNode = { id, label, description: '', icon, type, x: newX, y: newY };
     setNodes(prev => [...prev, newNode]);
     setConnections(prev => {
       const without = prev.filter((_, i) => i !== connIdx);
       return [
         ...without,
-        { from: conn.from, to: id, fromPort: conn.fromPort, toPort: 'left' as PortDirection },
-        { from: id, to: conn.to, fromPort: 'right' as PortDirection, toPort: conn.toPort },
+        { ...conn, from: conn.from, to: id, toPort: 'left' as PortDirection },
+        { ...conn, from: id, to: conn.to, fromPort: 'right' as PortDirection },
       ];
     });
     setSelectedNodeId(id);
     setSelectedConnId(null);
     setHoveredConnId(null);
+    setInsertPopover(null);
     setTimeout(() => startNodeEdit(id), 50);
-  }, [connections, nodes, connCurveStyle, pushHistory, startNodeEdit]);
+  }, [connections, nodes, connCurveStyle, pushHistory, startNodeEdit, t]);
 
-  const startGroupEdit = (groupId: string) => {
+  const startGroupEdit = useCallback((groupId: string) => {
     if (readOnly) return;
     const group = groups.find(g => g.id === groupId);
     if (!group) return;
     setEditGroupId(groupId);
     setEditGroupLabel(group.label);
-  };
+  }, [readOnly, groups]);
 
   const saveGroupEdit = () => {
     if (editGroupId) {
@@ -1549,7 +1587,7 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
     }
     const newConns = connections
       .filter(c => idMap.has(c.from) && idMap.has(c.to))
-      .map(c => ({ from: idMap.get(c.from)!, to: idMap.get(c.to)! }));
+      .map(c => ({ ...c, from: idMap.get(c.from)!, to: idMap.get(c.to)! }));
     setNodes(prev => [...prev, ...newNodes]);
     setConnections(prev => [...prev, ...newConns]);
     setMultiSelectedIds(new Set(newNodes.map(n => n.id)));
@@ -1649,27 +1687,45 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
     );
   };
 
+  // ─── Delete Execution (shared by keyboard, toolbar, context menu) ──────────
+
+  const executeDelete = useCallback(() => {
+    if (!deleteConfirm) return;
+    pushHistory();
+    const { type, ids, connIdx } = deleteConfirm;
+    if (type === 'nodes' && ids) {
+      const idSet = new Set(ids);
+      setNodes(prev => prev.filter(n => !idSet.has(n.id)));
+      setConnections(prev => prev.filter(c => !idSet.has(c.from) && !idSet.has(c.to)));
+      setMultiSelectedIds(new Set());
+    } else if (type === 'node' && ids?.[0]) {
+      setNodes(prev => prev.filter(n => n.id !== ids[0]));
+      setConnections(prev => prev.filter(c => c.from !== ids[0] && c.to !== ids[0]));
+      setSelectedNodeId(null);
+    } else if (type === 'connection' && connIdx !== undefined) {
+      setConnections(prev => prev.filter((_, i) => i !== connIdx));
+      setSelectedConnId(null);
+    } else if (type === 'group' && ids?.[0]) {
+      setGroups(prev => prev.filter(g => g.id !== ids[0]));
+      setSelectedGroupId(null);
+    } else if (type === 'sticky' && ids?.[0]) {
+      setStickyNotes(prev => prev.filter(s => s.id !== ids[0]));
+      setSelectedStickyId(null);
+    }
+    setDeleteConfirm(null);
+  }, [deleteConfirm, pushHistory]);
+
   // ─── Context Menu Actions ──────────────────────────────────────────────────
 
   const handleContextAction = useCallback((action: string) => {
     if (!contextMenu) return;
-    const { nodeId, groupId, connIdx } = contextMenu;
+    const { nodeId, groupId, connIdx, stickyId } = contextMenu;
 
     if (action === 'delete') {
-      pushHistory();
-      if (nodeId) {
-        setNodes(prev => prev.filter(n => n.id !== nodeId));
-        setConnections(prev => prev.filter(c => c.from !== nodeId && c.to !== nodeId));
-        setSelectedNodeId(null);
-      }
-      if (groupId) {
-        setGroups(prev => prev.filter(g => g.id !== groupId));
-        setSelectedGroupId(null);
-      }
-      if (connIdx !== undefined) {
-        setConnections(prev => prev.filter((_, i) => i !== connIdx));
-        setSelectedConnId(null);
-      }
+      if (nodeId) setDeleteConfirm({ type: 'node', ids: [nodeId] });
+      else if (groupId) setDeleteConfirm({ type: 'group', ids: [groupId] });
+      else if (stickyId) setDeleteConfirm({ type: 'sticky', ids: [stickyId] });
+      else if (connIdx !== undefined) setDeleteConfirm({ type: 'connection', connIdx });
     }
     if (action === 'edit' && nodeId) startNodeEdit(nodeId);
     if (action === 'edit' && groupId) startGroupEdit(groupId);
@@ -1680,7 +1736,7 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
     }
 
     setContextMenu(null);
-  }, [contextMenu, pushHistory, duplicateSelection]);
+  }, [contextMenu, duplicateSelection, startNodeEdit, startGroupEdit]);
 
   // ─── Render ────────────────────────────────────────────────────────────────
 
@@ -1707,7 +1763,7 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
                 <button
                   key={tab}
                   onClick={() => setPaletteTab(tab)}
-                  className={`flex-1 text-xs py-1.5 rounded-lg font-medium transition-colors ${paletteTab === tab ? 'bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800'}`}
+                  className={`flex-1 text-xs py-1.5 rounded-xl font-medium transition-colors ${paletteTab === tab ? 'bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800'}`}
                   aria-pressed={paletteTab === tab}
                 >
                   {tab === 'generic' ? t('palette.tabNodes') : tab === 'tools' ? t('palette.tabTools') : t('palette.tabGroups')}
@@ -1722,7 +1778,7 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
               const Icon = !isLogo ? (ICONS[item.icon] || Zap) : null;
               const style = NODE_STYLES[item.type];
               return (
-                <button key={item.icon + item.tKey} onClick={() => addNode(item)} draggable onDragStart={e => { e.dataTransfer.setData('application/json', JSON.stringify(item)); e.dataTransfer.effectAllowed = 'copy'; }} className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-left hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors group cursor-grab active:cursor-grabbing" aria-label={t('palette.addNode', { label: t(item.tKey) })}>
+                <button key={item.icon + item.tKey} onClick={() => addNode(item)} draggable onDragStart={e => { e.dataTransfer.setData('application/json', JSON.stringify(item)); e.dataTransfer.effectAllowed = 'copy'; }} className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors group cursor-grab active:cursor-grabbing" aria-label={t('palette.addNode', { label: t(item.tKey) })}>
                   <div className="w-7 h-7 rounded-md flex items-center justify-center shrink-0" style={{ background: style.accent + '15' }}>
                     {isLogo ? renderNodeIcon(item.icon, undefined, <Zap size={14} style={{ color: style.accent }} />, 14) : Icon && <Icon size={14} style={{ color: style.accent }} />}
                   </div>
@@ -1897,34 +1953,8 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
             {showCanvasSettings && (
               <>
                 <div className="fixed inset-0 z-30" onClick={() => setShowCanvasSettings(false)} />
-                <div className="absolute right-0 top-full mt-1.5 z-40 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl shadow-2xl p-4 min-w-[220px]">
+                <div className="absolute right-0 top-full mt-1.5 z-40 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl shadow-2xl p-4 min-w-[220px] max-h-[70vh] overflow-y-auto">
                   <div className="text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wider mb-3">{t('toolbar.canvasSettings')}</div>
-
-                  {/* Group/Phase opacity */}
-                  <div className="mb-3">
-                    <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-xs text-gray-600 dark:text-zinc-400">{t('settings.groupOpacity')}</span>
-                      <span className="text-[10px] text-gray-400 dark:text-zinc-600 tabular-nums">{groupTransparency}%</span>
-                    </div>
-                    <input
-                      type="range" min={0} max={100} step={5} value={groupTransparency}
-                      onChange={e => setGroupTransparency(Number(e.target.value))}
-                      className="w-full h-1 accent-purple-500 cursor-pointer"
-                    />
-                  </div>
-
-                  {/* Node opacity */}
-                  <div className="mb-4">
-                    <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-xs text-gray-600 dark:text-zinc-400">{t('settings.nodeOpacity')}</span>
-                      <span className="text-[10px] text-gray-400 dark:text-zinc-600 tabular-nums">{nodeTransparency}%</span>
-                    </div>
-                    <input
-                      type="range" min={0} max={100} step={5} value={nodeTransparency}
-                      onChange={e => setNodeTransparency(Number(e.target.value))}
-                      className="w-full h-1 accent-purple-500 cursor-pointer"
-                    />
-                  </div>
 
                   {/* Phase navigation section */}
                   <div className="border-t border-gray-200 dark:border-zinc-700 pt-3">
@@ -2115,6 +2145,66 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
                       ))}
                     </div>
                   </div>
+
+                  {/* ── Node Layout ── */}
+                  <div className="border-t border-gray-200 dark:border-zinc-700 pt-3 mt-3">
+                    <div className="text-[10px] font-semibold text-gray-400 dark:text-zinc-600 uppercase tracking-wider mb-2">{lang === 'en' ? 'Node Layout' : 'Node-Anordnung'}</div>
+                    <div className="grid grid-cols-2 gap-1.5">
+                      {([
+                        { key: 'standard' as const, de: 'Standard', en: 'Standard', icon: '☰' },
+                        { key: 'centered' as const, de: 'Zentriert', en: 'Centered', icon: '◎' },
+                        { key: 'compact' as const, de: 'Kompakt', en: 'Compact', icon: '▬' },
+                        { key: 'icon-focus' as const, de: 'Icon-Fokus', en: 'Icon Focus', icon: '◉' },
+                      ]).map(lo => (
+                        <button
+                          key={lo.key}
+                          onClick={() => setNodeLayout(lo.key)}
+                          className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-[10px] transition-all ${
+                            nodeLayout === lo.key
+                              ? 'ring-2 ring-purple-400 bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 font-semibold'
+                              : 'text-gray-500 dark:text-zinc-500 hover:bg-gray-100 dark:hover:bg-zinc-800'
+                          }`}
+                        >
+                          <span className="text-sm">{lo.icon}</span>
+                          {lang === 'en' ? lo.en : lo.de}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* ── Connection Presets ── */}
+                  <div className="border-t border-gray-200 dark:border-zinc-700 pt-3 mt-3">
+                    <div className="text-[10px] font-semibold text-gray-400 dark:text-zinc-600 uppercase tracking-wider mb-2">{lang === 'en' ? 'Connection Presets' : 'Verbindungs-Presets'}</div>
+                    <div className="grid grid-cols-2 gap-1.5">
+                      {([
+                        { key: 'default', de: 'Standard', en: 'Default', curve: 'bezier' as const, line: 'solid' as const, width: 2 as const, arrow: 'arrow' as const, color: 'purple', glow: false },
+                        { key: 'neon-glow', de: 'Neon-Glow', en: 'Neon Glow', curve: 'bezier' as const, line: 'solid' as const, width: 2 as const, arrow: 'arrow' as const, color: 'neon', glow: true },
+                        { key: 'blueprint', de: 'Blueprint', en: 'Blueprint', curve: 'straight' as const, line: 'dashed' as const, width: 1 as const, arrow: 'circle' as const, color: 'blue', glow: false },
+                        { key: 'bold', de: 'Kräftig', en: 'Bold', curve: 'elbow' as const, line: 'solid' as const, width: 3 as const, arrow: 'diamond' as const, color: 'mono', glow: false },
+                        { key: 'elegant', de: 'Elegant', en: 'Elegant', curve: 'bezier' as const, line: 'dotted' as const, width: 1 as const, arrow: 'none' as const, color: 'pastel', glow: false },
+                        { key: 'cyber', de: 'Cyber', en: 'Cyber', curve: 'straight' as const, line: 'solid' as const, width: 3 as const, arrow: 'arrow' as const, color: 'neon', glow: true },
+                      ]).map(preset => (
+                        <button
+                          key={preset.key}
+                          onClick={() => {
+                            setConnCurveStyle(preset.curve);
+                            setConnLineStyle(preset.line);
+                            setConnStrokeWidth(preset.width);
+                            setConnArrowHead(preset.arrow);
+                            setConnColorTheme(preset.color);
+                            setConnGlow(preset.glow);
+                          }}
+                          className={`text-[10px] px-2 py-1.5 rounded-lg transition-colors ${
+                            connCurveStyle === preset.curve && connLineStyle === preset.line && connStrokeWidth === preset.width && connColorTheme === preset.color && connGlow === preset.glow
+                              ? 'bg-purple-100 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400 font-semibold ring-1 ring-purple-400'
+                              : 'text-gray-500 dark:text-zinc-500 hover:bg-gray-100 dark:hover:bg-zinc-800'
+                          }`}
+                        >
+                          {lang === 'en' ? preset.en : preset.de}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </>
             )}
@@ -2170,21 +2260,17 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
                 {nodes.length} Nodes · {connections.length} Conn
               </div>
 
-              {(selectedNodeId || selectedGroupId || multiSelectedIds.size > 0) && (
+              {(selectedNodeId || selectedGroupId || selectedStickyId || multiSelectedIds.size > 0) && (
                 <button
                   onClick={() => {
-                    pushHistory();
                     if (multiSelectedIds.size > 0) {
-                      setNodes(prev => prev.filter(n => !multiSelectedIds.has(n.id)));
-                      setConnections(prev => prev.filter(c => !multiSelectedIds.has(c.from) && !multiSelectedIds.has(c.to)));
-                      setMultiSelectedIds(new Set());
+                      setDeleteConfirm({ type: 'nodes', ids: Array.from(multiSelectedIds) });
                     } else if (selectedNodeId) {
-                      setNodes(prev => prev.filter(n => n.id !== selectedNodeId));
-                      setConnections(prev => prev.filter(c => c.from !== selectedNodeId && c.to !== selectedNodeId));
-                      setSelectedNodeId(null);
+                      setDeleteConfirm({ type: 'node', ids: [selectedNodeId] });
                     } else if (selectedGroupId) {
-                      setGroups(prev => prev.filter(g => g.id !== selectedGroupId));
-                      setSelectedGroupId(null);
+                      setDeleteConfirm({ type: 'group', ids: [selectedGroupId] });
+                    } else if (selectedStickyId) {
+                      setDeleteConfirm({ type: 'sticky', ids: [selectedStickyId] });
                     }
                   }}
                   className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
@@ -2365,7 +2451,7 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
                         <foreignObject x={mid.x - 12} y={mid.y - 12} width={24} height={24} style={{ pointerEvents: 'all', overflow: 'visible' }}>
                           <div style={{ width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                             <button
-                              onClick={(e) => { e.stopPropagation(); insertNodeOnConnection(i); }}
+                              onClick={(e) => { e.stopPropagation(); showInsertPopover(i); }}
                               className="w-6 h-6 rounded-full bg-purple-500 hover:bg-purple-400 text-white flex items-center justify-center shadow-lg transition-all hover:scale-110 border-2 border-white dark:border-zinc-900"
                               title={t('conn.insertNode')}
                               style={{ fontSize: 16, lineHeight: 1, fontWeight: 700, cursor: 'pointer' }}
@@ -2492,7 +2578,7 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
                   }}
                   onMouseDown={e => handleStickyMouseDown(e, sticky.id)}
                   onDoubleClick={() => startStickyEdit(sticky.id)}
-                  onContextMenu={e => { if (readOnly) return; e.preventDefault(); e.stopPropagation(); setContextMenu({ x: e.clientX, y: e.clientY }); setSelectedStickyId(sticky.id); }}
+                  onContextMenu={e => { if (readOnly) return; e.preventDefault(); e.stopPropagation(); setContextMenu({ x: e.clientX, y: e.clientY, stickyId: sticky.id }); setSelectedStickyId(sticky.id); }}
                 >
                   <div className="p-3.5 h-full overflow-hidden">
                     <p className="leading-relaxed whitespace-pre-wrap break-words" style={{
@@ -2505,7 +2591,7 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
                   {isSelected && !readOnly && (
                     <>
                       <button
-                        onClick={(e) => { e.stopPropagation(); pushHistory(); setStickyNotes(prev => prev.filter(s => s.id !== sticky.id)); setSelectedStickyId(null); }}
+                        onClick={(e) => { e.stopPropagation(); setDeleteConfirm({ type: 'sticky', ids: [sticky.id] }); }}
                         className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-red-500 text-white flex items-center justify-center text-[10px] hover:bg-red-600 z-30"
                         aria-label="Notiz löschen"
                       >
@@ -2553,11 +2639,11 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
               let themeStyle: React.CSSProperties;
               switch (nodeDesignTheme) {
                 case 'glass':
-                  themeClass = 'absolute rounded-2xl border backdrop-blur-2xl select-none';
+                  themeClass = 'absolute rounded-2xl border-2 backdrop-blur-2xl select-none';
                   themeStyle = {
-                    background: `linear-gradient(145deg, ${style.accent}14, ${style.accent}06)`,
-                    borderColor: style.accent + '40',
-                    boxShadow: `0 0 30px ${style.accent}15, 0 8px 32px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.12)`,
+                    background: `linear-gradient(145deg, ${style.accent}20, ${style.accent}08, transparent)`,
+                    borderColor: style.accent + '50',
+                    boxShadow: `0 0 40px ${style.accent}20, 0 12px 40px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.25), inset 0 -1px 0 rgba(0,0,0,0.08)`,
                   };
                   break;
                 case 'minimal':
@@ -2576,25 +2662,25 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
                 case 'neon':
                   themeClass = 'absolute rounded-lg border-2 select-none';
                   themeStyle = {
-                    background: isDark ? 'rgba(8,8,20,0.97)' : 'rgba(12,12,28,0.95)',
+                    background: 'rgba(5,5,15,0.98)',
                     borderColor: style.accent,
-                    boxShadow: `0 0 14px ${style.accent}55, 0 0 40px ${style.accent}20, inset 0 0 20px ${style.accent}08`,
+                    boxShadow: `0 0 20px ${style.accent}70, 0 0 60px ${style.accent}35, 0 0 100px ${style.accent}15, inset 0 0 30px ${style.accent}10`,
                   };
                   break;
                 case 'gradient':
                   themeClass = 'absolute rounded-2xl select-none';
                   themeStyle = {
-                    background: `linear-gradient(135deg, ${style.accent}dd, ${style.accent}88)`,
+                    background: `linear-gradient(135deg, ${style.accent}, ${style.accent}90)`,
                     border: 'none',
-                    boxShadow: `0 10px 30px ${style.accent}30, 0 4px 12px rgba(0,0,0,0.1)`,
+                    boxShadow: `0 12px 40px ${style.accent}40, 0 4px 16px rgba(0,0,0,0.15)`,
                   };
                   break;
                 case 'solid':
                   themeClass = 'absolute rounded-xl select-none';
                   themeStyle = {
-                    background: style.accent,
+                    background: `linear-gradient(180deg, ${style.accent}, ${style.accent}cc)`,
                     border: 'none',
-                    boxShadow: `0 8px 24px ${style.accent}35, 0 2px 8px rgba(0,0,0,0.15)`,
+                    boxShadow: `0 8px 24px ${style.accent}50, 0 2px 8px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.3)`,
                   };
                   break;
                 case 'wire':
@@ -2626,15 +2712,39 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
                   aria-label={`Node: ${node.label}`}
                   tabIndex={0}
                 >
-                  <div className="h-full flex items-center px-4 gap-3.5">
-                    <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ background: isLightText ? 'rgba(255,255,255,0.18)' : style.accent + '15' }}>
-                      {renderIcon(node)}
+                  {nodeLayout === 'centered' ? (
+                    <div className="h-full flex flex-col items-center justify-center px-3 text-center">
+                      <div className="w-8 h-8 rounded-lg flex items-center justify-center mb-1" style={{ background: isLightText ? 'rgba(255,255,255,0.18)' : style.accent + '15' }}>
+                        {renderIcon(node, 16)}
+                      </div>
+                      <div className="font-medium text-[12px] text-gray-900 dark:text-white truncate w-full" style={isLightText ? { color: 'rgba(255,255,255,0.95)' } : undefined}>{node.label}</div>
+                      {node.description && <div className="text-[10px] text-gray-500 dark:text-zinc-500 mt-0.5 truncate w-full" style={isLightText ? { color: 'rgba(255,255,255,0.65)' } : undefined}>{node.description}</div>}
                     </div>
-                    <div className="min-w-0 flex-1">
+                  ) : nodeLayout === 'compact' ? (
+                    <div className="h-full flex items-center px-4 gap-2.5">
+                      <div className="w-7 h-7 rounded-md flex items-center justify-center shrink-0" style={{ background: isLightText ? 'rgba(255,255,255,0.18)' : style.accent + '15' }}>
+                        {renderIcon(node, 14)}
+                      </div>
                       <div className="font-medium text-[13px] text-gray-900 dark:text-white truncate" style={isLightText ? { color: 'rgba(255,255,255,0.95)' } : undefined}>{node.label}</div>
-                      {node.description && <div className="text-[11px] text-gray-500 dark:text-zinc-500 mt-0.5 line-clamp-2 leading-tight" style={isLightText ? { color: 'rgba(255,255,255,0.65)' } : undefined}>{node.description}</div>}
                     </div>
-                  </div>
+                  ) : nodeLayout === 'icon-focus' ? (
+                    <div className="h-full flex flex-col items-center justify-center px-3">
+                      <div className="w-11 h-11 rounded-xl flex items-center justify-center mb-1.5" style={{ background: isLightText ? 'rgba(255,255,255,0.18)' : style.accent + '15' }}>
+                        {renderIcon(node, 24)}
+                      </div>
+                      <div className="font-semibold text-[11px] text-gray-900 dark:text-white truncate w-full text-center" style={isLightText ? { color: 'rgba(255,255,255,0.95)' } : undefined}>{node.label}</div>
+                    </div>
+                  ) : (
+                    <div className="h-full flex items-center px-4 gap-3.5">
+                      <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ background: isLightText ? 'rgba(255,255,255,0.18)' : style.accent + '15' }}>
+                        {renderIcon(node)}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="font-medium text-[13px] text-gray-900 dark:text-white truncate" style={isLightText ? { color: 'rgba(255,255,255,0.95)' } : undefined}>{node.label}</div>
+                        {node.description && <div className="text-[11px] text-gray-500 dark:text-zinc-500 mt-0.5 line-clamp-2 leading-tight" style={isLightText ? { color: 'rgba(255,255,255,0.65)' } : undefined}>{node.description}</div>}
+                      </div>
+                    </div>
+                  )}
 
                   <div className={`absolute -top-2 -right-2 text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 border ${nodeDesignTheme === 'outlined' ? 'rounded-sm' : nodeDesignTheme === 'minimal' ? 'rounded text-[8px]' : 'rounded-md'}`} style={isLightText ? { background: 'rgba(255,255,255,0.15)', borderColor: 'rgba(255,255,255,0.25)', color: 'rgba(255,255,255,0.9)' } : { background: style.bg, borderColor: style.border, color: style.accent }}>
                     {style.label}
@@ -2645,6 +2755,20 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
                     <div className="absolute -top-2 -left-2 w-5 h-5 rounded-full bg-purple-100 dark:bg-purple-500/20 border border-purple-300 dark:border-purple-500/30 flex items-center justify-center" title={`${t('node.linkedResource')}: ${t(`resource.type.${node.linkedResourceType}` as keyof typeof t)}`}>
                       <Paperclip size={10} className="text-purple-600 dark:text-purple-400" />
                     </div>
+                  )}
+
+                  {/* Linked page badge (bottom-left) — clickable */}
+                  {node.linkedPage && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); const systemId = initialSystem?.id || ''; navigate(node.linkedPage! + (node.linkedPage!.includes('?') ? '&' : '?') + 'system=' + systemId); }}
+                      className="absolute -bottom-1.5 -left-1.5 h-5 px-1.5 rounded-full bg-blue-100 dark:bg-blue-500/20 border border-blue-300 dark:border-blue-500/30 flex items-center justify-center gap-0.5 hover:bg-blue-200 dark:hover:bg-blue-500/30 transition-colors z-20 cursor-pointer"
+                      title={`${lang === 'de' ? 'Öffnen' : 'Open'}: ${LINKABLE_PAGES.find(p => p.value === node.linkedPage)?.label[lang] || node.linkedPage}`}
+                    >
+                      <Globe size={9} className="text-blue-600 dark:text-blue-400" />
+                      <span className="text-[8px] font-semibold text-blue-600 dark:text-blue-400 max-w-[60px] truncate">
+                        {LINKABLE_PAGES.find(p => p.value === node.linkedPage)?.label[lang] || node.linkedPage}
+                      </span>
+                    </button>
                   )}
 
                   {/* Status overlay icon (bottom-right) — minimal, single accent */}
@@ -2703,24 +2827,72 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
               );
             })}
 
-            {/* ─── Edit Overlays ─── */}
-            {editNode && !readOnly && (() => {
-              const node = nodes.find(n => n.id === editNode);
-              if (!node) return null;
-              const allIcons = [
-                ...Object.keys(ICONS).map(k => ({ id: k, type: 'lucide' as const })),
-                ...Object.keys(TOOL_LOGOS).map(k => ({ id: k, type: 'logo' as const })),
-              ];
-              return (
-                <div className="absolute bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl shadow-xl p-4 z-50" style={{ left: node.x, top: node.y + NODE_H + 10, width: NODE_W + 60 }} onClick={e => e.stopPropagation()} role="dialog" aria-label="Node bearbeiten">
+            {/* ─── Insert Node Popover ─── */}
+            {insertPopover && !readOnly && (
+              <div
+                className="absolute bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl shadow-xl p-2 z-50"
+                style={{ left: insertPopover.x - 100, top: insertPopover.y + 20, width: 200 }}
+                onClick={e => e.stopPropagation()}
+              >
+                <div className="text-[10px] font-semibold text-gray-400 dark:text-zinc-600 uppercase tracking-wider px-2 pb-1 mb-1 border-b border-gray-100 dark:border-zinc-800">
+                  {lang === 'en' ? 'Insert Node' : 'Node einfügen'}
+                </div>
+                <div className="max-h-52 overflow-y-auto space-y-0.5">
+                  {PALETTE_ITEMS.map(item => {
+                    const isLogo = item.icon.startsWith('logo-');
+                    const Icon = !isLogo ? (ICONS[item.icon] || Zap) : null;
+                    const st = NODE_STYLES[item.type];
+                    return (
+                      <button
+                        key={item.icon + item.tKey}
+                        onClick={() => insertNodeOnConnection(insertPopover.connIdx, item)}
+                        className="w-full flex items-center gap-2 px-2 py-1.5 rounded-xl text-left hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
+                      >
+                        <div className="w-5 h-5 rounded flex items-center justify-center shrink-0" style={{ background: st.accent + '15' }}>
+                          {isLogo ? renderNodeIcon(item.icon, undefined, <Zap size={10} style={{ color: st.accent }} />, 10) : Icon && <Icon size={10} style={{ color: st.accent }} />}
+                        </div>
+                        <span className="text-[11px] text-gray-700 dark:text-zinc-300 truncate">{t(item.tKey)}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+                <button
+                  onClick={() => setInsertPopover(null)}
+                  className="w-full mt-1 pt-1 border-t border-gray-100 dark:border-zinc-800 text-[10px] text-gray-400 hover:text-gray-600 dark:hover:text-zinc-400 transition-colors"
+                >
+                  {lang === 'en' ? 'Cancel' : 'Abbrechen'}
+                </button>
+              </div>
+            )}
+
+            {/* Edit Overlays moved outside transform container below */}
+          </div>
+
+          {/* ─── Edit Overlays (outside transform to avoid overflow clipping) ─── */}
+          {editNode && !readOnly && (() => {
+            const node = nodes.find(n => n.id === editNode);
+            if (!node) return null;
+            const allIcons = [
+              ...Object.keys(ICONS).map(k => ({ id: k, type: 'lucide' as const })),
+              ...Object.keys(TOOL_LOGOS).map(k => ({ id: k, type: 'logo' as const })),
+            ];
+            const panelW = NODE_W + 60;
+            const screenX = node.x * zoom + pan.x;
+            const screenY = (node.y + NODE_H + 10) * zoom + pan.y;
+            const vpRect = viewportRef.current?.getBoundingClientRect();
+            const vpH = vpRect?.height || 600;
+            const fitsBelow = screenY + 380 < vpH;
+            const finalY = fitsBelow ? screenY : Math.max(8, (node.y * zoom + pan.y) - 380);
+            return (
+              <div className="absolute bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl shadow-xl p-4 z-50 max-h-[380px] overflow-y-auto" style={{ left: screenX, top: finalY, width: panelW }} onClick={e => e.stopPropagation()} role="dialog" aria-label="Node bearbeiten">
                   <div className="text-xs font-semibold text-gray-500 dark:text-zinc-400 mb-2">Node bearbeiten</div>
                   {/* #12 – maxLength on inputs */}
-                  <input type="text" value={editLabel} onChange={e => setEditLabel(e.target.value.slice(0, MAX_LABEL_LENGTH))} className="w-full bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-white mb-2 focus:outline-none focus:border-purple-500" placeholder="Label" maxLength={MAX_LABEL_LENGTH} autoFocus />
-                  <input type="text" value={editDesc} onChange={e => setEditDesc(e.target.value.slice(0, MAX_DESC_LENGTH))} className="w-full bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-lg px-3 py-2 text-xs text-gray-700 dark:text-zinc-300 mb-2 focus:outline-none focus:border-purple-500" placeholder="Beschreibung (optional)" maxLength={MAX_DESC_LENGTH} />
+                  <input type="text" value={editLabel} onChange={e => setEditLabel(e.target.value.slice(0, MAX_LABEL_LENGTH))} className="w-full bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white mb-2 focus:outline-none focus:border-purple-500 transition-colors" placeholder="Label" maxLength={MAX_LABEL_LENGTH} autoFocus />
+                  <input type="text" value={editDesc} onChange={e => setEditDesc(e.target.value.slice(0, MAX_DESC_LENGTH))} className="w-full bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl px-3 py-2 text-xs text-gray-700 dark:text-zinc-300 mb-2 focus:outline-none focus:border-purple-500 transition-colors" placeholder="Beschreibung (optional)" maxLength={MAX_DESC_LENGTH} />
 
                   <button
                     onClick={() => setShowIconPicker(!showIconPicker)}
-                    className="w-full flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 mb-2 hover:border-purple-400 transition-colors"
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 mb-2 hover:border-purple-400 transition-colors"
                   >
                     <div className="w-6 h-6 rounded flex items-center justify-center" style={{ background: NODE_STYLES[node.type].accent + '15' }}>
                       {renderNodeIcon(editIcon, undefined, (() => { const I = ICONS[editIcon]; return I ? <I size={14} style={{ color: NODE_STYLES[node.type].accent }} /> : <Zap size={14} style={{ color: NODE_STYLES[node.type].accent }} />; })(), 14)}
@@ -2730,7 +2902,7 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
                   </button>
 
                   {showIconPicker && (
-                    <div className="mb-2 max-h-32 overflow-y-auto rounded-lg border border-gray-200 dark:border-zinc-700 p-2">
+                    <div className="mb-2 max-h-32 overflow-y-auto rounded-xl border border-gray-200 dark:border-zinc-700 p-2">
                       <div className="grid grid-cols-8 gap-1">
                         {allIcons.map(item => {
                           const isIconSelected = editIcon === item.id;
@@ -2752,49 +2924,117 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
                     </div>
                   )}
 
-                  {/* Resource Type Linking */}
-                  <select
-                    value={editLinkedResource}
-                    onChange={e => setEditLinkedResource(e.target.value)}
-                    className="w-full bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-lg px-3 py-2 text-xs text-gray-700 dark:text-zinc-300 mb-2 focus:outline-none focus:border-purple-500"
-                  >
-                    <option value="">{t('node.resourceNone')}</option>
-                    <option value="transcript">{t('resource.type.transcript')}</option>
-                    <option value="document">{t('resource.type.document')}</option>
-                    <option value="note">{t('resource.type.note')}</option>
-                    <option value="dataset">{t('resource.type.dataset')}</option>
-                  </select>
+                  {/* Resource Linking — only for trigger, process, output */}
+                  {(node.type === 'trigger' || node.type === 'process' || node.type === 'output') && (
+                    <div className="mb-2">
+                      <div className="text-[10px] font-medium text-gray-400 dark:text-zinc-500 mb-1 flex items-center gap-1">
+                        <Paperclip size={10} />
+                        {lang === 'en' ? 'Link Resource' : 'Ressource verknüpfen'}
+                      </div>
+                      <div className="relative">
+                        <select
+                          value={editLinkedResource}
+                          onChange={e => { setEditLinkedResource(e.target.value); setEditLinkedResourceId(''); }}
+                          className="w-full appearance-none bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl px-3 py-2 pr-8 text-xs text-gray-700 dark:text-zinc-300 focus:outline-none focus:border-purple-500 transition-colors cursor-pointer"
+                        >
+                          <option value="">{t('node.resourceNone')}</option>
+                          <optgroup label={lang === 'en' ? 'Forms & Pages' : 'Formulare & Seiten'}>
+                            <option value="form">{lang === 'en' ? 'Onboarding Form' : 'Onboarding Formular'}</option>
+                            <option value="page">{lang === 'en' ? 'Landing Page' : 'Landing Page'}</option>
+                          </optgroup>
+                          <optgroup label={lang === 'en' ? 'Resources' : 'Ressourcen'}>
+                            <option value="transcript">{t('resource.type.transcript')}</option>
+                            <option value="document">{t('resource.type.document')}</option>
+                            <option value="note">{t('resource.type.note')}</option>
+                            <option value="dataset">{t('resource.type.dataset')}</option>
+                          </optgroup>
+                        </select>
+                        <ChevronDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                      </div>
+                      {/* Specific resource picker — shows actual files of the selected type */}
+                      {editLinkedResource && !['form', 'page'].includes(editLinkedResource) && (() => {
+                        const systemId = initialSystem?.id || '';
+                        const resources = systemId ? getResourcesForSystem(systemId).filter(r => r.type === editLinkedResource) : [];
+                        return resources.length > 0 ? (
+                          <div className="relative mt-1.5">
+                            <select
+                              value={editLinkedResourceId}
+                              onChange={e => setEditLinkedResourceId(e.target.value)}
+                              className="w-full appearance-none bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl px-3 py-1.5 pr-8 text-xs text-gray-700 dark:text-zinc-300 focus:outline-none focus:border-purple-500 transition-colors cursor-pointer"
+                            >
+                              <option value="">{lang === 'en' ? '— All of this type —' : '— Alle dieses Typs —'}</option>
+                              {resources.map(r => (
+                                <option key={r.id} value={r.id}>{r.title}</option>
+                              ))}
+                            </select>
+                            <ChevronDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                          </div>
+                        ) : (
+                          <p className="text-[10px] text-gray-400 dark:text-zinc-600 mt-1">
+                            {lang === 'en' ? 'No resources of this type yet. Add them in the Resources tab.' : 'Noch keine Ressourcen dieses Typs. Füge sie im Ressourcen-Tab hinzu.'}
+                          </p>
+                        );
+                      })()}
+                    </div>
+                  )}
+
+                  {/* Linked Page — opens internal page from canvas */}
+                  <div className="mb-2">
+                    <div className="text-[10px] font-medium text-gray-400 dark:text-zinc-500 mb-1 flex items-center gap-1">
+                      <Globe size={10} />
+                      {lang === 'en' ? 'Link Page / Tool' : 'Seite / Tool verknüpfen'}
+                    </div>
+                    <div className="relative">
+                      <select
+                        value={editLinkedPage}
+                        onChange={e => setEditLinkedPage(e.target.value)}
+                        className="w-full appearance-none bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl px-3 py-2 pr-8 text-xs text-gray-700 dark:text-zinc-300 focus:outline-none focus:border-purple-500 transition-colors cursor-pointer"
+                      >
+                        {LINKABLE_PAGES.map(p => (
+                          <option key={p.value} value={p.value}>{p.label[lang]}</option>
+                        ))}
+                      </select>
+                      <ChevronDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                    </div>
+                    {editLinkedPage && (
+                      <p className="text-[10px] text-blue-400 mt-1">{lang === 'de' ? 'Klickbar im Canvas — öffnet die Seite direkt' : 'Clickable on canvas — opens the page directly'}</p>
+                    )}
+                  </div>
 
                   <div className="flex gap-2">
-                    <button onClick={() => { setEditNode(null); setShowIconPicker(false); }} className="flex-1 py-1.5 rounded-lg text-xs border border-gray-200 dark:border-zinc-700 text-gray-500 hover:bg-gray-50 dark:hover:bg-zinc-800">{t('edit.cancel')}</button>
-                    <button onClick={saveNodeEdit} className="flex-1 py-1.5 rounded-lg text-xs bg-purple-600 text-white hover:bg-purple-500">{t('edit.save')}</button>
+                    <button onClick={() => { setEditNode(null); setShowIconPicker(false); }} className="flex-1 py-1.5 rounded-xl text-xs border border-gray-200 dark:border-zinc-700 text-gray-500 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors">{t('edit.cancel')}</button>
+                    <button onClick={saveNodeEdit} className="flex-1 py-1.5 rounded-xl text-xs bg-purple-600 text-white hover:bg-purple-500 transition-colors">{t('edit.save')}</button>
                   </div>
                 </div>
               );
             })()}
 
-            {editGroupId && !readOnly && (() => {
-              const group = groups.find(g => g.id === editGroupId);
-              if (!group) return null;
-              return (
-                <div className="absolute bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl shadow-xl p-4 z-50" style={{ left: group.x, top: group.y + group.height + 10, width: 260 }} onClick={e => e.stopPropagation()} role="dialog" aria-label={t('edit.editGroupAria')}>
+          {editGroupId && !readOnly && (() => {
+            const group = groups.find(g => g.id === editGroupId);
+            if (!group) return null;
+            const gScreenX = group.x * zoom + pan.x;
+            const gScreenY = (group.y + group.height + 10) * zoom + pan.y;
+            return (
+              <div className="absolute bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl shadow-xl p-4 z-50" style={{ left: gScreenX, top: gScreenY, width: 260 }} onClick={e => e.stopPropagation()} role="dialog" aria-label={t('edit.editGroupAria')}>
                   <div className="text-xs font-semibold text-gray-500 dark:text-zinc-400 mb-2">{t('edit.editGroup')}</div>
-                  <input type="text" value={editGroupLabel} onChange={e => setEditGroupLabel(e.target.value.slice(0, MAX_LABEL_LENGTH))} className="w-full bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-white mb-3 focus:outline-none focus:border-purple-500" placeholder={t('edit.groupPlaceholder')} maxLength={MAX_LABEL_LENGTH} autoFocus />
-                  <div className="flex gap-2">
-                    <button onClick={() => setEditGroupId(null)} className="flex-1 py-1.5 rounded-lg text-xs border border-gray-200 dark:border-zinc-700 text-gray-500 hover:bg-gray-50 dark:hover:bg-zinc-800">{t('edit.cancel')}</button>
-                    <button onClick={saveGroupEdit} className="flex-1 py-1.5 rounded-lg text-xs bg-purple-600 text-white hover:bg-purple-500">{t('edit.save')}</button>
-                  </div>
+                  <input type="text" value={editGroupLabel} onChange={e => setEditGroupLabel(e.target.value.slice(0, MAX_LABEL_LENGTH))} className="w-full bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white mb-3 focus:outline-none focus:border-purple-500 transition-colors" placeholder={t('edit.groupPlaceholder')} maxLength={MAX_LABEL_LENGTH} autoFocus />
+                <div className="flex gap-2">
+                  <button onClick={() => setEditGroupId(null)} className="flex-1 py-1.5 rounded-xl text-xs border border-gray-200 dark:border-zinc-700 text-gray-500 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors">{t('edit.cancel')}</button>
+                  <button onClick={saveGroupEdit} className="flex-1 py-1.5 rounded-xl text-xs bg-purple-600 text-white hover:bg-purple-500 transition-colors">{t('edit.save')}</button>
                 </div>
-              );
-            })()}
+              </div>
+            );
+          })()}
 
-            {/* Sticky Note Edit Overlay */}
-            {editStickyId && !readOnly && (() => {
-              const sticky = stickyNotes.find(s => s.id === editStickyId);
-              if (!sticky) return null;
-              const TEXT_COLOR_PRESETS = ['#854d0e','#9a3412','#991b1b','#9d174d','#5b21b6','#1e40af','#166534','#374151','#000000','#ffffff'];
-              return (
-                <div className="absolute bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl shadow-xl p-4 z-50" style={{ left: sticky.x, top: sticky.y + sticky.height + 10, width: 280 }} onClick={e => e.stopPropagation()} role="dialog" aria-label={t('edit.editNoteAria')}>
+          {/* Sticky Note Edit Overlay */}
+          {editStickyId && !readOnly && (() => {
+            const sticky = stickyNotes.find(s => s.id === editStickyId);
+            if (!sticky) return null;
+            const sScreenX = sticky.x * zoom + pan.x;
+            const sScreenY = (sticky.y + sticky.height + 10) * zoom + pan.y;
+            const TEXT_COLOR_PRESETS = ['#854d0e','#9a3412','#991b1b','#9d174d','#5b21b6','#1e40af','#166534','#374151','#000000','#ffffff'];
+            return (
+              <div className="absolute bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl shadow-xl p-4 z-50" style={{ left: sScreenX, top: sScreenY, width: 280 }} onClick={e => e.stopPropagation()} role="dialog" aria-label={t('edit.editNoteAria')}>
                   <div className="text-xs font-semibold text-gray-500 dark:text-zinc-400 mb-2">{t('edit.editNote')}</div>
 
                   {/* Color Picker Row */}
@@ -2857,16 +3097,15 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
                   </div>
 
                   {/* Textarea */}
-                  <textarea value={editStickyText} onChange={e => setEditStickyText(e.target.value.slice(0, 500))} rows={4} className="w-full bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-white mb-3 focus:outline-none focus:border-purple-500 resize-none" style={{ fontWeight: editStickyBold ? 700 : 400, fontStyle: editStickyItalic ? 'italic' : 'normal', fontSize: editStickyFontSize, color: editStickyTextColor || undefined }} placeholder={t('edit.notePlaceholder')} maxLength={500} autoFocus />
+                  <textarea value={editStickyText} onChange={e => setEditStickyText(e.target.value.slice(0, 500))} rows={4} className="w-full bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white mb-3 focus:outline-none focus:border-purple-500 resize-none transition-colors" style={{ fontWeight: editStickyBold ? 700 : 400, fontStyle: editStickyItalic ? 'italic' : 'normal', fontSize: editStickyFontSize, color: editStickyTextColor || undefined }} placeholder={t('edit.notePlaceholder')} maxLength={500} autoFocus />
 
-                  <div className="flex gap-2">
-                    <button onClick={() => setEditStickyId(null)} className="flex-1 py-1.5 rounded-lg text-xs border border-gray-200 dark:border-zinc-700 text-gray-500 hover:bg-gray-50 dark:hover:bg-zinc-800">{t('edit.cancel')}</button>
-                    <button onClick={saveStickyEdit} className="flex-1 py-1.5 rounded-lg text-xs bg-purple-600 text-white hover:bg-purple-500">{t('edit.save')}</button>
-                  </div>
+                <div className="flex gap-2">
+                  <button onClick={() => setEditStickyId(null)} className="flex-1 py-1.5 rounded-xl text-xs border border-gray-200 dark:border-zinc-700 text-gray-500 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors">{t('edit.cancel')}</button>
+                  <button onClick={saveStickyEdit} className="flex-1 py-1.5 rounded-xl text-xs bg-purple-600 text-white hover:bg-purple-500 transition-colors">{t('edit.save')}</button>
                 </div>
-              );
-            })()}
-          </div>
+              </div>
+            );
+          })()}
 
           {/* ─── Empty State ─── */}
           {nodes.length === 0 && groups.length === 0 && stickyNotes.length === 0 && !readOnly && (
@@ -2974,8 +3213,13 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
                   <Eye size={13} /> {t('contextMenu.edit')}
                 </button>
               )}
+              {contextMenu.stickyId && (
+                <button onClick={() => { startStickyEdit(contextMenu.stickyId!); setContextMenu(null); }} className="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-700 dark:text-zinc-300 hover:bg-gray-50 dark:hover:bg-zinc-800">
+                  <Eye size={13} /> {t('contextMenu.edit')}
+                </button>
+              )}
               {contextMenu.connIdx !== undefined && (
-                <button onClick={() => { insertNodeOnConnection(contextMenu.connIdx!); setContextMenu(null); }} className="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-700 dark:text-zinc-300 hover:bg-gray-50 dark:hover:bg-zinc-800">
+                <button onClick={() => { showInsertPopover(contextMenu.connIdx!); setContextMenu(null); }} className="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-700 dark:text-zinc-300 hover:bg-gray-50 dark:hover:bg-zinc-800">
                   <Plus size={13} /> {t('contextMenu.insertNode')}
                 </button>
               )}
@@ -2985,24 +3229,33 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
             </div>
           )}
 
-          {/* Presentation Mode floating bar */}
+          {/* Presentation Mode floating bar – auto-fades, reappears on hover */}
           {isPresentationMode && (
-            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-5 py-2.5 bg-black/70 backdrop-blur-xl rounded-full shadow-2xl border border-white/10">
-              <span className="text-xs text-white/60 font-medium">{lang === 'en' ? 'Presentation Mode' : 'Präsentationsmodus'}</span>
-              <div className="w-px h-4 bg-white/20" />
-              <button
-                onClick={() => fitToScreen()}
-                className="p-1.5 rounded-full text-white/60 hover:text-white hover:bg-white/10 transition-colors"
-                title={t('toolbar.fitScreen')}
+            <div
+              className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50 p-2"
+              onMouseEnter={() => setPresBarVisible(true)}
+              onMouseLeave={() => setPresBarVisible(false)}
+            >
+              <div
+                className="flex items-center gap-3 px-5 py-2.5 bg-black/70 backdrop-blur-xl rounded-full shadow-2xl border border-white/10"
+                style={{ opacity: presBarVisible ? 1 : 0, transition: 'opacity 0.6s ease' }}
               >
-                <Crosshair size={14} />
-              </button>
-              <button
-                onClick={() => { setIsPresentationMode(false); setIsFullscreen(false); }}
-                className="px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-medium transition-colors"
-              >
-                {lang === 'en' ? 'Exit' : 'Beenden'}
-              </button>
+                <span className="text-xs text-white/60 font-medium">{lang === 'en' ? 'Presentation Mode' : 'Präsentationsmodus'}</span>
+                <div className="w-px h-4 bg-white/20" />
+                <button
+                  onClick={() => fitToScreen()}
+                  className="p-1.5 rounded-full text-white/60 hover:text-white hover:bg-white/10 transition-colors"
+                  title={t('toolbar.fitScreen')}
+                >
+                  <Crosshair size={14} />
+                </button>
+                <button
+                  onClick={() => { setIsPresentationMode(false); setIsFullscreen(false); }}
+                  className="px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-medium transition-colors"
+                >
+                  {lang === 'en' ? 'Exit' : 'Beenden'}
+                </button>
+              </div>
             </div>
           )}
 
@@ -3031,10 +3284,35 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
                     </div>
                   ))}
                 </div>
-                <button onClick={() => setShowShortcuts(false)} className="mt-4 w-full py-2 rounded-lg text-xs bg-purple-600 text-white hover:bg-purple-500">{t('shortcuts.close')}</button>
+                <button onClick={() => setShowShortcuts(false)} className="mt-4 w-full py-2 rounded-xl text-xs bg-purple-600 text-white hover:bg-purple-500 transition-colors">{t('shortcuts.close')}</button>
               </div>
             </div>
           )}
+
+          {/* ─── Delete Confirmation Dialog ─── */}
+          <ConfirmDialog
+            open={!!deleteConfirm}
+            title={
+              deleteConfirm?.type === 'nodes' ? (lang === 'en' ? 'Delete selected elements?' : 'Ausgewählte Elemente löschen?') :
+              deleteConfirm?.type === 'node' ? (lang === 'en' ? 'Delete node?' : 'Node löschen?') :
+              deleteConfirm?.type === 'connection' ? (lang === 'en' ? 'Delete connection?' : 'Verbindung löschen?') :
+              deleteConfirm?.type === 'group' ? (lang === 'en' ? 'Delete group?' : 'Gruppe löschen?') :
+              deleteConfirm?.type === 'sticky' ? (lang === 'en' ? 'Delete note?' : 'Notiz löschen?') :
+              (lang === 'en' ? 'Delete?' : 'Löschen?')
+            }
+            message={
+              deleteConfirm?.type === 'nodes' ? (lang === 'en' ? `${deleteConfirm.ids?.length || 0} elements and their connections will be removed.` : `${deleteConfirm.ids?.length || 0} Elemente und deren Verbindungen werden entfernt.`) :
+              deleteConfirm?.type === 'node' ? (lang === 'en' ? 'This node and all its connections will be removed.' : 'Dieser Node und alle Verbindungen werden entfernt.') :
+              deleteConfirm?.type === 'connection' ? (lang === 'en' ? 'This connection will be removed.' : 'Diese Verbindung wird entfernt.') :
+              deleteConfirm?.type === 'group' ? (lang === 'en' ? 'This group will be removed. Nodes inside are not affected.' : 'Diese Gruppe wird entfernt. Nodes darin bleiben erhalten.') :
+              (lang === 'en' ? 'This note will be removed.' : 'Diese Notiz wird entfernt.')
+            }
+            confirmLabel={lang === 'en' ? 'Delete' : 'Löschen'}
+            cancelLabel={lang === 'en' ? 'Cancel' : 'Abbrechen'}
+            variant="danger"
+            onConfirm={executeDelete}
+            onCancel={() => setDeleteConfirm(null)}
+          />
         </div>
       </div>
     </div>

@@ -14,6 +14,7 @@ const FormularPage = () => {
     nachricht: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState(false);
 
   useEffect(() => {
     document.title = "Erstgespräch anfragen - Flowstack Systems";
@@ -27,6 +28,7 @@ const FormularPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setSubmitError(false);
 
     try {
       // Formulardaten als URL-encoded senden (Google Apps Script erwartet dieses Format)
@@ -47,8 +49,8 @@ const FormularPage = () => {
       navigate("/danke");
     } catch (error) {
       console.error("Fehler beim Senden:", error);
-      // Bei Fehler trotzdem zur Danke-Seite (no-cors gibt keinen Response)
-      navigate("/danke");
+      setSubmitError(true);
+      setIsSubmitting(false);
     }
   };
 
@@ -230,6 +232,12 @@ const FormularPage = () => {
                       </>
                     )}
                   </button>
+
+                  {submitError && (
+                    <p className="text-sm text-red-400 text-center">
+                      Beim Senden ist ein Fehler aufgetreten. Bitte versuche es erneut.
+                    </p>
+                  )}
 
                   <p className="text-xs text-gray-500 text-center">
                     Mit dem Absenden akzeptierst du unsere{" "}

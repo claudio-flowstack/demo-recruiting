@@ -17,7 +17,7 @@ export const Relief = () => {
           {relief.items.map((item, index) => (
             <div
               key={index}
-              className="flex items-start gap-3 p-4 rounded-lg bg-card/30 border border-border/30"
+              className="flex items-start gap-3 p-4 rounded-xl bg-card/30 border border-border/30"
             >
               <MinusCircle className="w-5 h-5 text-primary/70 mt-0.5 flex-shrink-0" />
               <span className="text-foreground/80">{item}</span>

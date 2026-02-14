@@ -133,3 +133,66 @@
     padding-right: 2.25rem;
   }
 }
+
+/* ─── Date & Time Input Styling ─────────────────────────────────────────────
+   Overrides the native browser date/time picker to match the dark UI theme.
+   Works on Chromium (Chrome, Edge, Arc, Brave) and Safari.
+   ──────────────────────────────────────────────────────────────────────────── */
+
+/* Webkit calendar/time picker icon — recolor to match theme */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  border-radius: 6px;
+  padding: 4px;
+  transition: background 0.15s ease;
+}
+
+/* Dark backgrounds: invert the icon so it's visible */
+.dark input[type="date"]::-webkit-calendar-picker-indicator,
+.dark input[type="time"]::-webkit-calendar-picker-indicator,
+.dark input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+[class*="bg-gray-8"] input[type="date"]::-webkit-calendar-picker-indicator,
+[class*="bg-gray-8"] input[type="time"]::-webkit-calendar-picker-indicator,
+[class*="bg-\[#0a0a0e\]"] input[type="date"]::-webkit-calendar-picker-indicator,
+[class*="bg-\[#0a0a0e\]"] input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.7) sepia(0.3) saturate(3) hue-rotate(210deg) brightness(1.1);
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover,
+input[type="time"]::-webkit-calendar-picker-indicator:hover,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover {
+  background: rgba(139, 92, 246, 0.15);
+}
+
+/* Remove the inner spin button on time inputs */
+input[type="time"]::-webkit-inner-spin-button {
+  display: none;
+}
+
+/* Ensure date/time inputs have the same text color */
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"] {
+  color-scheme: dark;
+}
+
+/* Light mode override */
+:root:not(.dark) input[type="date"],
+:root:not(.dark) input[type="time"],
+:root:not(.dark) input[type="datetime-local"] {
+  color-scheme: light;
+}
+
+/* ─── Chromium date/time picker popup (::picker()) ──────────────────────────
+   Style the dropdown calendar/clock that appears when clicking the input.
+   Note: This is supported in Chrome 130+ / Edge 130+ (2024+).
+   Older browsers will show the default picker — still functional, just unstyled.
+   ──────────────────────────────────────────────────────────────────────────── */
+
+/* Dark-themed background page (the landing page) uses bg-[#0a0a0e] */
+[class*="bg-\[#0a0a0e\]"] input[type="date"],
+[class*="bg-\[#0a0a0e\]"] input[type="time"] {
+  color-scheme: dark;
+}

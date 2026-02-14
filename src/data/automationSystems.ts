@@ -24,7 +24,7 @@ export const DEMO_SYSTEMS: AutomationSystem[] = [
     status: 'active',
     webhookUrl: '',
     nodes: [
-      { id: 'n1', label: 'Onboarding-Gespräch', description: 'Erstgespräch mit dem Kunden', icon: 'users', type: 'trigger', ...p(0, 0) },
+      { id: 'n1', label: 'Onboarding-Gespräch', description: 'Erstgespräch mit dem Kunden', icon: 'users', type: 'trigger', ...p(0, 0), linkedPage: '/onboarding' },
       { id: 'n2', label: 'KI-Transkription', description: 'Gespräch wird transkribiert', icon: 'logo-openai', type: 'ai', ...p(1, 0) },
       { id: 'n3', label: 'Werbetexte', description: 'Copy & Headlines generiert', icon: 'logo-google-docs', type: 'output', ...p(2, 0) },
       { id: 'n4', label: 'Website', description: 'Landing Page erstellt', icon: 'globe', type: 'output', ...p(2, 1) },

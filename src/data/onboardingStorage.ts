@@ -21,3 +21,31 @@ export function saveOnboardingSubmission(data: OnboardingFormData): string {
   localStorage.setItem(ONBOARDING_KEY, JSON.stringify(submissions));
   return id;
 }
+
+export const emptyOnboardingForm: OnboardingFormData = {
+  clientName: '',
+  companyName: '',
+  email: '',
+  phone: '',
+  position: '',
+  packageTier: 'growth',
+  contractStart: '',
+  contractDuration: '3',
+  monthlyBudget: '',
+  kickoffDate: '',
+  kickoffTime: '10:00',
+  kickoffParticipants: '',
+  kickoffNotes: '',
+  websiteUrl: '',
+  socialMediaUrls: '',
+  existingTools: '',
+  hasBrandGuidelines: 'nein',
+  googleAccess: 'nein',
+  industry: '',
+  targetAudience: '',
+  currentChallenges: '',
+  previousMarketing: '',
+  salesNotes: '',
+  priorities: '',
+  specialRequirements: '',
+};
