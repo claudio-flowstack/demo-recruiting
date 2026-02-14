@@ -2046,6 +2046,7 @@ function AutomationDashboardContent() {
           )}
           {selectedSystem && (
             <SystemDetailView
+              key={selectedSystem.id}
               system={selectedSystem}
               isUserSystem={isUserSystem}
               isDemoSystem={isDemoSystem}
