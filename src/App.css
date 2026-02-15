@@ -132,6 +132,18 @@
     background-size: 16px;
     padding-right: 2.25rem;
   }
+  select option {
+    @apply bg-white text-gray-900;
+  }
+  .dark select option {
+    @apply bg-zinc-800 text-zinc-200;
+  }
+  select optgroup {
+    @apply font-semibold;
+  }
+  .dark select optgroup {
+    @apply bg-zinc-900 text-zinc-400;
+  }
 }
 
 /* ─── Date & Time Input Styling ─────────────────────────────────────────────

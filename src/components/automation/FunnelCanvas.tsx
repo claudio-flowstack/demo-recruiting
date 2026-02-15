@@ -757,8 +757,12 @@ export default function FunnelCanvas() {
 
   // ─── UI State ────────────────────────────────────────────────────────────
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isPresentationMode, setIsPresentationMode] = useState(false);
+  const [presBarVisible, setPresBarVisible] = useState(true);
+  const [presEditEnabled, setPresEditEnabled] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [paletteTab, setPaletteTab] = useState<'platforms' | 'mockups' | 'text' | 'media' | 'phases' | 'templates'>('platforms');
+  const [paletteSearch, setPaletteSearch] = useState('');
   const [snapEnabled, setSnapEnabled] = useState(true);
   const [snapLines, setSnapLines] = useState<{ x: number[]; y: number[] }>({ x: [], y: [] });
   const [equalSpacingGuides, setEqualSpacingGuides] = useState<EqGuide[]>([]);
@@ -907,6 +911,15 @@ export default function FunnelCanvas() {
     setPan({ x: (rect.width - w * z) / 2 - minX * z, y: (rect.height - h * z) / 2 - minY * z });
   }, [elements, phases]);
 
+  // Auto-fade presentation bar
+  useEffect(() => {
+    if (isPresentationMode) {
+      setPresBarVisible(true);
+      const timer = setTimeout(() => setPresBarVisible(false), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [isPresentationMode]);
+
   // ─── Board CRUD ──────────────────────────────────────────────────────────
   const loadBoard = useCallback((board: FunnelBoard) => {
     setElements(board.elements);
@@ -940,17 +953,22 @@ export default function FunnelCanvas() {
   const saveCurrentBoard = useCallback(() => {
     if (!activeBoardId) return;
     setSaveState('saving');
-    const board: FunnelBoard = {
-      id: activeBoardId, name: boardName || 'Unbenannt', description: boardDesc,
-      elements, connections, phases,
-      createdAt: boards.find(b => b.id === activeBoardId)?.createdAt || new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    const updated = boards.map(b => b.id === activeBoardId ? board : b);
-    if (!updated.find(b => b.id === activeBoardId)) updated.push(board);
-    setBoards(updated);
-    saveFunnelBoards(updated);
-    setTimeout(() => { setSaveState('saved'); setTimeout(() => setSaveState('idle'), 1500); }, 300);
+    try {
+      const board: FunnelBoard = {
+        id: activeBoardId, name: boardName || 'Unbenannt', description: boardDesc,
+        elements, connections, phases,
+        createdAt: boards.find(b => b.id === activeBoardId)?.createdAt || new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      const updated = boards.map(b => b.id === activeBoardId ? board : b);
+      if (!updated.find(b => b.id === activeBoardId)) updated.push(board);
+      setBoards(updated);
+      saveFunnelBoards(updated);
+      setTimeout(() => { setSaveState('saved'); setTimeout(() => setSaveState('idle'), 1500); }, 300);
+    } catch (e) {
+      console.warn('Fehler beim Speichern:', e);
+      setSaveState('idle');
+    }
   }, [activeBoardId, boardName, boardDesc, elements, connections, phases, boards]);
 
   const handleDeleteBoard = useCallback((id: string) => {
@@ -988,12 +1006,15 @@ export default function FunnelCanvas() {
 
   // ─── Keyboard ────────────────────────────────────────────────────────────
   useEffect(() => {
-    const isEditing = editElementId || editPhaseId || editConnId || inlineEditId;
+    const isEditing = editElementId || editPhaseId || editConnId || inlineEditId || inlineConnLabelId;
     const down = (e: KeyboardEvent) => {
       if (e.key === ' ' && !e.repeat) { e.preventDefault(); setSpaceHeld(true); }
       if ((e.metaKey || e.ctrlKey) && e.key === 'z' && !e.shiftKey && !isEditing) { e.preventDefault(); historyUndo(); }
       if ((e.metaKey || e.ctrlKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey)) && !isEditing) { e.preventDefault(); historyRedo(); }
-      if (e.key === 'Escape') { setSelectedElementId(null); setSelectedConnId(null); setSelectedPhaseId(null); setMultiSelectedIds(new Set()); setConnectState(null); setEditElementId(null); setEditConnId(null); setEditPhaseId(null); setContextMenu(null); setInlineEditId(null); setRightClickMenu(null); setLassoState(null); }
+      if (e.key === 'Escape') {
+        if (isPresentationMode) { setIsPresentationMode(false); setIsFullscreen(false); setPresEditEnabled(false); return; }
+        setSelectedElementId(null); setSelectedConnId(null); setSelectedPhaseId(null); setMultiSelectedIds(new Set()); setConnectState(null); setReconnectState(null); setEditElementId(null); setEditConnId(null); setEditPhaseId(null); setContextMenu(null); setInlineEditId(null); setRightClickMenu(null); setLassoState(null);
+      }
 
       // Delete / Backspace – remove all selected
       if ((e.key === 'Delete' || e.key === 'Backspace') && !isEditing) {
@@ -1031,15 +1052,16 @@ export default function FunnelCanvas() {
           e.preventDefault();
           pushHistory();
           const newIds = new Map<string, string>();
-          const pasted: FunnelElement[] = clipboardRef.current.map(el => {
-            const newId = `el-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+          const ts = Date.now();
+          const pasted: FunnelElement[] = clipboardRef.current.map((el, i) => {
+            const newId = `el-${ts}-${i}-${Math.random().toString(36).slice(2, 8)}`;
             newIds.set(el.id, newId);
             return { ...el, id: newId, x: el.x + 40, y: el.y + 40 };
           });
           // Also duplicate connections between pasted elements
           const pastedConns: FunnelConnection[] = connections
             .filter(c => newIds.has(c.from) && newIds.has(c.to))
-            .map(c => ({ ...c, id: `conn-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, from: newIds.get(c.from)!, to: newIds.get(c.to)! }));
+            .map((c, i) => ({ ...c, id: `conn-${ts}-${i}-${Math.random().toString(36).slice(2, 8)}`, from: newIds.get(c.from)!, to: newIds.get(c.to)! }));
           setElements(prev => [...prev, ...pasted]);
           if (pastedConns.length > 0) setConnections(prev => [...prev, ...pastedConns]);
           setMultiSelectedIds(new Set(pasted.map(el => el.id)));
@@ -1130,7 +1152,7 @@ export default function FunnelCanvas() {
         return;
       }
       if (isEmptyArea) {
-        if (e.shiftKey) {
+        if (e.metaKey || e.ctrlKey) {
           // Start lasso selection
           const pos = screenToCanvas(e.clientX, e.clientY);
           setLassoState({ startX: pos.x, startY: pos.y, currentX: pos.x, currentY: pos.y });
@@ -1276,8 +1298,8 @@ export default function FunnelCanvas() {
     if (!el) return;
     const pos = screenToCanvas(e.clientX, e.clientY);
     setDragState({ id, offsetX: pos.x - el.x, offsetY: pos.y - el.y });
-    if (e.shiftKey) {
-      // Shift+Click: toggle element in multi-selection
+    if (e.metaKey || e.ctrlKey) {
+      // Cmd/Ctrl+Click: toggle element in multi-selection
       setMultiSelectedIds(prev => {
         const next = new Set(prev);
         if (next.has(id)) next.delete(id); else next.add(id);
@@ -1445,6 +1467,7 @@ export default function FunnelCanvas() {
   const handleElementDoubleClick = useCallback((id: string) => {
     const el = elements.find(e => e.id === id);
     if (!el) return;
+    pushHistory();
     // Text elements: inline edit directly on canvas
     if (el.type === 'text') { setInlineEditId(id); return; }
     setEditElementId(id);
@@ -1595,6 +1618,8 @@ export default function FunnelCanvas() {
   }, []);
 
   // ─── PNG Export ──────────────────────────────────────────────────────────
+  const escXml = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
   const handleExportPNG = useCallback(() => {
     if (elements.length === 0) return;
     const allBounds = [
@@ -1614,7 +1639,7 @@ export default function FunnelCanvas() {
     for (const p of phases) {
       const c = GROUP_COLORS[p.color] || GROUP_COLORS.gray;
       svg += `<rect x="${p.x - minX}" y="${p.y - minY}" width="${p.width}" height="${p.height}" rx="16" fill="${c.bg}" stroke="${c.border}" stroke-width="2" stroke-dasharray="8,4" />`;
-      svg += `<text x="${p.x - minX + 16}" y="${p.y - minY + 24}" font-family="sans-serif" font-size="11" font-weight="700" fill="${c.text}" text-transform="uppercase">${p.label}</text>`;
+      svg += `<text x="${p.x - minX + 16}" y="${p.y - minY + 24}" font-family="sans-serif" font-size="11" font-weight="700" fill="${c.text}" text-transform="uppercase">${escXml(p.label)}</text>`;
     }
 
     for (const conn of connections) {
@@ -1627,7 +1652,7 @@ export default function FunnelCanvas() {
       if (conn.label) {
         const mx = (from.x + from.width / 2 + to.x + to.width / 2) / 2 - minX;
         const my = (from.y + from.height / 2 + to.y + to.height / 2) / 2 - minY - 8;
-        svg += `<text x="${mx}" y="${my}" font-family="sans-serif" font-size="10" fill="${isDark ? '#a1a1aa' : '#6b7280'}" text-anchor="middle">${conn.label}</text>`;
+        svg += `<text x="${mx}" y="${my}" font-family="sans-serif" font-size="10" fill="${isDark ? '#a1a1aa' : '#6b7280'}" text-anchor="middle">${escXml(conn.label)}</text>`;
       }
     }
 
@@ -1636,9 +1661,9 @@ export default function FunnelCanvas() {
         const platform = PLATFORMS.find(p => p.kind === el.platformKind);
         const color = platform?.color || '#8b5cf6';
         svg += `<rect x="${el.x - minX}" y="${el.y - minY}" width="${el.width}" height="${el.height}" rx="12" fill="${color}12" stroke="${color}30" stroke-width="1.5" />`;
-        svg += `<text x="${el.x - minX + 48}" y="${el.y - minY + el.height / 2 + 4}" font-family="sans-serif" font-size="13" font-weight="600" fill="${isDark ? '#fff' : '#111'}">${(el.label || '').substring(0, 22)}</text>`;
+        svg += `<text x="${el.x - minX + 48}" y="${el.y - minY + el.height / 2 + 4}" font-family="sans-serif" font-size="13" font-weight="600" fill="${isDark ? '#fff' : '#111'}">${escXml((el.label || '').substring(0, 22))}</text>`;
       } else if (el.type === 'text') {
-        svg += `<text x="${el.x - minX + 8}" y="${el.y - minY + 20}" font-family="sans-serif" font-size="${el.fontSize || 14}" fill="${el.textColor || (isDark ? '#e4e4e7' : '#374151')}">${(el.textContent || '').substring(0, 50)}</text>`;
+        svg += `<text x="${el.x - minX + 8}" y="${el.y - minY + 20}" font-family="sans-serif" font-size="${el.fontSize || 14}" fill="${el.textColor || (isDark ? '#e4e4e7' : '#374151')}">${escXml((el.textContent || '').substring(0, 50))}</text>`;
       } else {
         svg += `<rect x="${el.x - minX}" y="${el.y - minY}" width="${el.width}" height="${el.height}" rx="12" fill="${isDark ? '#27272a' : '#f3f4f6'}" stroke="${isDark ? '#3f3f46' : '#d1d5db'}" stroke-width="1.5" />`;
       }
@@ -1793,7 +1818,7 @@ export default function FunnelCanvas() {
     <div className={`flex flex-col ${isFullscreen ? 'fixed inset-0 z-50 bg-gray-50 dark:bg-zinc-950' : 'rounded-2xl border border-gray-200 dark:border-zinc-800 overflow-hidden'}`} style={{ height: isFullscreen ? '100vh' : '80vh' }}>
 
       {/* ── Toolbar ─────────────────────────────────────────────────────── */}
-      <div className="flex items-center gap-2 px-3 py-2 border-b border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 z-10 shrink-0">
+      {(!isPresentationMode || presEditEnabled) && <div className="flex items-center gap-2 px-3 py-2 border-b border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 z-10 shrink-0">
         <button onClick={() => setPaletteOpen(!paletteOpen)} className={`p-1.5 rounded-lg transition-colors ${paletteOpen ? 'bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800'}`} title="Palette"><Plus size={16} /></button>
 
         <div className="h-4 w-px bg-gray-200 dark:bg-zinc-700" />
@@ -1827,6 +1852,7 @@ export default function FunnelCanvas() {
         <div className="h-4 w-px bg-gray-200 dark:bg-zinc-700" />
 
         <button onClick={() => setShowShortcuts(!showShortcuts)} className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"><HelpCircle size={15} /></button>
+        <button onClick={() => { setIsPresentationMode(true); setIsFullscreen(true); setPaletteOpen(false); setShowMetrics(false); setShowGlobalStyles(false); setTimeout(() => fitToScreen(), 100); }} className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors" title="Präsentationsmodus"><Eye size={15} /></button>
         <button onClick={() => setIsFullscreen(!isFullscreen)} className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors">{isFullscreen ? <Minimize2 size={15} /> : <Maximize2 size={15} />}</button>
 
         <div className="h-4 w-px bg-gray-200 dark:bg-zinc-700" />
@@ -1835,7 +1861,7 @@ export default function FunnelCanvas() {
           <Save size={14} />{saveState === 'saving' ? 'Speichert...' : saveState === 'saved' ? 'Gespeichert' : 'Speichern'}
         </button>
         <button onClick={() => { setShowBoardList(true); setPaletteOpen(false); }} className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors" title="Zur Board-Übersicht"><LayoutGrid size={15} /></button>
-      </div>
+      </div>}
 
       {/* ── History Panel ──────────────────────────────────────────────── */}
       {showHistoryPanel && (canUndo || canRedo) && (
@@ -1906,72 +1932,119 @@ export default function FunnelCanvas() {
 
       <div className="flex flex-1 overflow-hidden">
         {/* ── Palette ───────────────────────────────────────────────────── */}
-        {paletteOpen && (
-          <div className="w-56 border-r border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-y-auto shrink-0">
-            <div className="flex border-b border-gray-200 dark:border-zinc-800">
-              {(['platforms', 'mockups', 'text', 'media', 'phases', 'templates'] as const).map(tab => (
-                <button key={tab} onClick={() => setPaletteTab(tab)} className={`flex-1 py-2 text-[10px] font-medium transition-colors ${paletteTab === tab ? 'text-purple-600 dark:text-purple-400 border-b-2 border-purple-500' : 'text-gray-400 dark:text-zinc-500 hover:text-gray-600 dark:hover:text-zinc-300'}`}>
-                  {tab === 'platforms' ? 'Plattformen' : tab === 'mockups' ? 'Mockups' : tab === 'text' ? 'Text' : tab === 'media' ? 'Medien' : tab === 'phases' ? 'Phasen' : 'Vorlagen'}
-                </button>
-              ))}
+        {paletteOpen && (!isPresentationMode || presEditEnabled) && (
+          <div className="w-56 border-r border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex flex-col overflow-hidden shrink-0">
+            {/* Header + Tabs */}
+            <div className="p-3 border-b border-gray-200 dark:border-zinc-800">
+              <div className="text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wider mb-2">Elemente</div>
+              <div className="flex gap-1 mb-1">
+                {(['platforms', 'mockups', 'text'] as const).map(tab => (
+                  <button key={tab} onClick={() => setPaletteTab(tab)} className={`flex-1 text-xs py-1.5 rounded-xl font-medium transition-colors ${paletteTab === tab ? 'bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800'}`}>
+                    {tab === 'platforms' ? 'Plattformen' : tab === 'mockups' ? 'Mockups' : 'Text'}
+                  </button>
+                ))}
+              </div>
+              <div className="flex gap-1">
+                {(['media', 'phases', 'templates'] as const).map(tab => (
+                  <button key={tab} onClick={() => setPaletteTab(tab)} className={`flex-1 text-xs py-1.5 rounded-xl font-medium transition-colors ${paletteTab === tab ? 'bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800'}`}>
+                    {tab === 'media' ? 'Medien' : tab === 'phases' ? 'Phasen' : 'Vorlagen'}
+                  </button>
+                ))}
+              </div>
             </div>
 
-            <div className="p-2 space-y-1">
+            {/* Search */}
+            <div className="px-3 py-2 border-b border-gray-200 dark:border-zinc-800">
+              <div className="relative">
+                <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-zinc-600" />
+                <input
+                  type="text"
+                  value={paletteSearch}
+                  onChange={e => setPaletteSearch(e.target.value)}
+                  placeholder="Suchen…"
+                  className="w-full pl-7 pr-7 py-1.5 text-xs rounded-lg bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-white border border-gray-200 dark:border-zinc-700 focus:outline-none focus:ring-1 focus:ring-purple-500"
+                />
+                {paletteSearch && (
+                  <button onClick={() => setPaletteSearch('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-zinc-300">
+                    <X size={12} />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-2 space-y-1">
               {paletteTab === 'platforms' && (() => {
+                const search = paletteSearch.toLowerCase();
                 const categories = ['Werbung', 'Touchpoints', 'Backend'];
-                return categories.map(cat => (
-                  <div key={cat}>
-                    <p className="text-[10px] uppercase font-semibold text-gray-400 dark:text-zinc-500 px-2 pt-2 pb-1">{cat}</p>
-                    {PLATFORMS.filter(p => p.category === cat).map(p => {
-                      const item: FunnelPaletteItem = { type: 'platform', label: p.label, icon: p.icon, platformKind: p.kind };
-                      const LucideIcon = LUCIDE_ICONS[p.icon];
-                      return (
-                        <button key={p.kind} onClick={() => addElementFromPalette(item)} draggable
-                          onDragStart={e => { e.dataTransfer.setData('application/json', JSON.stringify(item)); e.dataTransfer.effectAllowed = 'copy'; }}
-                          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-left hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors cursor-grab active:cursor-grabbing">
-                          <div className="w-6 h-6 rounded flex items-center justify-center shrink-0" style={{ background: p.color + '18' }}>
-                            {TOOL_LOGOS[p.icon] ? renderNodeIcon(p.icon) : LucideIcon ? <LucideIcon size={14} style={{ color: p.color }} /> : <Globe size={14} style={{ color: p.color }} />}
-                          </div>
-                          <span className="text-xs text-gray-700 dark:text-zinc-300 truncate">{p.label}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
+                return categories.map(cat => {
+                  const filtered = PLATFORMS.filter(p => p.category === cat && (!search || p.label.toLowerCase().includes(search) || p.kind.toLowerCase().includes(search)));
+                  if (filtered.length === 0) return null;
+                  return (
+                    <div key={cat}>
+                      <p className="text-[10px] uppercase font-semibold text-gray-400 dark:text-zinc-500 px-2 pt-2 pb-1">{cat}</p>
+                      {filtered.map(p => {
+                        const item: FunnelPaletteItem = { type: 'platform', label: p.label, icon: p.icon, platformKind: p.kind };
+                        const LucideIcon = LUCIDE_ICONS[p.icon];
+                        return (
+                          <button key={p.kind} onClick={() => addElementFromPalette(item)} draggable
+                            onDragStart={e => { e.dataTransfer.setData('application/json', JSON.stringify(item)); e.dataTransfer.effectAllowed = 'copy'; }}
+                            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-left hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors cursor-grab active:cursor-grabbing">
+                            <div className="w-6 h-6 rounded flex items-center justify-center shrink-0" style={{ background: p.color + '18' }}>
+                              {TOOL_LOGOS[p.icon] ? renderNodeIcon(p.icon) : LucideIcon ? <LucideIcon size={14} style={{ color: p.color }} /> : <Globe size={14} style={{ color: p.color }} />}
+                            </div>
+                            <span className="text-xs text-gray-700 dark:text-zinc-300 truncate">{p.label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  );
+                });
+              })()}
+
+              {paletteTab === 'mockups' && (() => {
+                const search = paletteSearch.toLowerCase();
+                const filtered = MOCKUP_ITEMS.filter(item => !search || item.label.toLowerCase().includes(search));
+                return filtered.map(item => {
+                  const Icon = LUCIDE_ICONS[item.icon] || Monitor;
+                  return (
+                    <button key={item.label} onClick={() => addElementFromPalette(item)} draggable
+                      onDragStart={e => { e.dataTransfer.setData('application/json', JSON.stringify(item)); e.dataTransfer.effectAllowed = 'copy'; }}
+                      className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors cursor-grab active:cursor-grabbing">
+                      <Icon size={16} className="text-gray-500 dark:text-zinc-400 shrink-0" />
+                      <span className="text-xs text-gray-700 dark:text-zinc-300">{item.label}</span>
+                    </button>
+                  );
+                });
+              })()}
+
+              {paletteTab === 'text' && (() => {
+                const search = paletteSearch.toLowerCase();
+                const filtered = TEXT_ITEMS.filter(item => !search || item.label.toLowerCase().includes(search));
+                return filtered.map(item => (
+                  <button key={item.label} onClick={() => addElementFromPalette(item)} draggable
+                    onDragStart={e => { e.dataTransfer.setData('application/json', JSON.stringify(item)); e.dataTransfer.effectAllowed = 'copy'; }}
+                    className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors cursor-grab active:cursor-grabbing">
+                    <Type size={16} className="text-gray-500 dark:text-zinc-400 shrink-0" />
+                    <span className="text-xs text-gray-700 dark:text-zinc-300">{item.label}</span>
+                  </button>
                 ));
               })()}
 
-              {paletteTab === 'mockups' && MOCKUP_ITEMS.map(item => {
-                const Icon = LUCIDE_ICONS[item.icon] || Monitor;
-                return (
-                  <button key={item.label} onClick={() => addElementFromPalette(item)} draggable
-                    onDragStart={e => { e.dataTransfer.setData('application/json', JSON.stringify(item)); e.dataTransfer.effectAllowed = 'copy'; }}
-                    className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors cursor-grab active:cursor-grabbing">
-                    <Icon size={16} className="text-gray-500 dark:text-zinc-400 shrink-0" />
-                    <span className="text-xs text-gray-700 dark:text-zinc-300">{item.label}</span>
-                  </button>
-                );
-              })}
-
-              {paletteTab === 'text' && TEXT_ITEMS.map(item => (
-                <button key={item.label} onClick={() => addElementFromPalette(item)} draggable
-                  onDragStart={e => { e.dataTransfer.setData('application/json', JSON.stringify(item)); e.dataTransfer.effectAllowed = 'copy'; }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors cursor-grab active:cursor-grabbing">
-                  <Type size={16} className="text-gray-500 dark:text-zinc-400 shrink-0" />
-                  <span className="text-xs text-gray-700 dark:text-zinc-300">{item.label}</span>
-                </button>
-              ))}
-
-              {paletteTab === 'media' && MEDIA_ITEMS.map(item => {
-                const Icon = item.mediaType === 'video' ? Video : ImageIcon;
-                return (
-                  <button key={item.label} onClick={() => addElementFromPalette(item)} draggable
-                    onDragStart={e => { e.dataTransfer.setData('application/json', JSON.stringify(item)); e.dataTransfer.effectAllowed = 'copy'; }}
-                    className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors cursor-grab active:cursor-grabbing">
-                    <Icon size={16} className="text-gray-500 dark:text-zinc-400 shrink-0" />
-                    <span className="text-xs text-gray-700 dark:text-zinc-300">{item.label}</span>
-                  </button>
-                );
-              })}
+              {paletteTab === 'media' && (() => {
+                const search = paletteSearch.toLowerCase();
+                const filtered = MEDIA_ITEMS.filter(item => !search || item.label.toLowerCase().includes(search));
+                return filtered.map(item => {
+                  const Icon = item.mediaType === 'video' ? Video : ImageIcon;
+                  return (
+                    <button key={item.label} onClick={() => addElementFromPalette(item)} draggable
+                      onDragStart={e => { e.dataTransfer.setData('application/json', JSON.stringify(item)); e.dataTransfer.effectAllowed = 'copy'; }}
+                      className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors cursor-grab active:cursor-grabbing">
+                      <Icon size={16} className="text-gray-500 dark:text-zinc-400 shrink-0" />
+                      <span className="text-xs text-gray-700 dark:text-zinc-300">{item.label}</span>
+                    </button>
+                  );
+                });
+              })()}
 
               {paletteTab === 'phases' && Object.entries(GROUP_COLORS).map(([key, colors]) => (
                 <button key={key} onClick={() => {
@@ -2013,7 +2086,7 @@ export default function FunnelCanvas() {
         )}
 
         {/* ── Global Styles Panel ──────────────────────────────────────── */}
-        {showGlobalStyles && (
+        {showGlobalStyles && (!isPresentationMode || presEditEnabled) && (
           <div className="w-64 border-r border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-y-auto shrink-0">
             <div className="p-3 border-b border-gray-200 dark:border-zinc-800">
               <h3 className="text-xs font-semibold text-gray-900 dark:text-white flex items-center gap-1.5"><SlidersHorizontal size={12} /> Globale Stile</h3>
@@ -2503,7 +2576,7 @@ export default function FunnelCanvas() {
                       <input
                         type="number"
                         value={step.metricTarget ?? ''}
-                        onChange={e => setElements(prev => prev.map(el => el.id === step.id ? { ...el, metricTarget: Number(e.target.value) || 0 } : el))}
+                        onChange={e => { pushHistory(); setElements(prev => prev.map(el => el.id === step.id ? { ...el, metricTarget: Number(e.target.value) || 0 } : el)); }}
                         placeholder="Ziel"
                         className="w-20 px-2 py-1.5 text-[11px] rounded-lg border border-dashed border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-gray-500 dark:text-zinc-400 focus:outline-none focus:border-purple-400 text-right"
                       />
@@ -2870,6 +2943,53 @@ export default function FunnelCanvas() {
         )}
       </div>
     )}
+
+    {/* ── Presentation Mode Overlays ──────────────────────────────────── */}
+    {isPresentationMode && (
+      <>
+        {/* Edit toggle — top-left corner */}
+        <div className="absolute top-3 left-3 z-50">
+          <label className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-black/50 backdrop-blur-xl border border-white/10 cursor-pointer select-none">
+            <span className="text-[10px] text-white/60 font-medium">Bearbeiten</span>
+            <button
+              onClick={() => setPresEditEnabled(!presEditEnabled)}
+              className={`relative w-8 h-4 rounded-full transition-colors ${presEditEnabled ? 'bg-purple-500' : 'bg-white/20'}`}
+            >
+              <span className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-transform ${presEditEnabled ? 'translate-x-4' : 'translate-x-0.5'}`} />
+            </button>
+          </label>
+        </div>
+
+        {/* Bottom floating bar */}
+        <div
+          className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50 p-2"
+          onMouseEnter={() => setPresBarVisible(true)}
+          onMouseLeave={() => setPresBarVisible(false)}
+        >
+          <div
+            className="flex items-center gap-3 px-5 py-2.5 bg-black/70 backdrop-blur-xl rounded-full shadow-2xl border border-white/10"
+            style={{ opacity: presBarVisible ? 1 : 0, transition: 'opacity 0.6s ease' }}
+          >
+            <span className="text-xs text-white/60 font-medium">Präsentationsmodus</span>
+            <div className="w-px h-4 bg-white/20" />
+            <button
+              onClick={() => fitToScreen()}
+              className="p-1.5 rounded-full text-white/60 hover:text-white hover:bg-white/10 transition-colors"
+              title="Einpassen"
+            >
+              <Crosshair size={14} />
+            </button>
+            <button
+              onClick={() => { setIsPresentationMode(false); setIsFullscreen(false); setPresEditEnabled(false); }}
+              className="px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-medium transition-colors"
+            >
+              Beenden
+            </button>
+          </div>
+        </div>
+      </>
+    )}
+
     </div>
   );
 }

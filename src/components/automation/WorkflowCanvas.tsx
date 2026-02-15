@@ -22,11 +22,16 @@ import {
   Bell, LayoutDashboard, Webhook, Split, Repeat, FileSearch,
   MessageSquare, Gauge, Lock, Cpu, Layers, Settings,
   ChevronLeft, ChevronRight, ChevronUp,
+  // New palette icons
+  Calendar, Clock, Heart, Languages, Scan, Wrench, BookOpen,
+  FileOutput, GitMerge, Scale, ShieldAlert, Bookmark,
+  CopyCheck, Package, Smartphone, FileType2, ImagePlus, Video,
+  FileJson, Shuffle, Code,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '@/components/theme-provider';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
-import type { AutomationSystem, SystemNode, NodeConnection, NodeType, CanvasGroup, StickyNote, StickyNoteColor, PortDirection } from '@/types/automation';
+import type { AutomationSystem, SystemNode, NodeConnection, NodeType, CanvasGroup, StickyNote, StickyNoteColor, PortDirection, SubNode, SubNodeType } from '@/types/automation';
 import { getResourcesForSystem } from '@/data/resourceStorage';
 import type { NodeExecutionStatus } from '@/types/workflowEvents';
 import { TOOL_LOGOS, getToolLogosByCategory, renderNodeIcon } from './ToolLogos';
@@ -55,6 +60,14 @@ const ICONS: Record<string, IconComponent> = {
   'layout-dashboard': LayoutDashboard, 'webhook': Webhook, 'split': Split,
   'repeat': Repeat, 'file-search': FileSearch, 'message-square': MessageSquare,
   'gauge': Gauge, 'lock': Lock, 'cpu': Cpu, 'layers': Layers, 'settings': Settings,
+  // New palette icons
+  'calendar': Calendar, 'clock': Clock, 'heart': Heart, 'languages': Languages,
+  'scan': Scan, 'wrench': Wrench, 'book-open': BookOpen, 'file-output': FileOutput,
+  'git-branch': GitBranch, 'git-merge': GitMerge, 'scale': Scale,
+  'shield-alert': ShieldAlert, 'bookmark': Bookmark, 'copy-check': CopyCheck,
+  'package': Package, 'smartphone': Smartphone, 'file-type-2': FileType2,
+  'image-plus': ImagePlus, 'video': Video, 'shuffle': Shuffle, 'code': Code,
+  'file-json': FileJson,
 };
 
 const NODE_W = 230;
@@ -73,12 +86,22 @@ const NODE_STYLES: Record<NodeType, { bg: string; border: string; accent: string
   output:  { bg: 'rgba(16,185,129,0.07)', border: 'rgba(16,185,129,0.18)', accent: '#10b981', label: 'Output' },
 };
 
+const SUB_NODE_DEFS: { type: SubNodeType; icon: string; tKey: string; descKey: string }[] = [
+  { type: 'tool',         icon: 'wrench',      tKey: 'palette.aiTool',         descKey: 'palette.aiTool.desc' },
+  { type: 'memory',       icon: 'database',    tKey: 'palette.aiMemory',       descKey: 'palette.aiMemory.desc' },
+  { type: 'knowledge',    icon: 'book-open',   tKey: 'palette.aiKnowledge',    descKey: 'palette.aiKnowledge.desc' },
+  { type: 'outputFormat', icon: 'file-output', tKey: 'palette.aiOutputFormat', descKey: 'palette.aiOutputFormat.desc' },
+];
+const SUB_NODE_W = 150;
+const SUB_NODE_H = 34;
+
 const GROUP_COLORS: Record<string, { bg: string; border: string; text: string; name: string }> = {
   blue:   { bg: 'rgba(59,130,246,0.10)',  border: 'rgba(59,130,246,0.30)',  text: 'rgba(59,130,246,0.70)',  name: 'Blau' },
   green:  { bg: 'rgba(16,185,129,0.10)',  border: 'rgba(16,185,129,0.30)',  text: 'rgba(16,185,129,0.70)',  name: 'Grün' },
   purple: { bg: 'rgba(139,92,246,0.10)',  border: 'rgba(139,92,246,0.30)',  text: 'rgba(139,92,246,0.70)',  name: 'Lila' },
   orange: { bg: 'rgba(245,158,11,0.10)',  border: 'rgba(245,158,11,0.30)',  text: 'rgba(245,158,11,0.70)',  name: 'Orange' },
   red:    { bg: 'rgba(239,68,68,0.10)',   border: 'rgba(239,68,68,0.30)',   text: 'rgba(239,68,68,0.70)',   name: 'Rot' },
+  yellow: { bg: 'rgba(234,179,8,0.10)',   border: 'rgba(234,179,8,0.30)',   text: 'rgba(234,179,8,0.70)',   name: 'Gelb' },
   gray:   { bg: 'rgba(107,114,128,0.08)', border: 'rgba(107,114,128,0.25)', text: 'rgba(107,114,128,0.60)', name: 'Grau' },
 };
 
@@ -424,6 +447,8 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
   const [nodeDesignTheme, setNodeDesignTheme] = useState<NodeDesignTheme>('default');
   type NodeLayout = 'standard' | 'centered' | 'compact' | 'icon-focus';
   const [nodeLayout, setNodeLayout] = useState<NodeLayout>('standard');
+  const [showDescriptions, setShowDescriptions] = useState(true); // global toggle
+  const [nodeDescOverrides, setNodeDescOverrides] = useState<Record<string, boolean>>({}); // per-node: true=show, false=hide (overrides global)
 
   // Presentation mode
   const [isPresentationMode, setIsPresentationMode] = useState(false);
@@ -441,6 +466,7 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
 
   const [editNode, setEditNode] = useState<string | null>(null);
   const [insertPopover, setInsertPopover] = useState<{ connIdx: number; x: number; y: number } | null>(null);
+  const [quickAddFromConnect, setQuickAddFromConnect] = useState<{ fromId: string; fromPort: PortDirection; x: number; y: number; screenX: number; screenY: number } | null>(null);
   const [editLabel, setEditLabel] = useState('');
   const [editDesc, setEditDesc] = useState('');
   const [editLinkedResource, setEditLinkedResource] = useState<string>('');
@@ -462,12 +488,18 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
       setConnections(initialSystem.connections || []);
       setGroups(initialSystem.groups || []);
       setStickyNotes(initialSystem.stickyNotes || []);
+      setStickyConnections([]);
       setSystemName(initialSystem.name || '');
       setSelectedNodeId(null);
       setSelectedConnId(null);
       setSelectedGroupId(null);
       setMultiSelectedIds(new Set());
       setSaveState('idle');
+      // Reset undo/redo to prevent cross-system undo
+      undoStackRef.current = [];
+      redoStackRef.current = [];
+      setCanUndo(false);
+      setCanRedo(false);
       // Restore saved zoom/pan if available
       if (initialSystem.canvasZoom != null) setZoom(initialSystem.canvasZoom);
       if (initialSystem.canvasPan) setPan(initialSystem.canvasPan);
@@ -542,6 +574,7 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
 
   // Sticky notes
   const [selectedStickyId, setSelectedStickyId] = useState<string | null>(null);
+  const [dragSubNodeState, setDragSubNodeState] = useState<{ parentId: string; subId: string; offsetX: number; offsetY: number } | null>(null);
   const [dragStickyState, setDragStickyState] = useState<{ stickyId: string; offsetX: number; offsetY: number } | null>(null);
   const [resizeStickyState, setResizeStickyState] = useState<{ stickyId: string; startX: number; startY: number; startW: number; startH: number } | null>(null);
   const [editStickyId, setEditStickyId] = useState<string | null>(null);
@@ -675,6 +708,12 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
       y: (clientY - rect.top - pan.y) / zoom,
     };
   }, [zoom, pan]);
+
+  // Check if a node's description should be visible (per-node override > global)
+  const isDescVisible = useCallback((nodeId: string) => {
+    if (nodeId in nodeDescOverrides) return nodeDescOverrides[nodeId];
+    return showDescriptions;
+  }, [showDescriptions, nodeDescOverrides]);
 
   const canvasW = useMemo(() => {
     const items = [
@@ -835,6 +874,15 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
     if (!el) return;
 
     const handler = (e: WheelEvent) => {
+      // Allow native scroll inside overflow containers (edit panel, popovers)
+      let target = e.target as HTMLElement | null;
+      while (target && target !== el) {
+        const oy = getComputedStyle(target).overflowY;
+        if ((oy === 'auto' || oy === 'scroll') && target.scrollHeight > target.clientHeight) {
+          return; // let native scroll happen
+        }
+        target = target.parentElement;
+      }
       e.preventDefault();
       const rect = el.getBoundingClientRect();
       const currentZoom = zoomRef.current;
@@ -875,6 +923,7 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
         if (showShortcuts) { setShowShortcuts(false); return; }
         if (connectingStickyId) { setConnectingStickyId(null); setStickyConnMousePos(null); return; }
         if (connectState) { setConnectState(null); return; }
+        if (quickAddFromConnect) { setQuickAddFromConnect(null); return; }
         // #6 – reset icon picker
         if (editNode) { setEditNode(null); setShowIconPicker(false); return; }
         if (editGroupId) { setEditGroupId(null); return; }
@@ -887,12 +936,12 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
         if (isFullscreen) setIsFullscreen(false);
       }
 
-      // #15 – Undo/Redo
-      if ((e.metaKey || e.ctrlKey) && e.key === 'z' && !e.shiftKey && !editNode && !editGroupId) {
+      // #15 – Undo/Redo (disabled in readOnly)
+      if (!readOnly && (e.metaKey || e.ctrlKey) && e.key === 'z' && !e.shiftKey && !editNode && !editGroupId) {
         e.preventDefault();
         historyUndo();
       }
-      if ((e.metaKey || e.ctrlKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey)) && !editNode && !editGroupId) {
+      if (!readOnly && (e.metaKey || e.ctrlKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey)) && !editNode && !editGroupId) {
         e.preventDefault();
         historyRedo();
       }
@@ -1012,6 +1061,7 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
     // Close context menu / popover on click
     if (contextMenu) { setContextMenu(null); return; }
     if (insertPopover) { setInsertPopover(null); return; }
+    if (quickAddFromConnect) { setQuickAddFromConnect(null); return; }
 
     // Middle mouse or space+click: always pan
     if (e.button === 1 || (e.button === 0 && spaceHeld)) {
@@ -1022,29 +1072,46 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
       setPanThresholdMet(true); // Space/middle always immediate
       return;
     }
-    // Left-click on empty canvas area: start selection box + deselect
+    // Left-click on empty canvas area (or anywhere in presentation mode for panning)
     if (e.button === 0) {
       const target = e.target as HTMLElement;
       const isEmptyArea = target === viewportRef.current || target.classList.contains('canvas-inner');
-      if (isEmptyArea) {
+      // In presentation mode without editing, treat all clicks as empty-area for panning
+      const shouldStartPan = isEmptyArea || (isPresentationMode && !presEditEnabled);
+      if (shouldStartPan) {
         // Auto-close edit panels on canvas click
         if (editNode) { setEditNode(null); setShowIconPicker(false); }
         if (editGroupId) setEditGroupId(null);
         if (editStickyId) setEditStickyId(null);
-        if (connectState) setConnectState(null);
         if (connectingStickyId) { setConnectingStickyId(null); setStickyConnMousePos(null); }
-        // Start selection box (rubber-band)
-        const canvasPos = screenToCanvas(e.clientX, e.clientY);
-        setSelectionBox({ startX: canvasPos.x, startY: canvasPos.y, currentX: canvasPos.x, currentY: canvasPos.y });
-        if (!e.shiftKey) {
-          setSelectedNodeId(null);
-          setSelectedConnId(null);
-          setSelectedGroupId(null);
-          setMultiSelectedIds(new Set());
+
+        // Connection dropped on empty area → show quick-add node picker
+        if (connectState) {
+          const canvasPos = screenToCanvas(e.clientX, e.clientY);
+          setQuickAddFromConnect({ fromId: connectState.fromId, fromPort: connectState.fromPort, x: canvasPos.x, y: canvasPos.y, screenX: e.clientX, screenY: e.clientY });
+          setConnectState(null);
+          return;
         }
+
+        // Cmd/Ctrl+drag: start selection box (rubber-band)
+        if (e.metaKey || e.ctrlKey) {
+          const canvasPos = screenToCanvas(e.clientX, e.clientY);
+          setSelectionBox({ startX: canvasPos.x, startY: canvasPos.y, currentX: canvasPos.x, currentY: canvasPos.y });
+          return;
+        }
+
+        // Normal left-click on empty: deselect + start panning
+        setSelectedNodeId(null);
+        setSelectedConnId(null);
+        setSelectedGroupId(null);
+        setMultiSelectedIds(new Set());
+        setIsPanning(true);
+        setPanStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
+        setPanStartMouse({ x: e.clientX, y: e.clientY });
+        setPanThresholdMet(false); // Use threshold so simple click doesn't jump
       }
     }
-  }, [spaceHeld, pan, connectState, contextMenu, editNode, editGroupId, editStickyId, screenToCanvas]);
+  }, [spaceHeld, pan, connectState, contextMenu, editNode, editGroupId, editStickyId, connectingStickyId, quickAddFromConnect, isPresentationMode, presEditEnabled, screenToCanvas]);
 
   const handleViewportMouseMove = useCallback((e: React.MouseEvent) => {
     if (isPanning) {
@@ -1225,6 +1292,17 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
       }
     }
 
+    // Sub-node drag
+    if (dragSubNodeState) {
+      const newX = canvasPos.x - dragSubNodeState.offsetX;
+      const newY = canvasPos.y - dragSubNodeState.offsetY;
+      setNodes(prev => prev.map(n =>
+        n.id === dragSubNodeState.parentId
+          ? { ...n, subNodes: (n.subNodes || []).map(s => s.id === dragSubNodeState.subId ? { ...s, x: newX, y: newY } : s) }
+          : n
+      ));
+    }
+
     if (resizeStickyState) {
       const dw = canvasPos.x - resizeStickyState.startX;
       const dh = canvasPos.y - resizeStickyState.startY;
@@ -1243,11 +1321,11 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
     if (connectingStickyId) {
       setStickyConnMousePos({ x: canvasPos.x, y: canvasPos.y });
     }
-  }, [isPanning, panStart, panStartMouse, panThresholdMet, dragState, dragGroupState, resizeState, connectState, connectingStickyId, dragStickyState, resizeStickyState, screenToCanvas, snapEnabled, nodes, groups, stickyNotes, selectionBox]);
+  }, [isPanning, panStart, panStartMouse, panThresholdMet, dragState, dragGroupState, resizeState, connectState, connectingStickyId, dragSubNodeState, dragStickyState, resizeStickyState, screenToCanvas, snapEnabled, nodes, groups, stickyNotes, selectionBox]);
 
   const handleViewportMouseUp = useCallback(() => {
     // Push history after drag operations
-    if (dragState || dragGroupState || resizeState || dragStickyState || resizeStickyState) {
+    if (dragState || dragGroupState || resizeState || dragStickyState || resizeStickyState || dragSubNodeState) {
       pushHistory();
     }
     setIsPanning(false);
@@ -1255,6 +1333,7 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
     setDragState(null);
     setDragGroupState(null);
     setResizeState(null);
+    setDragSubNodeState(null);
     setDragStickyState(null);
     setResizeStickyState(null);
     setSnapLines({ x: [], y: [] });
@@ -1299,6 +1378,8 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
 
   const handleNodeMouseDown = useCallback((e: React.MouseEvent, nodeId: string) => {
     if (e.button !== 0 || readOnly || spaceHeld) return;
+    // In presentation mode, don't drag nodes — allow pan-through
+    if (isPresentationMode && !presEditEnabled) return;
 
     // If in sticky-connection mode, complete the connection
     if (connectingStickyId) {
@@ -1320,8 +1401,8 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
     const canvasPos = screenToCanvas(e.clientX, e.clientY);
     setDragState({ nodeId, offsetX: canvasPos.x - node.x, offsetY: canvasPos.y - node.y });
 
-    // #22 – Shift+click for multi-select
-    if (e.shiftKey) {
+    // #22 – Cmd/Ctrl+click for multi-select
+    if (e.metaKey || e.ctrlKey) {
       setMultiSelectedIds(prev => {
         const next = new Set(prev);
         if (next.has(nodeId)) next.delete(nodeId);
@@ -1336,7 +1417,7 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
       setSelectedConnId(null);
       setSelectedGroupId(null);
     }
-  }, [nodes, readOnly, spaceHeld, screenToCanvas, multiSelectedIds, connectingStickyId, stickyConnections, pushHistory]);
+  }, [nodes, readOnly, spaceHeld, isPresentationMode, presEditEnabled, screenToCanvas, multiSelectedIds, connectingStickyId, stickyConnections, pushHistory]);
 
   const handlePortClick = useCallback((e: React.MouseEvent, nodeId: string, port: PortDirection) => {
     if (readOnly) return;
@@ -1374,6 +1455,8 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
 
   const handleGroupMouseDown = useCallback((e: React.MouseEvent, groupId: string) => {
     if (e.button !== 0 || readOnly || spaceHeld) return;
+    // In presentation mode, don't drag groups — allow pan-through instead
+    if (isPresentationMode && !presEditEnabled) return;
     e.stopPropagation();
     const group = groups.find(g => g.id === groupId);
     if (!group) return;
@@ -1383,7 +1466,7 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
     setSelectedNodeId(null);
     setSelectedConnId(null);
     setMultiSelectedIds(new Set());
-  }, [groups, readOnly, spaceHeld, screenToCanvas]);
+  }, [groups, readOnly, spaceHeld, isPresentationMode, presEditEnabled, screenToCanvas]);
 
   const handleGroupResizeStart = useCallback((e: React.MouseEvent, groupId: string) => {
     if (readOnly) return;
@@ -1399,6 +1482,7 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
 
   const handleStickyMouseDown = useCallback((e: React.MouseEvent, stickyId: string) => {
     if (e.button !== 0 || readOnly || spaceHeld) return;
+    if (isPresentationMode && !presEditEnabled) return;
     e.stopPropagation();
     const sticky = stickyNotes.find(s => s.id === stickyId);
     if (!sticky) return;
@@ -1409,17 +1493,18 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
     setSelectedGroupId(null);
     setSelectedConnId(null);
     setMultiSelectedIds(new Set());
-  }, [stickyNotes, readOnly, spaceHeld, screenToCanvas]);
+  }, [stickyNotes, readOnly, spaceHeld, isPresentationMode, presEditEnabled, screenToCanvas]);
 
   const handleStickyResizeStart = useCallback((e: React.MouseEvent, stickyId: string) => {
     if (readOnly) return;
+    if (isPresentationMode && !presEditEnabled) return;
     e.stopPropagation();
     e.preventDefault();
     const sticky = stickyNotes.find(s => s.id === stickyId);
     if (!sticky) return;
     const canvasPos = screenToCanvas(e.clientX, e.clientY);
     setResizeStickyState({ stickyId, startX: canvasPos.x, startY: canvasPos.y, startW: sticky.width, startH: sticky.height });
-  }, [stickyNotes, readOnly, screenToCanvas]);
+  }, [stickyNotes, readOnly, isPresentationMode, presEditEnabled, screenToCanvas]);
 
   const addStickyNote = useCallback((color: StickyNoteColor) => {
     pushHistory();
@@ -1748,6 +1833,7 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setIsDragOver(false);
+    if (readOnly) return;
     try {
       const data = e.dataTransfer.getData('application/json');
       if (!data) return;
@@ -1792,8 +1878,9 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
       cx += (Math.random() - 0.5) * 80;
       cy += (Math.random() - 0.5) * 60;
     }
+    const desc = item.descKey ? t(item.descKey) : '';
     const newNode: SystemNode = {
-      id, label, description: '', icon: item.icon, type: item.type,
+      id, label, description: desc, icon: item.icon, type: item.type,
       x: cx - NODE_W / 2, y: cy - NODE_H / 2,
     };
     setNodes(prev => [...prev, newNode]);
@@ -1894,6 +1981,30 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
     setTimeout(() => startNodeEdit(id), 50);
   }, [connections, nodes, connCurveStyle, pushHistory, startNodeEdit, t]);
 
+  // ─── Quick-Add Node from Connection Drop on Empty ───────────────────────────
+  const handleQuickAddFromConnect = useCallback((item: PaletteItem) => {
+    if (!quickAddFromConnect) return;
+    pushHistory();
+    const id = `node-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+    const newX = quickAddFromConnect.x - NODE_W / 2;
+    const newY = quickAddFromConnect.y - NODE_H / 2;
+    const icon = item.icon;
+    const type = item.type;
+    const label = item.tKey ? t(item.tKey) : item.label || '';
+    const desc = item.descKey ? t(item.descKey) : '';
+    const newNode: SystemNode = { id, label, description: desc, icon, type, x: newX, y: newY };
+    setNodes(prev => [...prev, newNode]);
+    setConnections(prev => [...prev, {
+      from: quickAddFromConnect.fromId,
+      to: id,
+      fromPort: quickAddFromConnect.fromPort,
+      toPort: 'left' as PortDirection,
+    }]);
+    setSelectedNodeId(id);
+    setQuickAddFromConnect(null);
+    setTimeout(() => startNodeEdit(id), 50);
+  }, [quickAddFromConnect, pushHistory, startNodeEdit, t]);
+
   // ─── Connection Label Edit ──────────────────────────────────────────────────
   const startConnLabelEdit = useCallback((connIdx: number) => {
     if (readOnly) return;
@@ -1970,7 +2081,8 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
         webhookUrl: '',
         nodes, connections, groups: groups.length > 0 ? groups : undefined,
         stickyNotes: stickyNotes.length > 0 ? stickyNotes : undefined,
-        outputs: [], executionCount: 0,
+        outputs: initialSystem?.outputs || [],
+        executionCount: initialSystem?.executionCount || 0,
         canvasZoom: zoom,
         canvasPan: pan,
       };
@@ -2181,23 +2293,39 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
           </div>
 
           <div className="flex-1 overflow-y-auto p-2 space-y-1">
-            {paletteTab === 'generic' && PALETTE_ITEMS.filter(item => !paletteSearch || t(item.tKey).toLowerCase().includes(paletteSearch.toLowerCase())).map(item => {
-              const isLogo = item.icon.startsWith('logo-');
-              const Icon = !isLogo ? (ICONS[item.icon] || Zap) : null;
-              const style = NODE_STYLES[item.type];
-              return (
-                <button key={item.icon + item.tKey} onClick={() => addNode(item)} draggable onDragStart={e => { e.dataTransfer.setData('application/json', JSON.stringify(item)); e.dataTransfer.effectAllowed = 'copy'; }} className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors group cursor-grab active:cursor-grabbing" aria-label={t('palette.addNode', { label: t(item.tKey) })}>
-                  <div className="w-7 h-7 rounded-md flex items-center justify-center shrink-0" style={{ background: style.accent + '15' }}>
-                    {isLogo ? renderNodeIcon(item.icon, undefined, <Zap size={14} style={{ color: style.accent }} />, 14) : Icon && <Icon size={14} style={{ color: style.accent }} />}
-                  </div>
-                  <div className="min-w-0">
-                    <div className="text-xs font-medium text-gray-800 dark:text-zinc-200 truncate">{t(item.tKey)}</div>
-                    <div className="text-[10px] text-gray-400 dark:text-zinc-600">{t('nodeType.' + item.type)}</div>
-                  </div>
-                  <Plus size={12} className="ml-auto text-gray-300 dark:text-zinc-600 opacity-0 group-hover:opacity-100 transition-opacity" />
-                </button>
+            {paletteTab === 'generic' && (() => {
+              const search = paletteSearch.toLowerCase();
+              const filtered = PALETTE_ITEMS.filter(item =>
+                !paletteSearch ||
+                t(item.tKey).toLowerCase().includes(search) ||
+                t(item.descKey).toLowerCase().includes(search) ||
+                t(item.category).toLowerCase().includes(search)
               );
-            })}
+              let lastCat = '';
+              return filtered.map((item, idx) => {
+                const showHeader = item.category !== lastCat;
+                lastCat = item.category;
+                const isLogo = item.icon.startsWith('logo-');
+                const Icon = !isLogo ? (ICONS[item.icon] || Zap) : null;
+                const style = NODE_STYLES[item.type];
+                return (
+                  <div key={item.tKey + item.icon + idx}>
+                    {showHeader && (
+                      <div className="text-[10px] font-semibold text-gray-400 dark:text-zinc-600 uppercase tracking-wider px-3 pt-3 pb-1">{t(item.category)}</div>
+                    )}
+                    <button onClick={() => addNode(item)} draggable onDragStart={e => { e.dataTransfer.setData('application/json', JSON.stringify(item)); e.dataTransfer.effectAllowed = 'copy'; }} className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-left hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors group cursor-grab active:cursor-grabbing" aria-label={t('palette.addNode', { label: t(item.tKey) })}>
+                      <div className="w-7 h-7 rounded-md flex items-center justify-center shrink-0" style={{ background: style.accent + '15' }}>
+                        {isLogo ? renderNodeIcon(item.icon, undefined, <Zap size={14} style={{ color: style.accent }} />, 14) : Icon && <Icon size={14} style={{ color: style.accent }} />}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="text-[11px] font-semibold text-gray-800 dark:text-zinc-200 leading-tight">{t(item.tKey)}</div>
+                        <div className="text-[10px] text-gray-400 dark:text-zinc-500 leading-tight mt-0.5">{t(item.descKey)}</div>
+                      </div>
+                    </button>
+                  </div>
+                );
+              });
+            })()}
 
             {paletteTab === 'tools' && (() => {
               const categories = getToolLogosByCategory();
@@ -2208,7 +2336,7 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
                 <div key={cat}>
                   <div className="text-[10px] font-semibold text-gray-400 dark:text-zinc-600 uppercase tracking-wider px-3 pt-2 pb-1">{cat}</div>
                   {filtered.map(logo => (
-                    <button key={logo.id} onClick={() => addNode({ icon: logo.id, tKey: '', label: logo.name, type: 'process' })} draggable onDragStart={e => { e.dataTransfer.setData('application/json', JSON.stringify({ icon: logo.id, tKey: '', label: logo.name, type: 'process' })); e.dataTransfer.effectAllowed = 'copy'; }} className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors group cursor-grab active:cursor-grabbing" aria-label={t('palette.addNode', { label: logo.name })}>
+                    <button key={logo.id} onClick={() => addNode({ icon: logo.id, tKey: '', descKey: '', label: logo.name, type: 'process', category: '' })} draggable onDragStart={e => { e.dataTransfer.setData('application/json', JSON.stringify({ icon: logo.id, tKey: '', descKey: '', label: logo.name, type: 'process', category: '' })); e.dataTransfer.effectAllowed = 'copy'; }} className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors group cursor-grab active:cursor-grabbing" aria-label={t('palette.addNode', { label: logo.name })}>
                       <div className="w-7 h-7 rounded-md flex items-center justify-center shrink-0 bg-gray-50 dark:bg-zinc-800">
                         {renderNodeIcon(logo.id, undefined, <Zap size={14} />, 16)}
                       </div>
@@ -2584,6 +2712,21 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
                     </div>
                   </div>
 
+                  {/* ── Description Toggle ── */}
+                  <div className="border-t border-gray-200 dark:border-zinc-700 pt-3 mt-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-semibold text-gray-400 dark:text-zinc-600 uppercase tracking-wider">{lang === 'en' ? 'Show Descriptions' : 'Beschreibungen'}</span>
+                      <button
+                        onClick={() => setShowDescriptions(!showDescriptions)}
+                        className={`relative inline-flex h-5 w-9 shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 cursor-pointer ${showDescriptions ? 'bg-purple-500' : 'bg-gray-300 dark:bg-zinc-600'}`}
+                        role="switch"
+                        aria-checked={showDescriptions}
+                      >
+                        <span className={`pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow-sm ring-0 transition-transform duration-200 ${showDescriptions ? 'translate-x-4' : 'translate-x-0'}`} />
+                      </button>
+                    </div>
+                  </div>
+
                   {/* ── Connection Presets ── */}
                   <div className="border-t border-gray-200 dark:border-zinc-700 pt-3 mt-3">
                     <div className="text-[10px] font-semibold text-gray-400 dark:text-zinc-600 uppercase tracking-wider mb-2">{lang === 'en' ? 'Connection Presets' : 'Verbindungs-Presets'}</div>
@@ -2769,7 +2912,7 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
         <div
           ref={viewportRef}
           className={`flex-1 overflow-hidden relative select-none ${isDragOver ? 'ring-2 ring-inset ring-purple-500/30 bg-purple-500/5' : ''}`}
-          style={{ cursor: isPanning && panThresholdMet ? 'grabbing' : (spaceHeld ? 'grab' : connectingStickyId ? 'crosshair' : 'default'), touchAction: 'none' }}
+          style={{ cursor: isPanning && panThresholdMet ? 'grabbing' : (spaceHeld ? 'grab' : connectState ? 'crosshair' : connectingStickyId ? 'crosshair' : 'grab'), touchAction: 'none' }}
           onMouseDown={handleViewportMouseDown}
           onMouseMove={handleViewportMouseMove}
           onMouseUp={handleViewportMouseUp}
@@ -3123,7 +3266,7 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
                     opacity: (100 - groupTransparency) / 100,
                     // #11 – Selected group gets higher z-index
                     zIndex: isSelected ? 3 : 1,
-                    cursor: readOnly ? 'default' : (dragGroupState?.groupId === group.id ? 'grabbing' : 'grab'),
+                    cursor: (readOnly || (isPresentationMode && !presEditEnabled)) ? 'default' : (dragGroupState?.groupId === group.id ? 'grabbing' : 'grab'),
                   }}
                   onMouseDown={e => handleGroupMouseDown(e, group.id)}
                   onDoubleClick={() => startGroupEdit(group.id)}
@@ -3169,7 +3312,7 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
                     background: colors.bg, border: `2px solid ${colors.border}`,
                     boxShadow: isSelected ? undefined : `0 2px 8px ${colors.shadow}, 0 1px 3px rgba(0,0,0,0.06)`,
                     zIndex: isSelected ? 8 : 5,
-                    cursor: readOnly ? 'default' : (dragStickyState?.stickyId === sticky.id ? 'grabbing' : 'grab'),
+                    cursor: (readOnly || (isPresentationMode && !presEditEnabled)) ? 'default' : (dragStickyState?.stickyId === sticky.id ? 'grabbing' : 'grab'),
                   }}
                   onMouseDown={e => handleStickyMouseDown(e, sticky.id)}
                   onDoubleClick={() => startStickyEdit(sticky.id)}
@@ -3184,7 +3327,7 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
                     }}>{sticky.text}</p>
                   </div>
                   {/* Link port for sticky-to-node connection (#40) */}
-                  {!readOnly && (isSelected || selectedStickyId === sticky.id) && (
+                  {!readOnly && !(isPresentationMode && !presEditEnabled) && (isSelected || selectedStickyId === sticky.id) && (
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -3202,7 +3345,7 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
                       <Link2 size={10} strokeWidth={2.5} />
                     </button>
                   )}
-                  {isSelected && !readOnly && (
+                  {isSelected && !readOnly && !(isPresentationMode && !presEditEnabled) && (
                     <>
                       <button
                         onClick={(e) => { e.stopPropagation(); pushHistory(); setStickyNotes(prev => prev.filter(s => s.id !== sticky.id)); setStickyConnections(prev => prev.filter(sc => sc.stickyId !== sticky.id)); setSelectedStickyId(null); }}
@@ -3315,11 +3458,11 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
                     left: node.x, top: node.y, width: NODE_W, height: NODE_H,
                     ...themeStyle,
                     opacity: (100 - nodeTransparency) / 100,
-                    cursor: readOnly ? 'default' : (dragState?.nodeId === node.id ? 'grabbing' : 'grab'),
+                    cursor: (readOnly || (isPresentationMode && !presEditEnabled)) ? 'default' : (dragState?.nodeId === node.id ? 'grabbing' : 'grab'),
                     zIndex: isNodeActive ? 15 : (isSelected ? 20 : 10),
                   }}
                   onMouseDown={e => handleNodeMouseDown(e, node.id)}
-                  onMouseEnter={() => { if (!readOnly) setHoveredNodeId(node.id); }}
+                  onMouseEnter={() => { if (!readOnly && !(isPresentationMode && !presEditEnabled)) setHoveredNodeId(node.id); }}
                   onMouseLeave={() => setHoveredNodeId(null)}
                   onDoubleClick={() => startNodeEdit(node.id)}
                   onContextMenu={e => handleContextMenu(e, node.id)}
@@ -3333,7 +3476,7 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
                         {renderIcon(node, 16)}
                       </div>
                       <div className="font-medium text-[12px] text-gray-900 dark:text-white truncate w-full" style={isLightText ? { color: 'rgba(255,255,255,0.95)' } : undefined}>{node.label}</div>
-                      {node.description && <div className="text-[10px] text-gray-500 dark:text-zinc-500 mt-0.5 truncate w-full" style={isLightText ? { color: 'rgba(255,255,255,0.65)' } : undefined}>{node.description}</div>}
+                      {node.description && isDescVisible(node.id) && <div className="text-[10px] text-gray-500 dark:text-zinc-500 mt-0.5 truncate w-full" style={isLightText ? { color: 'rgba(255,255,255,0.65)' } : undefined}>{node.description}</div>}
                     </div>
                   ) : nodeLayout === 'compact' ? (
                     <div className="h-full flex items-center px-4 gap-2.5">
@@ -3356,7 +3499,7 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="font-medium text-[13px] text-gray-900 dark:text-white truncate" style={isLightText ? { color: 'rgba(255,255,255,0.95)' } : undefined}>{node.label}</div>
-                        {node.description && <div className="text-[11px] text-gray-500 dark:text-zinc-500 mt-0.5 line-clamp-2 leading-tight" style={isLightText ? { color: 'rgba(255,255,255,0.65)' } : undefined}>{node.description}</div>}
+                        {node.description && isDescVisible(node.id) && <div className="text-[11px] text-gray-500 dark:text-zinc-500 mt-0.5 line-clamp-2 leading-tight" style={isLightText ? { color: 'rgba(255,255,255,0.65)' } : undefined}>{node.description}</div>}
                       </div>
                     </div>
                   )}
@@ -3398,7 +3541,7 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
                   )}
 
                   {/* 4-Directional Hover Ports — larger hit area for easier clicking */}
-                  {!readOnly && (hoveredNodeId === node.id || connectState) && (
+                  {!readOnly && !(isPresentationMode && !presEditEnabled) && (hoveredNodeId === node.id || connectState) && (
                     <>
                       {/* Top */}
                       <div
@@ -3443,51 +3586,128 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
                     </>
                   )}
 
-                  {/* ─── Tooltip on Hover ─── */}
-                  {hoveredNodeId === node.id && node.description && (
-                    <div
-                      className="absolute left-1/2 -translate-x-1/2 pointer-events-none z-50"
-                      style={{ bottom: NODE_H + 8 }}
-                    >
-                      <div className="bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-lg px-2.5 py-1.5 shadow-lg"
-                        style={{ fontSize: 11, maxWidth: 250, lineHeight: 1.4, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}
-                      >
-                        {node.description}
-                      </div>
-                    </div>
-                  )}
+                  {/* Sub-nodes are rendered separately at their own canvas positions */}
                 </div>
               );
             })}
 
+            {/* ─── Sub-Nodes (n8n-style, rendered at own canvas positions) ─── */}
+            {nodes.filter(n => n.type === 'ai' && n.subNodes && n.subNodes.length > 0).map(parentNode => {
+              const parentCX = parentNode.x + NODE_W / 2;
+              const parentBottom = parentNode.y + NODE_H;
+              return parentNode.subNodes!.map(sub => {
+                const SubIcon = ICONS[sub.icon] || Wrench;
+                const subX = sub.x ?? (parentCX - SUB_NODE_W / 2);
+                const subY = sub.y ?? (parentBottom + 50);
+                const subCX = subX + SUB_NODE_W / 2;
+                const subTopY = subY;
+                return (
+                  <div key={sub.id}>
+                    {/* Dotted connector line */}
+                    <svg className="absolute inset-0 pointer-events-none" style={{ width: canvasW, height: canvasH, overflow: 'visible' }}>
+                      <line
+                        x1={parentCX} y1={parentBottom}
+                        x2={subCX} y2={subTopY}
+                        stroke={isDark ? 'rgba(168,85,247,0.28)' : 'rgba(168,85,247,0.32)'}
+                        strokeWidth={1.5}
+                        strokeDasharray="4 3"
+                      />
+                    </svg>
+                    {/* Sub-node card — single unified element */}
+                    <div
+                      className={`absolute flex items-center gap-2 rounded-lg border cursor-grab active:cursor-grabbing select-none group/subnode transition-all ${
+                        isDark
+                          ? 'bg-zinc-800 border-purple-500/30 hover:border-purple-400/50 hover:shadow-lg hover:shadow-purple-500/5'
+                          : 'bg-white border-purple-200 hover:border-purple-400 hover:shadow-md'
+                      }`}
+                      style={{
+                        left: subX,
+                        top: subY,
+                        width: SUB_NODE_W,
+                        height: SUB_NODE_H,
+                        paddingLeft: 6,
+                        paddingRight: 8,
+                      }}
+                      onMouseDown={e => {
+                        if (readOnly) return;
+                        e.stopPropagation();
+                        setDragSubNodeState({
+                          parentId: parentNode.id,
+                          subId: sub.id,
+                          offsetX: (e.clientX - viewportRef.current!.getBoundingClientRect().left - pan.x) / zoom - subX,
+                          offsetY: (e.clientY - viewportRef.current!.getBoundingClientRect().top - pan.y) / zoom - subY,
+                        });
+                      }}
+                    >
+                      {/* Icon */}
+                      <div
+                        className={`w-[22px] h-[22px] rounded-md flex items-center justify-center shrink-0 ${
+                          isDark ? 'bg-purple-500/15' : 'bg-purple-50'
+                        }`}
+                      >
+                        <SubIcon size={12} className="text-purple-500 dark:text-purple-400" />
+                      </div>
+                      {/* Label */}
+                      <span className="text-[11px] font-medium text-gray-700 dark:text-zinc-300 whitespace-nowrap">{sub.label}</span>
+                      {/* Delete button on hover */}
+                      {!readOnly && (
+                        <button
+                          className="ml-auto opacity-0 group-hover/subnode:opacity-100 text-gray-400 hover:text-red-500 transition-all shrink-0"
+                          onMouseDown={e => e.stopPropagation()}
+                          onClick={e => {
+                            e.stopPropagation();
+                            pushHistory();
+                            setNodes(prev => prev.map(n => n.id === parentNode.id ? { ...n, subNodes: (n.subNodes || []).filter(s => s.id !== sub.id) } : n));
+                          }}
+                        >
+                          <X size={10} />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              });
+            })}
+
             {/* ─── Insert Node Popover ─── */}
-            {insertPopover && !readOnly && (
-              <div
-                className="absolute bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl shadow-xl p-2 z-50"
-                style={{ left: insertPopover.x - 100, top: insertPopover.y + 20, width: 200 }}
-                onClick={e => e.stopPropagation()}
-              >
-                <div className="text-[10px] font-semibold text-gray-400 dark:text-zinc-600 uppercase tracking-wider px-2 pb-1 mb-1 border-b border-gray-100 dark:border-zinc-800">
-                  {lang === 'en' ? 'Insert Node' : 'Node einfügen'}
-                </div>
-                <div className="max-h-52 overflow-y-auto space-y-0.5">
-                  {PALETTE_ITEMS.map(item => {
-                    const isLogo = item.icon.startsWith('logo-');
-                    const Icon = !isLogo ? (ICONS[item.icon] || Zap) : null;
-                    const st = NODE_STYLES[item.type];
-                    return (
+            {insertPopover && !readOnly && (() => {
+              const renderPopoverItems = (items: typeof PALETTE_ITEMS, onSelect: (item: typeof PALETTE_ITEMS[0]) => void, prefix = '') => {
+                let lastCat = '';
+                return items.map((item, idx) => {
+                  const showHeader = item.category !== lastCat;
+                  lastCat = item.category;
+                  const isLogo = item.icon.startsWith('logo-');
+                  const Icon = !isLogo ? (ICONS[item.icon] || Zap) : null;
+                  const st = NODE_STYLES[item.type];
+                  return (
+                    <div key={prefix + item.tKey + item.icon + idx}>
+                      {showHeader && <div className="text-[9px] font-semibold text-gray-400 dark:text-zinc-600 uppercase tracking-wider px-2 pt-2 pb-0.5">{t(item.category)}</div>}
                       <button
-                        key={item.icon + item.tKey}
-                        onClick={() => insertNodeOnConnection(insertPopover.connIdx, item)}
+                        onClick={() => onSelect(item)}
                         className="w-full flex items-center gap-2 px-2 py-1.5 rounded-xl text-left hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
                       >
                         <div className="w-5 h-5 rounded flex items-center justify-center shrink-0" style={{ background: st.accent + '15' }}>
                           {isLogo ? renderNodeIcon(item.icon, undefined, <Zap size={10} style={{ color: st.accent }} />, 10) : Icon && <Icon size={10} style={{ color: st.accent }} />}
                         </div>
-                        <span className="text-[11px] text-gray-700 dark:text-zinc-300 truncate">{t(item.tKey)}</span>
+                        <div className="min-w-0 flex-1">
+                          <span className="text-[11px] text-gray-700 dark:text-zinc-300 truncate block">{t(item.tKey)}</span>
+                        </div>
                       </button>
-                    );
-                  })}
+                    </div>
+                  );
+                });
+              };
+              return (
+              <div
+                className="absolute bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl shadow-xl p-2 z-50"
+                style={{ left: insertPopover.x - 110, top: insertPopover.y + 20, width: 240 }}
+                onClick={e => e.stopPropagation()}
+              >
+                <div className="text-[10px] font-semibold text-gray-400 dark:text-zinc-600 uppercase tracking-wider px-2 pb-1 mb-1 border-b border-gray-100 dark:border-zinc-800">
+                  {lang === 'en' ? 'Insert Node' : 'Node einfügen'}
+                </div>
+                <div className="max-h-64 overflow-y-auto space-y-0.5">
+                  {renderPopoverItems(PALETTE_ITEMS, (item) => insertNodeOnConnection(insertPopover.connIdx, item), 'ins-')}
                 </div>
                 <button
                   onClick={() => setInsertPopover(null)}
@@ -3496,7 +3716,54 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
                   {lang === 'en' ? 'Cancel' : 'Abbrechen'}
                 </button>
               </div>
-            )}
+            );})()}
+
+            {/* ─── Quick-Add Node from Connection Drop ─── */}
+            {quickAddFromConnect && !readOnly && (() => {
+              let lastCat2 = '';
+              return (
+              <div
+                className="absolute bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl shadow-xl p-2 z-50"
+                style={{ left: quickAddFromConnect.x - NODE_W / 2 + 15, top: quickAddFromConnect.y + 20, width: 240 }}
+                onClick={e => e.stopPropagation()}
+                onMouseDown={e => e.stopPropagation()}
+              >
+                <div className="text-[10px] font-semibold text-gray-400 dark:text-zinc-600 uppercase tracking-wider px-2 pb-1 mb-1 border-b border-gray-100 dark:border-zinc-800">
+                  {lang === 'en' ? 'Create & Connect Node' : 'Node erstellen & verbinden'}
+                </div>
+                <div className="max-h-64 overflow-y-auto space-y-0.5">
+                  {PALETTE_ITEMS.map((item, idx) => {
+                    const showHeader = item.category !== lastCat2;
+                    lastCat2 = item.category;
+                    const isLogo = item.icon.startsWith('logo-');
+                    const Icon = !isLogo ? (ICONS[item.icon] || Zap) : null;
+                    const st = NODE_STYLES[item.type];
+                    return (
+                      <div key={'qa-' + item.tKey + item.icon + idx}>
+                        {showHeader && <div className="text-[9px] font-semibold text-gray-400 dark:text-zinc-600 uppercase tracking-wider px-2 pt-2 pb-0.5">{t(item.category)}</div>}
+                        <button
+                          onClick={() => handleQuickAddFromConnect(item)}
+                          className="w-full flex items-center gap-2 px-2 py-1.5 rounded-xl text-left hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
+                        >
+                          <div className="w-5 h-5 rounded flex items-center justify-center shrink-0" style={{ background: st.accent + '15' }}>
+                            {isLogo ? renderNodeIcon(item.icon, undefined, <Zap size={10} style={{ color: st.accent }} />, 10) : Icon && <Icon size={10} style={{ color: st.accent }} />}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <span className="text-[11px] text-gray-700 dark:text-zinc-300 truncate block">{t(item.tKey)}</span>
+                          </div>
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+                <button
+                  onClick={() => setQuickAddFromConnect(null)}
+                  className="w-full mt-1 pt-1 border-t border-gray-100 dark:border-zinc-800 text-[10px] text-gray-400 hover:text-gray-600 dark:hover:text-zinc-400 transition-colors"
+                >
+                  {lang === 'en' ? 'Cancel' : 'Abbrechen'}
+                </button>
+              </div>
+            );})()}
 
             {/* Edit Overlays moved outside transform container below */}
           </div>
@@ -3510,7 +3777,7 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
               ...Object.keys(TOOL_LOGOS).map(k => ({ id: k, type: 'logo' as const })),
             ];
             const panelW = 320;
-            const panelMaxH = 380;
+            const panelMaxH = 460;
             const arrowGap = 10;
             const vpRect = viewportRef.current?.getBoundingClientRect();
             const vpW = vpRect?.width || 800;
@@ -3543,11 +3810,29 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
                     <line x1="0" y1="8" x2="14" y2="8" stroke={isDark ? '#18181b' : '#fff'} strokeWidth="2" />
                   </svg>
                 </div>
-                <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl shadow-xl p-4 max-h-[380px] overflow-y-auto">
+                <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl shadow-xl p-4 max-h-[460px] overflow-y-auto">
                   <div className="text-xs font-semibold text-gray-500 dark:text-zinc-400 mb-2">Node bearbeiten</div>
                   {/* #12 – maxLength on inputs */}
                   <input type="text" value={editLabel} onChange={e => setEditLabel(e.target.value.slice(0, MAX_LABEL_LENGTH))} className="w-full bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white mb-2 focus:outline-none focus:border-purple-500 transition-colors" placeholder="Label" maxLength={MAX_LABEL_LENGTH} autoFocus />
                   <input type="text" value={editDesc} onChange={e => setEditDesc(e.target.value.slice(0, MAX_DESC_LENGTH))} className="w-full bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl px-3 py-2 text-xs text-gray-700 dark:text-zinc-300 mb-2 focus:outline-none focus:border-purple-500 transition-colors" placeholder="Beschreibung (optional)" maxLength={MAX_DESC_LENGTH} />
+                  {/* Per-node description visibility override */}
+                  <div className="flex items-center justify-between mb-2 px-1">
+                    <span className="text-[10px] text-gray-400 dark:text-zinc-500">{lang === 'en' ? 'Show description' : 'Beschreibung anzeigen'}</span>
+                    <button
+                      onClick={() => setNodeDescOverrides(prev => {
+                        const next = { ...prev };
+                        if (node.id in next) { delete next[node.id]; } // reset to global
+                        else { next[node.id] = !showDescriptions; } // override opposite of global
+                        return next;
+                      })}
+                      className={`relative inline-flex h-5 w-9 shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 cursor-pointer ${isDescVisible(node.id) ? 'bg-purple-500' : 'bg-gray-300 dark:bg-zinc-600'}`}
+                      role="switch"
+                      aria-checked={isDescVisible(node.id)}
+                      title={node.id in nodeDescOverrides ? (lang === 'en' ? 'Per-node override (click to reset)' : 'Eigene Einstellung (klicken zum Zurücksetzen)') : (lang === 'en' ? 'Using global setting' : 'Globale Einstellung')}
+                    >
+                      <span className={`pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow-sm ring-0 transition-transform duration-200 ${isDescVisible(node.id) ? 'translate-x-4' : 'translate-x-0'}`} />
+                    </button>
+                  </div>
 
                   <button
                     onClick={() => setShowIconPicker(!showIconPicker)}
@@ -3659,6 +3944,75 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
                       <p className="text-[10px] text-blue-400 mt-1">{lang === 'de' ? 'Klickbar im Canvas — öffnet die Seite direkt' : 'Clickable on canvas — opens the page directly'}</p>
                     )}
                   </div>
+
+                  {/* ── Sub-Nodes (AI nodes only) ── */}
+                  {node.type === 'ai' && (
+                    <div className="mb-3">
+                      <div className="text-[10px] font-medium text-gray-400 dark:text-zinc-500 mb-1.5 flex items-center gap-1">
+                        <Wrench size={10} />
+                        {lang === 'en' ? 'Sub-Nodes' : 'Sub-Nodes'}
+                      </div>
+                      {/* Attached sub-nodes */}
+                      {(node.subNodes || []).length > 0 && (
+                        <div className="flex flex-wrap gap-1.5 mb-2">
+                          {(node.subNodes || []).map(sub => {
+                            const SubIcon = ICONS[sub.icon] || Wrench;
+                            return (
+                              <div key={sub.id} className="flex items-center gap-1 px-2 py-1 rounded-lg bg-purple-50 dark:bg-purple-500/10 border border-purple-200 dark:border-purple-500/30">
+                                <SubIcon size={11} className="text-purple-600 dark:text-purple-400" />
+                                <span className="text-[10px] font-medium text-purple-700 dark:text-purple-300">{sub.label}</span>
+                                <button
+                                  onClick={() => {
+                                    pushHistory();
+                                    setNodes(prev => prev.map(n => n.id === node.id ? { ...n, subNodes: (n.subNodes || []).filter(s => s.id !== sub.id) } : n));
+                                  }}
+                                  className="ml-0.5 text-purple-400 hover:text-red-500 transition-colors"
+                                >
+                                  <X size={10} />
+                                </button>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                      {/* Add sub-node buttons */}
+                      <div className="grid grid-cols-2 gap-1">
+                        {SUB_NODE_DEFS.filter(def => !(node.subNodes || []).some(s => s.type === def.type)).map(def => {
+                          const DefIcon = ICONS[def.icon] || Wrench;
+                          return (
+                            <button
+                              key={def.type}
+                              onClick={() => {
+                                pushHistory();
+                                // Position sub-nodes below parent, evenly spread
+                                const existingSubs = (node.subNodes || []).length;
+                                const totalW = SUB_NODE_W;
+                                const gap = 14;
+                                const cols = existingSubs + 1; // including the new one
+                                const totalSpan = cols * totalW + (cols - 1) * gap;
+                                const startX = node.x + NODE_W / 2 - totalSpan / 2;
+                                const newSub: SubNode = {
+                                  id: `sub-${Date.now()}-${Math.random().toString(36).slice(2, 5)}`,
+                                  type: def.type,
+                                  label: t(def.tKey),
+                                  icon: def.icon,
+                                  x: startX + existingSubs * (totalW + gap),
+                                  y: node.y + NODE_H + 40,
+                                };
+                                setNodes(prev => prev.map(n => n.id === node.id ? { ...n, subNodes: [...(n.subNodes || []), newSub] } : n));
+                              }}
+                              className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg border border-dashed border-gray-300 dark:border-zinc-600 hover:border-purple-400 dark:hover:border-purple-500 hover:bg-purple-50 dark:hover:bg-purple-500/5 transition-colors text-left"
+                            >
+                              <DefIcon size={11} className="text-gray-400 dark:text-zinc-500 shrink-0" />
+                              <div className="min-w-0">
+                                <div className="text-[10px] font-medium text-gray-600 dark:text-zinc-400 truncate">{t(def.tKey).replace(' (Sub-Node)', '')}</div>
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
 
                   <div className="flex gap-2">
                     <button onClick={() => { setEditNode(null); setShowIconPicker(false); }} className="flex-1 py-1.5 rounded-xl text-xs border border-gray-200 dark:border-zinc-700 text-gray-500 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors">{t('edit.cancel')}</button>
@@ -3962,15 +4316,15 @@ export default function WorkflowCanvas({ onSave, onExecute, initialSystem, readO
             <>
               {/* Edit toggle — top-left corner */}
               <div className="absolute top-3 left-3 z-50">
-                <label className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-black/50 backdrop-blur-xl border border-white/10 cursor-pointer select-none">
-                  <span className="text-[10px] text-white/60 font-medium">{lang === 'en' ? 'Edit' : 'Bearbeiten'}</span>
-                  <button
-                    onClick={() => setPresEditEnabled(!presEditEnabled)}
-                    className={`relative w-8 h-4 rounded-full transition-colors ${presEditEnabled ? 'bg-purple-500' : 'bg-white/20'}`}
-                  >
-                    <span className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-transform ${presEditEnabled ? 'translate-x-4' : 'translate-x-0.5'}`} />
-                  </button>
-                </label>
+                <button
+                  onClick={() => setPresEditEnabled(!presEditEnabled)}
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-black/60 backdrop-blur-xl border border-white/10 cursor-pointer select-none hover:bg-black/70 transition-colors"
+                >
+                  <span className="text-[11px] text-white/70 font-medium">{lang === 'en' ? 'Edit' : 'Bearbeiten'}</span>
+                  <div className={`relative w-10 h-[22px] rounded-full transition-colors duration-200 ${presEditEnabled ? 'bg-purple-500' : 'bg-white/20'}`}>
+                    <span className={`absolute top-[3px] left-[3px] w-4 h-4 rounded-full bg-white shadow-sm transition-transform duration-200 ${presEditEnabled ? 'translate-x-[18px]' : 'translate-x-0'}`} />
+                  </div>
+                </button>
               </div>
 
               {/* Bottom floating bar */}

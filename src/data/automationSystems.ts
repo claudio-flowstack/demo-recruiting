@@ -155,6 +155,74 @@ export const DEMO_SYSTEMS: AutomationSystem[] = [
   },
 ];
 
+// ─── English Translations for Demo Systems ──────────────────────────────────
+
+const DEMO_META_EN: Record<string, { name: string; description: string }> = {
+  'demo-1': { name: 'Client Onboarding',   description: 'From the initial meeting to the finished website, ad copy and Google Ads — fully automated.' },
+  'demo-2': { name: 'Content Pipeline',     description: 'From the content idea to the finished blog post, social media post and LinkedIn carousel.' },
+  'demo-3': { name: 'Lead Qualification',   description: 'Automatically enrich, score and transfer incoming leads to CRM.' },
+  'demo-4': { name: 'Report Generator',     description: 'Collect data from various sources, analyze and send as a finished report.' },
+};
+
+/** Composite key: "systemId:nodeId" → { label, description } */
+const DEMO_NODE_EN: Record<string, { label: string; description: string }> = {
+  // ─── demo-1: Client Onboarding ───
+  'demo-1:n1': { label: 'Onboarding Meeting',      description: 'Initial meeting with the client' },
+  'demo-1:n2': { label: 'AI Transcription',         description: 'Conversation is transcribed' },
+  'demo-1:n3': { label: 'Ad Copy',                  description: 'Copy & headlines generated' },
+  'demo-1:n4': { label: 'Website',                  description: 'Landing page created' },
+  'demo-1:n5': { label: 'Google Ads',               description: 'Campaign set up' },
+  // ─── demo-2: Content Pipeline ───
+  'demo-2:n1': { label: 'Content Briefing',          description: 'Topic & audience defined' },
+  'demo-2:n2': { label: 'AI Research',               description: 'Sources & data collected' },
+  'demo-2:n3': { label: 'Content Creation',          description: 'Texts AI-generated' },
+  'demo-2:n4': { label: 'Blog Post',                 description: 'Article formatted & ready' },
+  'demo-2:n5': { label: 'Social Media',              description: 'Posts for all channels' },
+  'demo-2:n6': { label: 'LinkedIn Carousel',         description: 'Slides generated' },
+  // ─── demo-3: Lead Qualification ───
+  'demo-3:n1': { label: 'Lead Intake',               description: 'New contact received' },
+  'demo-3:n2': { label: 'Data Enrichment',           description: 'Company data supplemented' },
+  'demo-3:n3': { label: 'AI Scoring',                description: 'Lead quality evaluated' },
+  'demo-3:n4': { label: 'CRM Entry',                 description: 'Created in HubSpot' },
+  'demo-3:n5': { label: 'Follow-up Email',           description: 'Personalized email' },
+  'demo-3:n6': { label: 'Team Notification',         description: 'Sales team informed' },
+  // ─── demo-4: Report Generator ───
+  'demo-4:n1a': { label: 'Google Sheets Import',     description: 'Data from Sheets' },
+  'demo-4:n1b': { label: 'HubSpot Export',           description: 'CRM data exported' },
+  'demo-4:n2':  { label: 'Merge Data',               description: 'Sources combined' },
+  'demo-4:n3':  { label: 'AI Analysis',              description: 'Patterns & trends detected' },
+  'demo-4:n4':  { label: 'Create Report',            description: 'Report formatted' },
+  'demo-4:n5':  { label: 'PDF to Drive',             description: 'Saved as PDF' },
+  'demo-4:n6':  { label: 'Dashboard',                description: 'Live view updated' },
+  'demo-4:n7':  { label: 'Email Delivery',           description: 'Sent to team' },
+};
+
+/** Composite key: "systemId:groupId" → English label */
+const DEMO_GROUP_EN: Record<string, string> = {
+  // demo-1
+  'demo-1:g1': 'Intake',            'demo-1:g2': 'AI Processing',      'demo-1:g3': 'Results',
+  // demo-4
+  'demo-4:g1': 'Data Sources',      'demo-4:g2': 'Analysis & Processing', 'demo-4:g3': 'Distribution',
+};
+
+export function getLocalizedDemoSystem(sys: AutomationSystem, lang: 'de' | 'en'): AutomationSystem {
+  if (lang === 'de') return sys;
+  const meta = DEMO_META_EN[sys.id];
+  return {
+    ...sys,
+    name: meta?.name || sys.name,
+    description: meta?.description || sys.description,
+    nodes: sys.nodes.map(n => {
+      const en = DEMO_NODE_EN[`${sys.id}:${n.id}`];
+      return en ? { ...n, label: en.label, description: en.description } : n;
+    }),
+    groups: sys.groups?.map(g => {
+      const en = DEMO_GROUP_EN[`${sys.id}:${g.id}`];
+      return en ? { ...g, label: en } : g;
+    }),
+  };
+}
+
 // ─── Storage Keys ──────────────────────────────────────────────────────────────
 
 export const STORAGE_KEY = 'flowstack-automation-systems';
@@ -165,7 +233,17 @@ const HIDDEN_DEMOS_KEY = 'flowstack-hidden-demos';
 export function loadUserSystems(): AutomationSystem[] {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
-    return stored ? JSON.parse(stored) : [];
+    if (!stored) return [];
+    const parsed = JSON.parse(stored);
+    if (!Array.isArray(parsed)) return [];
+    // Basic validation: filter out entries that are not valid system objects
+    return parsed.filter(
+      (s: unknown): s is AutomationSystem =>
+        typeof s === 'object' && s !== null &&
+        typeof (s as AutomationSystem).id === 'string' &&
+        typeof (s as AutomationSystem).name === 'string' &&
+        Array.isArray((s as AutomationSystem).nodes),
+    );
   } catch {
     return [];
   }

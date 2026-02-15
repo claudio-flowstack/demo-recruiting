@@ -79,3 +79,47 @@ export const Typeform = () => (
     <line x1="11" y1="17" x2="15" y2="17" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity={0.5}/>
   </svg>
 );
+
+// ─── Telegram ───────────────────────────────────────────────────────────────
+
+export const Telegram = () => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <circle cx="12" cy="12" r="10" fill="#26A5E4"/>
+    <path d="M6.5 11.5l9.2-4.2c.4-.2.8.2.7.6L14.8 15c-.1.3-.5.4-.7.2l-2.3-1.7-1.1 1.1c-.2.2-.5.1-.5-.2v-2l5.5-5c.1-.1 0-.2-.1-.1l-6.8 4.2-2.5-.8c-.3-.1-.3-.5 0-.7z" fill="white"/>
+  </svg>
+);
+
+// ─── Microsoft Teams ────────────────────────────────────────────────────────
+
+export const MicrosoftTeams = () => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <circle cx="17" cy="7" r="3" fill="#5B5FC7" opacity={0.4}/>
+    <rect x="12" y="5" width="9" height="11" rx="1.5" fill="#5B5FC7" opacity={0.6}/>
+    <rect x="3" y="7" width="11" height="11" rx="1.5" fill="#5B5FC7"/>
+    <text x="8.5" y="16" textAnchor="middle" fill="white" fontSize="9" fontWeight="700" fontFamily="Arial, sans-serif">T</text>
+  </svg>
+);
+
+// ─── Mailchimp ──────────────────────────────────────────────────────────────
+
+export const Mailchimp = () => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <circle cx="12" cy="12" r="10" fill="#FFE01B" opacity={0.2}/>
+    <circle cx="12" cy="12" r="10" stroke="#FFE01B" strokeWidth="1.5" fill="none"/>
+    <path d="M8 16c0-2.2 1.8-4 4-4s4 1.8 4 4" stroke="#241C15" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
+    <circle cx="9.5" cy="10" r="1.2" fill="#241C15"/>
+    <circle cx="14.5" cy="10" r="1.2" fill="#241C15"/>
+    <path d="M7 7c1-1.5 2.5-2 5-2s4 .5 5 2" stroke="#241C15" strokeWidth="1.3" strokeLinecap="round" fill="none"/>
+  </svg>
+);
+
+// ─── Pipedrive ──────────────────────────────────────────────────────────────
+
+export const Pipedrive = () => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <rect x="3" y="3" width="18" height="18" rx="4" fill="#017737" opacity={0.15}/>
+    <rect x="3" y="3" width="18" height="18" rx="4" stroke="#017737" strokeWidth="1.5" fill="none"/>
+    <circle cx="12" cy="9" r="3" stroke="#017737" strokeWidth="1.8" fill="none"/>
+    <line x1="12" y1="12" x2="12" y2="19" stroke="#017737" strokeWidth="1.8" strokeLinecap="round"/>
+  </svg>
+);

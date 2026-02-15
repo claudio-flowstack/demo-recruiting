@@ -10,7 +10,12 @@ import {
   Eye, Search, Trash2, Check, ArrowLeft,
   Zap, Target, Mail, Users, BarChart3, Globe, Shield, Cpu, Settings,
   Layers, Rocket, Heart,
+  Calendar, Clock, Languages, Scan, Play, Brain, MessageSquare, FileText,
+  Filter, Split, Shuffle, GitMerge, Repeat, Timer, Scale, ShieldAlert,
+  Bookmark, CopyCheck, Package, Type, FileJson, FileSearch, ShieldCheck, Code,
+  Bell, Smartphone, FileType2, ImagePlus, Video, Gauge, Webhook,
 } from 'lucide-react';
+import type { LucideIcon as LucideIconType } from 'lucide-react';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { useTheme } from '@/components/theme-provider';
 import { renderNodeIcon } from './ToolLogos';
@@ -29,7 +34,46 @@ const NODE_TYPE_COLORS: Record<string, string> = {
   output: '#10b981',
 };
 
-const CATEGORIES = ['Marketing', 'Sales', 'Agentur', 'Support', 'Intern'];
+/** Lucide icon lookup for non-logo palette icons */
+const LUCIDE_ICONS: Record<string, LucideIconType> = {
+  calendar: Calendar, clock: Clock, play: Play, webhook: Webhook,
+  brain: Brain, 'message-square': MessageSquare, 'file-text': FileText,
+  heart: Heart, languages: Languages, eye: Eye, scan: Scan,
+  'git-branch': GitBranch, filter: Filter, split: Split, shuffle: Shuffle,
+  'git-merge': GitMerge, repeat: Repeat, timer: Timer, scale: Scale,
+  'shield-alert': ShieldAlert, bookmark: Bookmark, 'copy-check': CopyCheck,
+  'package': Package, type: Type, 'file-json': FileJson, 'file-search': FileSearch,
+  'shield-check': ShieldCheck, code: Code, globe: Globe, bell: Bell,
+  smartphone: Smartphone, 'file-type-2': FileType2, 'image-plus': ImagePlus,
+  video: Video, gauge: Gauge, zap: Zap, target: Target, mail: Mail,
+  users: Users, 'bar-chart': BarChart3, search: Search, settings: Settings,
+  cpu: Cpu, layers: Layers,
+};
+
+/** Render icon: try logo first, then Lucide fallback */
+function wizardIcon(icon: string, size = 18): React.ReactNode {
+  if (icon.startsWith('logo-')) {
+    return renderNodeIcon(icon, undefined, undefined, size);
+  }
+  const LIcon = LUCIDE_ICONS[icon];
+  if (LIcon) return <LIcon size={size} className="text-gray-500 dark:text-zinc-400" />;
+  return renderNodeIcon(icon, undefined, <Zap size={size} className="text-gray-400" />, size);
+}
+
+const CATEGORIES: { value: string; de: string; en: string }[] = [
+  { value: 'Marketing', de: 'Marketing', en: 'Marketing' },
+  { value: 'Sales', de: 'Sales', en: 'Sales' },
+  { value: 'Agentur', de: 'Agentur', en: 'Agency' },
+  { value: 'Support', de: 'Support', en: 'Support' },
+  { value: 'Intern', de: 'Intern', en: 'Internal' },
+];
+
+const NODE_TYPE_LABELS: Record<string, { de: string; en: string }> = {
+  trigger: { de: 'Auslöser', en: 'Trigger' },
+  process: { de: 'Prozess', en: 'Process' },
+  ai: { de: 'KI', en: 'AI' },
+  output: { de: 'Ausgabe', en: 'Output' },
+};
 
 const SYSTEM_ICONS = ['zap', 'target', 'mail', 'users', 'bar-chart-3', 'globe', 'shield', 'cpu', 'settings', 'layers', 'rocket', 'heart'];
 
@@ -58,8 +102,9 @@ const SECTION_HEADER = 'text-xs font-semibold text-gray-500 dark:text-zinc-400 u
 
 // ─── Helpers: Tree traversal & immutable updates ──────────────────────────────
 
+let _idCounter = 0;
 function generateId(): string {
-  return `wn-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+  return `wn-${Date.now()}-${(++_idCounter).toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
 }
 
 /**
@@ -207,16 +252,22 @@ function updateNodeInTree(
   if (!root) return null;
   if (root.kind === 'node') {
     if (root.node.id === nodeId) {
-      return { ...root, node: updater(root.node), next: updateNodeInTree(root.next, nodeId, updater) };
+      // Found — update this node, no need to recurse further (IDs are unique)
+      return { ...root, node: updater(root.node) };
     }
     return { ...root, next: updateNodeInTree(root.next, nodeId, updater) };
   }
-  // Parallel
-  const updatedBranches = root.branches.map((b) => ({
-    ...b,
-    firstStep: updateNodeInTree(b.firstStep, nodeId, updater),
-  }));
-  return { ...root, branches: updatedBranches, next: updateNodeInTree(root.next, nodeId, updater) };
+  // Parallel: try each branch, stop early once found (IDs are unique)
+  for (let i = 0; i < root.branches.length; i++) {
+    const b = root.branches[i];
+    const updated = updateNodeInTree(b.firstStep, nodeId, updater);
+    if (updated !== b.firstStep) {
+      const newBranches = [...root.branches];
+      newBranches[i] = { ...b, firstStep: updated };
+      return { ...root, branches: newBranches };
+    }
+  }
+  return { ...root, next: updateNodeInTree(root.next, nodeId, updater) };
 }
 
 /**
@@ -314,10 +365,7 @@ export default function WizardTemplateBuilder({ onComplete, onCancel }: WizardTe
     phaseId: string | null;
   } | null>(null);
 
-  // Branch creation state
-  const [showBranchCreator, setShowBranchCreator] = useState(false);
-  const [branchCount, setBranchCount] = useState(2);
-  const [branchNames, setBranchNames] = useState<string[]>(['', '']);
+  // (Branch creation is handled inline via the "Parallel" button)
 
   // Collapsible sections
   const [metaExpanded, setMetaExpanded] = useState(true);
@@ -340,16 +388,17 @@ export default function WizardTemplateBuilder({ onComplete, onCancel }: WizardTe
     const q = nodeSearch.toLowerCase();
     return PALETTE_ITEMS.filter((item) => {
       const label = t(item.tKey).toLowerCase();
-      return label.includes(q) || item.type.includes(q);
+      const desc = t(item.descKey).toLowerCase();
+      return label.includes(q) || desc.includes(q) || item.type.includes(q);
     });
   }, [nodeSearch, t]);
 
   const groupedPalette = useMemo(() => {
-    const groups: Record<string, typeof PALETTE_ITEMS> = {
-      trigger: [], ai: [], process: [], output: [],
-    };
+    const groups: Record<string, typeof PALETTE_ITEMS> = {};
     for (const item of filteredPaletteItems) {
-      groups[item.type]?.push(item);
+      const key = item.category;
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(item);
     }
     return groups;
   }, [filteredPaletteItems]);
@@ -372,65 +421,53 @@ export default function WizardTemplateBuilder({ onComplete, onCancel }: WizardTe
     setShowNodePicker(false);
   }, [t]);
 
+  const [isAdding, setIsAdding] = useState(false);
+
   const handleConfirmNode = useCallback(() => {
-    if (!editingNode) return;
+    if (!editingNode || isAdding) return;
+    setIsAdding(true);
 
-    const newNode: WizardNode = {
-      id: generateId(),
-      icon: editingNode.paletteIcon,
-      tKey: editingNode.paletteTKey,
-      nodeType: editingNode.paletteType,
-      label: editingNode.label || t(editingNode.paletteTKey),
-      description: editingNode.description,
-      phaseId: editingNode.phaseId,
-    };
-
-    const newStep: WizardStep = { kind: 'node', node: newNode, next: null };
-
-    setWizardState((prev) => {
-      if (!prev.rootStep && focusPath.length === 0) {
-        return { ...prev, rootStep: newStep };
-      }
-      const updatedRoot = setNextAtPath(prev.rootStep, focusPath, newStep);
-      return { ...prev, rootStep: updatedRoot };
-    });
-
-    setFocusPath((prev) => [...prev, newNode.id]);
-    setEditingNode(null);
-    setMetaExpanded(false); // Auto-collapse meta after adding a node
-    setPreviewVersion((v) => v + 1);
-  }, [editingNode, focusPath, t]);
-
-  const handleAddParallelFork = useCallback(() => {
-    const branches: WizardBranch[] = [];
-    for (let i = 0; i < branchCount; i++) {
-      branches.push({
+    try {
+      const newNode: WizardNode = {
         id: generateId(),
-        label: branchNames[i] || `Branch ${i + 1}`,
-        firstStep: null,
+        icon: editingNode.paletteIcon,
+        tKey: editingNode.paletteTKey,
+        nodeType: editingNode.paletteType,
+        label: editingNode.label || t(editingNode.paletteTKey),
+        description: editingNode.description,
+        phaseId: editingNode.phaseId,
+      };
+
+      const newStep: WizardStep = { kind: 'node', node: newNode, next: null };
+
+      setWizardState((prev) => {
+        if (!prev.rootStep && focusPath.length === 0) {
+          return { ...prev, rootStep: newStep };
+        }
+        const updatedRoot = setNextAtPath(prev.rootStep, focusPath, newStep);
+        return { ...prev, rootStep: updatedRoot };
       });
+
+      setFocusPath((prev) => [...prev, newNode.id]);
+      setEditingNode(null);
+      setMetaExpanded(false); // Auto-collapse meta after adding a node
+      setPreviewVersion((v) => v + 1);
+    } finally {
+      setIsAdding(false);
     }
+  }, [editingNode, focusPath, t, isAdding]);
 
-    const parallelStep: WizardStep = { kind: 'parallel', branches, next: null };
-
-    setWizardState((prev) => {
-      const updatedRoot = setNextAtPath(prev.rootStep, focusPath, parallelStep);
-      return { ...prev, rootStep: updatedRoot };
-    });
-
-    // Don't auto-navigate — user stays at current node and sees branch overview
-    setShowBranchCreator(false);
-    setBranchCount(2);
-    setBranchNames(['', '']);
-    setPreviewVersion((v) => v + 1);
-  }, [branchCount, branchNames, focusPath]);
 
   const handleRemoveNode = useCallback((nodeId: string) => {
     setWizardState((prev) => ({
       ...prev,
       rootStep: removeNodeFromTree(prev.rootStep, nodeId),
     }));
-    setFocusPath([]);
+    // Navigate to parent path instead of root
+    setFocusPath((prev) => {
+      const idx = prev.indexOf(nodeId);
+      return idx >= 0 ? prev.slice(0, idx) : [];
+    });
     setPreviewVersion((v) => v + 1);
   }, []);
 
@@ -487,23 +524,12 @@ export default function WizardTemplateBuilder({ onComplete, onCancel }: WizardTe
     setFocusPath((prev) => prev.slice(0, -1));
     setShowNodePicker(false);
     setEditingNode(null);
-    setShowBranchCreator(false);
   }, []);
 
   const handleNavigateTo = useCallback((path: string[]) => {
     setFocusPath(path);
     setShowNodePicker(false);
     setEditingNode(null);
-    setShowBranchCreator(false);
-  }, []);
-
-  const handleBranchCountChange = useCallback((count: number) => {
-    setBranchCount(count);
-    setBranchNames((prev) => {
-      const next = [...prev];
-      while (next.length < count) next.push('');
-      return next.slice(0, count);
-    });
   }, []);
 
   /** Navigate out of the current branch context (used by "Ende" button) */
@@ -523,7 +549,6 @@ export default function WizardTemplateBuilder({ onComplete, onCancel }: WizardTe
     setFocusPath(newPath);
     setShowNodePicker(false);
     setEditingNode(null);
-    setShowBranchCreator(false);
   }, [focusPath, wizardState.rootStep]);
 
   // ─── Sub-components (inline) ────────────────────────────────────────────────
@@ -620,15 +645,15 @@ export default function WizardTemplateBuilder({ onComplete, onCancel }: WizardTe
               <div className="flex flex-wrap gap-1">
                 {CATEGORIES.map((cat) => (
                   <button
-                    key={cat}
-                    onClick={() => handleMetaChange('category', cat)}
+                    key={cat.value}
+                    onClick={() => handleMetaChange('category', cat.value)}
                     className={`px-2.5 py-1 text-[11px] font-medium rounded-lg transition-all ${
-                      wizardState.category === cat
+                      wizardState.category === cat.value
                         ? 'bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 ring-1 ring-purple-300 dark:ring-purple-700'
                         : 'bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 hover:bg-gray-200 dark:hover:bg-zinc-700'
                     }`}
                   >
-                    {cat}
+                    {lang === 'de' ? cat.de : cat.en}
                   </button>
                 ))}
               </div>
@@ -694,7 +719,7 @@ export default function WizardTemplateBuilder({ onComplete, onCancel }: WizardTe
           >
             {/* Node icon */}
             <span className="flex-shrink-0">
-              {renderNodeIcon(step.node.icon, undefined, undefined, 18)}
+              {wizardIcon(step.node.icon, 18)}
             </span>
 
             {/* Node info */}
@@ -703,7 +728,7 @@ export default function WizardTemplateBuilder({ onComplete, onCancel }: WizardTe
                 {step.node.label}
               </span>
               <span className="text-[10px] text-gray-400 dark:text-zinc-500 uppercase">
-                {step.node.nodeType}
+                {NODE_TYPE_LABELS[step.node.nodeType]?.[lang] || step.node.nodeType}
               </span>
             </div>
 
@@ -712,7 +737,7 @@ export default function WizardTemplateBuilder({ onComplete, onCancel }: WizardTe
               {phase ? (
                 <button
                   onClick={(e) => { e.stopPropagation(); setPhaseDropdownNodeId(showPhaseDropdown ? null : step.node.id); }}
-                  className="text-[10px] px-1.5 py-0.5 rounded-md font-medium transition-colors hover:opacity-80"
+                  className="text-[10px] px-1.5 py-0.5 rounded-md font-medium transition-colors hover:opacity-80 truncate max-w-[80px]"
                   style={{ backgroundColor: phase.color + '20', color: phase.color }}
                   title={lang === 'de' ? 'Phase ändern' : 'Change phase'}
                 >
@@ -781,7 +806,7 @@ export default function WizardTemplateBuilder({ onComplete, onCancel }: WizardTe
               {t('wizard.tree.parallel')}
             </span>
             <span className="text-[10px] text-purple-400 dark:text-purple-500">
-              {step.branches.length} Branches
+              {step.branches.length} {lang === 'de' ? 'Zweige' : 'Branches'}
             </span>
           </div>
 
@@ -865,14 +890,29 @@ export default function WizardTemplateBuilder({ onComplete, onCancel }: WizardTe
   );
 
   // ── NodePicker ──
-  const renderNodePicker = () => {
-    const typeLabels: Record<string, string> = {
-      trigger: 'Trigger',
-      ai: lang === 'de' ? 'KI / AI' : 'AI',
-      process: 'Process',
-      output: 'Output',
-    };
+  const CATEGORY_ORDER = [
+    'palette.cat.trigger',
+    'palette.cat.ai',
+    'palette.cat.logic',
+    'palette.cat.data',
+    'palette.cat.comm',
+    'palette.cat.content',
+    'palette.cat.social',
+    'palette.cat.analytics',
+  ];
 
+  const CATEGORY_COLORS: Record<string, string> = {
+    'palette.cat.trigger': '#3b82f6',
+    'palette.cat.ai': '#d946ef',
+    'palette.cat.logic': '#8b5cf6',
+    'palette.cat.data': '#8b5cf6',
+    'palette.cat.comm': '#10b981',
+    'palette.cat.content': '#10b981',
+    'palette.cat.social': '#10b981',
+    'palette.cat.analytics': '#10b981',
+  };
+
+  const renderNodePicker = () => {
     return (
       <div className="border border-gray-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-900 overflow-hidden">
         {/* Search */}
@@ -890,19 +930,19 @@ export default function WizardTemplateBuilder({ onComplete, onCancel }: WizardTe
           </div>
         </div>
         {/* Grouped items */}
-        <div className="max-h-64 overflow-y-auto p-2 space-y-2">
-          {(['trigger', 'ai', 'process', 'output'] as const).map((type) => {
-            const items = groupedPalette[type];
+        <div className="max-h-[28rem] overflow-y-auto p-2 space-y-2">
+          {CATEGORY_ORDER.map((catKey) => {
+            const items = groupedPalette[catKey];
             if (!items || items.length === 0) return null;
             return (
-              <div key={type}>
+              <div key={catKey}>
                 <div className="flex items-center gap-2 px-2 py-1">
                   <span
                     className="w-2 h-2 rounded-full"
-                    style={{ backgroundColor: NODE_TYPE_COLORS[type] }}
+                    style={{ backgroundColor: CATEGORY_COLORS[catKey] || '#8b5cf6' }}
                   />
                   <span className="text-[10px] font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wider">
-                    {typeLabels[type]}
+                    {t(catKey)}
                   </span>
                 </div>
                 <div className="grid grid-cols-2 gap-1">
@@ -913,7 +953,7 @@ export default function WizardTemplateBuilder({ onComplete, onCancel }: WizardTe
                       className="flex items-center gap-2 px-2.5 py-2 rounded-lg text-left hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors group"
                     >
                       <span className="flex-shrink-0 opacity-70 group-hover:opacity-100 transition-opacity">
-                        {renderNodeIcon(item.icon, undefined, undefined, 18)}
+                        {wizardIcon(item.icon, 18)}
                       </span>
                       <span className="text-xs text-gray-700 dark:text-zinc-300 truncate">
                         {t(item.tKey)}
@@ -941,10 +981,10 @@ export default function WizardTemplateBuilder({ onComplete, onCancel }: WizardTe
       <div className="border border-purple-200 dark:border-purple-800 rounded-xl bg-purple-50/50 dark:bg-purple-900/10 p-3 space-y-3">
         <div className="flex items-center gap-2">
           <span className="flex-shrink-0">
-            {renderNodeIcon(editingNode.paletteIcon, undefined, undefined, 20)}
+            {wizardIcon(editingNode.paletteIcon, 20)}
           </span>
           <span className="text-xs font-medium text-gray-500 dark:text-zinc-400 uppercase">
-            {editingNode.paletteType}
+            {NODE_TYPE_LABELS[editingNode.paletteType]?.[lang] || editingNode.paletteType}
           </span>
         </div>
         {/* Label */}
@@ -996,7 +1036,7 @@ export default function WizardTemplateBuilder({ onComplete, onCancel }: WizardTe
         <div className="flex items-center gap-2 pt-1">
           <button onClick={handleConfirmNode} className={BTN_PRIMARY + ' flex items-center gap-1.5'}>
             <Check size={14} />
-            <span>{lang === 'de' ? 'Hinzufugen' : 'Add'}</span>
+            <span>{lang === 'de' ? 'Hinzufügen' : 'Add'}</span>
           </button>
           <button
             onClick={() => setEditingNode(null)}
@@ -1011,7 +1051,7 @@ export default function WizardTemplateBuilder({ onComplete, onCancel }: WizardTe
 
   // ── StepEditor: "What comes next?" ──
   const renderStepEditor = () => {
-    if (showNodePicker || editingNode || showBranchCreator) return null;
+    if (showNodePicker || editingNode) return null;
 
     // Only show if we are at a node position (focusPath points to a node)
     const step = getStepAtPath(wizardState.rootStep, focusPath);
@@ -1045,8 +1085,8 @@ export default function WizardTemplateBuilder({ onComplete, onCancel }: WizardTe
             onClick={() => {
               // Create 2 branches — stay at current node to show branch overview
               const branches: WizardBranch[] = [
-                { id: generateId(), label: 'Branch 1', firstStep: null },
-                { id: generateId(), label: 'Branch 2', firstStep: null },
+                { id: generateId(), label: `${lang === 'de' ? 'Zweig' : 'Branch'} 1`, firstStep: null },
+                { id: generateId(), label: `${lang === 'de' ? 'Zweig' : 'Branch'} 2`, firstStep: null },
               ];
               const parallelStep: WizardStep = { kind: 'parallel', branches, next: null };
               setWizardState((prev) => {
@@ -1085,70 +1125,6 @@ export default function WizardTemplateBuilder({ onComplete, onCancel }: WizardTe
                 {t('wizard.step.endHereDesc')}
               </p>
             </div>
-          </button>
-        </div>
-      </div>
-    );
-  };
-
-  // ── BranchCreator ──
-  const renderBranchCreator = () => {
-    if (!showBranchCreator) return null;
-    return (
-      <div className="border border-purple-200 dark:border-purple-800 rounded-xl bg-purple-50/50 dark:bg-purple-900/10 p-3 space-y-3">
-        <p className="text-sm font-medium text-gray-700 dark:text-zinc-300">
-          {t('wizard.step.parallel')}
-        </p>
-        {/* Branch count */}
-        <div>
-          <label className="block text-xs font-medium text-gray-600 dark:text-zinc-400 mb-1.5">
-            {lang === 'de' ? 'Anzahl Branches' : 'Number of branches'}
-          </label>
-          <div className="flex gap-1.5">
-            {[2, 3, 4].map((n) => (
-              <button
-                key={n}
-                onClick={() => handleBranchCountChange(n)}
-                className={`w-10 h-10 rounded-lg text-sm font-medium transition-all ${
-                  branchCount === n
-                    ? 'bg-purple-600 text-white'
-                    : 'bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 hover:bg-gray-200 dark:hover:bg-zinc-700'
-                }`}
-              >
-                {n}
-              </button>
-            ))}
-          </div>
-        </div>
-        {/* Branch names */}
-        <div className="space-y-2">
-          {Array.from({ length: branchCount }, (_, i) => (
-            <div key={i}>
-              <label className="block text-[11px] font-medium text-gray-500 dark:text-zinc-400 mb-1">
-                {t('wizard.branch.name')} {i + 1}
-              </label>
-              <input
-                type="text"
-                value={branchNames[i] || ''}
-                onChange={(e) => {
-                  const next = [...branchNames];
-                  next[i] = e.target.value;
-                  setBranchNames(next);
-                }}
-                placeholder={t('wizard.branch.namePlaceholder')}
-                className={INPUT_CLS}
-              />
-            </div>
-          ))}
-        </div>
-        {/* Actions */}
-        <div className="flex items-center gap-2 pt-1">
-          <button onClick={handleAddParallelFork} className={BTN_PRIMARY + ' flex items-center gap-1.5'}>
-            <GitBranch size={14} />
-            <span>{lang === 'de' ? 'Erstellen' : 'Create'}</span>
-          </button>
-          <button onClick={() => setShowBranchCreator(false)} className={BTN_SECONDARY}>
-            {t('wizard.action.cancel')}
           </button>
         </div>
       </div>
@@ -1213,20 +1189,26 @@ export default function WizardTemplateBuilder({ onComplete, onCancel }: WizardTe
         };
         return { ...prev, rootStep: updateStep(prev.rootStep) };
       });
+      // If focusPath contains the deleted branch ID, navigate to parent
+      setFocusPath((prev) => {
+        const idx = prev.indexOf(branchId);
+        return idx >= 0 ? prev.slice(0, idx) : prev;
+      });
       setPreviewVersion((v) => v + 1);
     };
 
     const handleAddBranch = () => {
       if (step.branches.length >= 5) return;
+      const branchIds = new Set(step.branches.map((b) => b.id));
       const newBranch: WizardBranch = {
         id: generateId(),
-        label: `Branch ${step.branches.length + 1}`,
+        label: `${lang === 'de' ? 'Zweig' : 'Branch'} ${step.branches.length + 1}`,
         firstStep: null,
       };
       setWizardState((prev) => {
         const updateStep = (s: WizardStep | null): WizardStep | null => {
           if (!s) return null;
-          if (s.kind === 'parallel' && s === step) {
+          if (s.kind === 'parallel' && s.branches.length === branchIds.size && s.branches.every((b) => branchIds.has(b.id))) {
             return { ...s, branches: [...s.branches, newBranch] };
           }
           if (s.kind === 'parallel') {
@@ -1255,7 +1237,7 @@ export default function WizardTemplateBuilder({ onComplete, onCancel }: WizardTe
             </span>
           </div>
           <span className="text-[10px] text-gray-400 dark:text-zinc-500 bg-gray-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded font-medium">
-            {step.branches.length} Branches
+            {step.branches.length} {lang === 'de' ? 'Zweige' : 'Branches'}
           </span>
         </div>
         <div className="space-y-2">
@@ -1445,10 +1427,7 @@ export default function WizardTemplateBuilder({ onComplete, onCancel }: WizardTe
                           ? 'ring-2 ring-offset-2 ring-offset-white dark:ring-offset-zinc-900 scale-110'
                           : 'hover:scale-105'
                       }`}
-                      style={{
-                        backgroundColor: pc.color,
-                        boxShadow: newPhaseColor === pc.color ? `0 0 0 2px white, 0 0 0 4px ${pc.color}` : undefined,
-                      }}
+                      style={{ backgroundColor: pc.color }}
                     />
                   ))}
                 </div>
@@ -1509,11 +1488,6 @@ export default function WizardTemplateBuilder({ onComplete, onCancel }: WizardTe
       );
     }
 
-    // If creating parallel branches
-    if (showBranchCreator) {
-      return renderBranchCreator();
-    }
-
     // If at a parallel step, show branch manager
     const stepAtFocus = getStepAtPath(wizardState.rootStep, focusPath);
     if (stepAtFocus && stepAtFocus.kind === 'parallel') {
@@ -1535,21 +1509,21 @@ export default function WizardTemplateBuilder({ onComplete, onCancel }: WizardTe
           {/* Node info card with inline editing */}
           <div className="flex items-center gap-2.5 p-3 rounded-xl bg-gray-50 dark:bg-zinc-800/50 border border-gray-100 dark:border-zinc-700/50">
             <span className="flex-shrink-0">
-              {renderNodeIcon(node.icon, undefined, undefined, 22)}
+              {wizardIcon(node.icon, 22)}
             </span>
             <div className="flex-1 min-w-0">
               <input
                 type="text"
                 value={node.label}
                 onChange={(e) => handleUpdateNodeField(node.id, 'label', e.target.value)}
-                className="block w-full text-sm font-medium text-gray-800 dark:text-zinc-200 bg-transparent border-none outline-none p-0"
+                className="block w-full text-sm font-medium text-gray-800 dark:text-zinc-200 bg-transparent border-none outline-none p-0 focus:ring-1 focus:ring-purple-400 rounded px-1 -mx-1"
               />
               <input
                 type="text"
                 value={node.description}
                 onChange={(e) => handleUpdateNodeField(node.id, 'description', e.target.value)}
                 placeholder={t('wizard.step.descPlaceholder')}
-                className="block w-full text-[11px] text-gray-500 dark:text-zinc-400 bg-transparent border-none outline-none p-0 mt-0.5"
+                className="block w-full text-[11px] text-gray-500 dark:text-zinc-400 bg-transparent border-none outline-none p-0 mt-0.5 focus:ring-1 focus:ring-purple-400 rounded px-1 -mx-1"
               />
             </div>
             <span
@@ -1590,7 +1564,7 @@ export default function WizardTemplateBuilder({ onComplete, onCancel }: WizardTe
                   </span>
                 </div>
                 <span className="text-[10px] text-gray-400 dark:text-zinc-500 bg-gray-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded font-medium">
-                  {nextStep.branches.length} Branches
+                  {nextStep.branches.length} {lang === 'de' ? 'Zweige' : 'Branches'}
                 </span>
               </div>
               <div className="space-y-2">
@@ -1708,7 +1682,7 @@ export default function WizardTemplateBuilder({ onComplete, onCancel }: WizardTe
                       if (!curNode || curNode.kind !== 'node' || !curNode.next || curNode.next.kind !== 'parallel') return prev;
                       const newBranch: WizardBranch = {
                         id: generateId(),
-                        label: `Branch ${curNode.next.branches.length + 1}`,
+                        label: `${lang === 'de' ? 'Zweig' : 'Branch'} ${curNode.next.branches.length + 1}`,
                         firstStep: null,
                       };
                       const updatedParallel: WizardStep = {
@@ -1768,7 +1742,7 @@ export default function WizardTemplateBuilder({ onComplete, onCancel }: WizardTe
         </p>
         <p className="text-xs text-gray-500 dark:text-zinc-400 mb-4">
           {lang === 'de'
-            ? 'Wahle einen Node-Typ aus der Palette'
+            ? 'Wähle einen Node-Typ aus der Palette'
             : 'Choose a node type from the palette'}
         </p>
         <button
@@ -1798,23 +1772,22 @@ export default function WizardTemplateBuilder({ onComplete, onCancel }: WizardTe
             {/* Active Wizard Area — above tree & phases for visibility */}
             <div className="px-4 py-4">
               {/* Breadcrumb path */}
-              {focusPath.length > 0 && (
+              {focusPath.length > 0 && (() => {
+                const allBranches = collectBranches(wizardState.rootStep);
+                return (
                 <div className="flex items-center gap-1 mb-3 flex-wrap">
                   <button
                     onClick={() => handleNavigateTo([])}
                     className="text-[11px] text-purple-600 dark:text-purple-400 hover:underline font-medium"
                   >
-                    Root
+                    {lang === 'de' ? 'Start' : 'Root'}
                   </button>
                   {focusPath.map((seg, idx) => {
-                    // Try to find a node or branch name for this segment
                     const nodeStep = findStepById(wizardState.rootStep, seg);
                     let label = seg.slice(0, 8);
                     if (nodeStep && nodeStep.kind === 'node') {
                       label = nodeStep.node.label;
                     } else {
-                      // Check if it's a branch
-                      const allBranches = collectBranches(wizardState.rootStep);
                       const branch = allBranches.find((b) => b.id === seg);
                       if (branch) label = branch.label;
                     }
@@ -1831,7 +1804,8 @@ export default function WizardTemplateBuilder({ onComplete, onCancel }: WizardTe
                     );
                   })}
                 </div>
-              )}
+                );
+              })()}
 
               {renderWizardContent()}
             </div>
@@ -1890,7 +1864,7 @@ export default function WizardTemplateBuilder({ onComplete, onCancel }: WizardTe
 
       {/* Mobile Preview Modal */}
       {mobilePreview && (
-        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 lg:hidden">
+        <div className="fixed inset-0 z-[70] bg-black/80 flex items-center justify-center p-4 lg:hidden">
           <div className="bg-white dark:bg-zinc-900 rounded-2xl w-full h-[80vh] overflow-hidden relative">
             <button
               onClick={() => setMobilePreview(false)}

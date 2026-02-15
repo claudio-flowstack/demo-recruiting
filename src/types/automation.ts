@@ -2,6 +2,17 @@ export type NodeType = 'trigger' | 'process' | 'ai' | 'output';
 
 export type OutputType = 'document' | 'folder' | 'website' | 'spreadsheet' | 'email' | 'image' | 'other';
 
+export type SubNodeType = 'tool' | 'memory' | 'knowledge' | 'outputFormat';
+
+export interface SubNode {
+  id: string;
+  type: SubNodeType;
+  label: string;
+  icon: string;
+  x: number;    // absolute canvas x
+  y: number;    // absolute canvas y
+}
+
 export interface SystemNode {
   id: string;
   label: string;
@@ -14,6 +25,7 @@ export interface SystemNode {
   linkedResourceType?: ResourceType;  // Auto-link to resources of this type
   linkedResourceId?: string;          // Specific resource item ID within the type
   linkedPage?: string;    // Internal page path (e.g. '/onboarding') – clickable from canvas
+  subNodes?: SubNode[];   // Small attachable modules (e.g., Tool, Memory for AI agents)
 }
 
 export type PortDirection = 'top' | 'right' | 'bottom' | 'left';

@@ -15,7 +15,7 @@ import WorkflowCanvas from '@/components/automation/WorkflowCanvas';
 import FunnelCanvas from '@/components/automation/FunnelCanvas';
 import WizardTemplateBuilder from '@/components/automation/WizardTemplateBuilder';
 import type { AutomationSystem, SystemOutput, OutputType, SystemResource, ResourceType, ExecutionLogEntry, WorkflowVersion, AdvancedSystemOutput } from '@/types/automation';
-import { DEMO_SYSTEMS, loadUserSystems, saveUserSystems, getVisibleDemoSystems, hideDemoSystem } from '@/data/automationSystems';
+import { DEMO_SYSTEMS, loadUserSystems, saveUserSystems, getVisibleDemoSystems, hideDemoSystem, getLocalizedDemoSystem } from '@/data/automationSystems';
 import { getResourcesForSystem, addResource, updateResource, deleteResource } from '@/data/resourceStorage';
 import { WORKFLOW_TEMPLATES, loadUserTemplates, saveUserTemplates, deleteUserTemplate, getLocalizedTemplate } from '@/data/automationTemplates';
 import { createMockEventSource } from '@/services/mockEventSource';
@@ -25,10 +25,10 @@ import ConfirmDialog, { useModalEsc } from '../components/ui/ConfirmDialog';
 
 // ─── Error Boundary (#26) ────────────────────────────────────────────────────
 
-interface ErrorBoundaryState { hasError: boolean; error?: Error }
+interface ErrorBoundaryState { hasError: boolean; error?: Error; retryKey: number }
 
 class CanvasErrorBoundary extends Component<{ children: ReactNode; fallback?: ReactNode }, ErrorBoundaryState> {
-  state: ErrorBoundaryState = { hasError: false };
+  state: ErrorBoundaryState = { hasError: false, retryKey: 0 };
 
   static getDerivedStateFromError(error: Error) {
     return { hasError: true, error };
@@ -45,12 +45,12 @@ class CanvasErrorBoundary extends Component<{ children: ReactNode; fallback?: Re
           <div className="text-center">
             <AlertCircle size={28} className="text-red-400 mx-auto mb-2" />
             <p className="text-sm text-red-500 font-medium">Error loading canvas</p>
-            <button onClick={() => this.setState({ hasError: false })} className="mt-2 text-xs text-red-400 underline hover:text-red-300">Retry</button>
+            <button onClick={() => this.setState(s => ({ hasError: false, retryKey: s.retryKey + 1 }))} className="mt-2 text-xs text-red-400 underline hover:text-red-300">Retry</button>
           </div>
         </div>
       );
     }
-    return this.props.children;
+    return <div key={this.state.retryKey}>{this.props.children}</div>;
   }
 }
 
@@ -110,17 +110,31 @@ interface ToastMessage {
 
 function useToast() {
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
+  const timersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
+
+  // Cleanup all timers on unmount
+  useEffect(() => {
+    return () => { timersRef.current.forEach(t => clearTimeout(t)); };
+  }, []);
 
   const addToast = useCallback((text: string, type: ToastMessage['type'] = 'success') => {
     const id = `toast-${Date.now()}-${Math.random().toString(36).slice(2, 5)}`;
-    setToasts(prev => [...prev, { id, text, type }]);
-    setTimeout(() => {
+    setToasts(prev => {
+      const next = [...prev, { id, text, type }];
+      // Cap at 8 toasts max
+      return next.length > 8 ? next.slice(-8) : next;
+    });
+    const timer = setTimeout(() => {
       setToasts(prev => prev.filter(t => t.id !== id));
+      timersRef.current.delete(id);
     }, 3000);
+    timersRef.current.set(id, timer);
   }, []);
 
   const dismissToast = useCallback((id: string) => {
     setToasts(prev => prev.filter(t => t.id !== id));
+    const timer = timersRef.current.get(id);
+    if (timer) { clearTimeout(timer); timersRef.current.delete(id); }
   }, []);
 
   return { toasts, addToast, dismissToast };
@@ -1277,8 +1291,14 @@ function SystemDetailView({ system, onSave, onExecute, onDelete, onToggleStatus,
   const eventSource = useMemo(() => createMockEventSource(), []);
   const { nodeStates, execute, reset } = useWorkflowExecution(eventSource);
 
+  // Execution timer cleanup
+  const execTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+  useEffect(() => {
+    return () => { execTimersRef.current.forEach(t => clearTimeout(t)); };
+  }, []);
+
   // Reset execution state when switching systems
-  useEffect(() => { reset(); }, [system.id, reset]);
+  useEffect(() => { reset(); execTimersRef.current.forEach(t => clearTimeout(t)); execTimersRef.current = []; }, [system.id, reset]);
 
   const handleExecuteWithEvents = useCallback(() => {
     const nodeIds = system.nodes.map(n => n.id);
@@ -1299,7 +1319,7 @@ function SystemDetailView({ system, onSave, onExecute, onDelete, onToggleStatus,
     // Process each node with staggered delays
     const nodesToProcess = system.nodes.slice(0, Math.min(system.nodes.length, 4));
     nodesToProcess.forEach((node, i) => {
-      setTimeout(() => {
+      execTimersRef.current.push(setTimeout(() => {
         const entry: ExecutionLogEntry = {
           id: `log-${startTime}-node-${i}`,
           timestamp: new Date().toISOString(),
@@ -1309,11 +1329,11 @@ function SystemDetailView({ system, onSave, onExecute, onDelete, onToggleStatus,
           duration: Math.floor(Math.random() * 800 + 100),
         };
         setExecutionLog(prev => [entry, ...prev]);
-      }, (i + 1) * 500);
+      }, (i + 1) * 500));
     });
 
     // Final completion entry
-    setTimeout(() => {
+    execTimersRef.current.push(setTimeout(() => {
       const totalDuration = (nodesToProcess.length + 1) * 500 + Math.floor(Math.random() * 200);
       const completeEntry: ExecutionLogEntry = {
         id: `log-${startTime}-complete`,
@@ -1330,7 +1350,7 @@ function SystemDetailView({ system, onSave, onExecute, onDelete, onToggleStatus,
         }
         return updated;
       });
-    }, (nodesToProcess.length + 1) * 500);
+    }, (nodesToProcess.length + 1) * 500));
   }, [system, execute, onExecute, t, onSave]);
 
   // Detail tabs: workflow (default), resources, log, versions
@@ -1438,8 +1458,8 @@ function SystemDetailView({ system, onSave, onExecute, onDelete, onToggleStatus,
     if (printWindow) {
       printWindow.document.write(html);
       printWindow.document.close();
-      // Small delay to allow rendering before print dialog
-      setTimeout(() => printWindow.print(), 400);
+      // Small delay to allow rendering before print dialog, then close
+      setTimeout(() => { printWindow.print(); printWindow.close(); }, 400);
     }
   }, [system, lang, onToast]);
 
@@ -2255,11 +2275,14 @@ function AutomationDashboardContent() {
     try { const s = localStorage.getItem('fs_automation_settings'); if (s) return JSON.parse(s); } catch {}
     return { autoExecute: false, notifications: true, webhookLogs: true, compactView: false };
   });
-  useEffect(() => { try { localStorage.setItem('fs_automation_settings', JSON.stringify(settingsData)); } catch {} }, [settingsData]);
+  useEffect(() => { try { localStorage.setItem('fs_automation_settings', JSON.stringify(settingsData)); } catch { console.warn('Settings save failed — storage full?'); } }, [settingsData]);
 
   useEffect(() => { setUserSystems(loadUserSystems()); }, []);
 
-  const allSystems = useMemo(() => [...getVisibleDemoSystems(), ...userSystems], [userSystems, demoVersion]);
+  const allSystems = useMemo(() => [
+    ...getVisibleDemoSystems().map(s => getLocalizedDemoSystem(s, lang)),
+    ...userSystems,
+  ], [userSystems, demoVersion, lang]);
   const selectedSystem = allSystems.find(s => s.id === section);
 
   const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches);
@@ -2275,10 +2298,12 @@ function AutomationDashboardContent() {
     };
   }, [theme]);
 
+  const saveFail = () => addToast(lang === 'de' ? 'Fehler beim Speichern — Speicher voll?' : 'Save failed — storage full?', 'error');
+
   const handleCreated = (system: AutomationSystem) => {
     const updated = [...userSystems, system];
     setUserSystems(updated);
-    saveUserSystems(updated);
+    if (!saveUserSystems(updated)) { saveFail(); return; }
     setSection(system.id);
     addToast(t('toast.systemCreated'), 'success');
   };
@@ -2293,13 +2318,13 @@ function AutomationDashboardContent() {
     } else {
       const isDemo = DEMO_SYSTEMS.some(d => d.id === system.id);
       const newSystem = isDemo
-        ? { ...system, id: `user-${Date.now()}`, name: `${system.name} ${t('system.copy')}` }
+        ? { ...system, id: `user-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, name: `${system.name} ${t('system.copy')}` }
         : system;
       updated = [...userSystems, newSystem];
       if (isDemo) setSection(newSystem.id);
     }
     setUserSystems(updated);
-    saveUserSystems(updated);
+    if (!saveUserSystems(updated)) { saveFail(); return; }
     addToast(t('toast.systemSaved'), 'success');
   };
 
@@ -2318,7 +2343,7 @@ function AutomationDashboardContent() {
     } else {
       const updated = userSystems.filter(s => s.id !== confirmDeleteSystemId);
       setUserSystems(updated);
-      saveUserSystems(updated);
+      if (!saveUserSystems(updated)) { saveFail(); }
       addToast(t('toast.systemDeleted'), 'success');
     }
     setConfirmDeleteSystemId(null);
@@ -2335,7 +2360,7 @@ function AutomationDashboardContent() {
       s.id === systemId ? { ...s, status: newStatus as 'active' | 'draft' } : s
     );
     setUserSystems(updated);
-    saveUserSystems(updated);
+    if (!saveUserSystems(updated)) { saveFail(); return; }
     addToast(
       newStatus === 'active' ? t('toast.statusActive') : t('toast.statusDraft'),
       'info'
@@ -2353,7 +2378,7 @@ function AutomationDashboardContent() {
         lastExecuted: new Date().toISOString(),
       };
       setUserSystems(updated);
-      saveUserSystems(updated);
+      if (!saveUserSystems(updated)) { saveFail(); }
     }
     addToast(t('toast.executionStarted'), 'info');
   };
@@ -2599,7 +2624,7 @@ function AutomationDashboardContent() {
                 onSave={(system) => {
                   const updated = [...userSystems, system];
                   setUserSystems(updated);
-                  saveUserSystems(updated);
+                  if (!saveUserSystems(updated)) { saveFail(); return; }
                   setSection(system.id);
                 }}
               />
@@ -2611,9 +2636,13 @@ function AutomationDashboardContent() {
                 onComplete={(system) => {
                   const updated = [...userSystems, system];
                   setUserSystems(updated);
-                  saveUserSystems(updated);
-                  setSection(system.id);
-                  addToast(t('toast.wizardCreated'), 'success');
+                  const saved = saveUserSystems(updated);
+                  if (saved) {
+                    setSection(system.id);
+                    addToast(t('toast.wizardCreated'), 'success');
+                  } else {
+                    addToast(lang === 'de' ? 'Fehler beim Speichern — Speicher voll?' : 'Save failed — storage full?', 'error');
+                  }
                 }}
                 onCancel={() => navigate('dashboard')}
               />

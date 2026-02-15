@@ -85,6 +85,11 @@ function flattenSteps(
   }
 
   // kind === 'parallel'
+  // Edge case: empty parallel (0 branches) — pass through prevNodeIds
+  if (step.branches.length === 0) {
+    return flattenSteps(step.next, prevNodeIds, nodes, connections, col, rowStart);
+  }
+
   let currentRow = rowStart;
   let maxColInBranches = col - 1;
   const allBranchLastIds: string[] = [];
@@ -107,9 +112,12 @@ function flattenSteps(
     currentRow += branchHeight;
   }
 
+  // Deduplicate to avoid duplicate connections from empty branches
+  const uniqueLastIds = [...new Set(allBranchLastIds)];
+
   // Continue after parallel merge
   const mergeCol = maxColInBranches + 1;
-  return flattenSteps(step.next, allBranchLastIds, nodes, connections, mergeCol, rowStart);
+  return flattenSteps(step.next, uniqueLastIds, nodes, connections, mergeCol, rowStart);
 }
 
 /**
@@ -252,7 +260,7 @@ export function convertWizardToSystem(state: WizardState): AutomationSystem | nu
   }
 
   return {
-    id: `user-${Date.now()}`,
+    id: `user-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     name: state.name.trim() || 'Neues System',
     description: state.description.trim(),
     category: state.category,

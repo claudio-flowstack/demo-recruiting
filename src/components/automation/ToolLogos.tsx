@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { TikTok, GoogleAds, Instagram, Calendly, Stripe, YouTube, Typeform } from './FunnelLogos';
+import { TikTok, GoogleAds, Instagram, Calendly, Stripe, YouTube, Typeform, Telegram, MicrosoftTeams, Mailchimp, Pipedrive } from './FunnelLogos';
 
 // ─── Inline SVG Logo Components ───────────────────────────────────────────────
 
@@ -240,6 +240,10 @@ export const TOOL_LOGOS: Record<string, ToolLogo> = {
   'logo-typeform':        { id: 'logo-typeform',        name: 'Typeform',        category: 'Forms',         component: Typeform,       color: '#262627' },
   'logo-wordpress':       { id: 'logo-wordpress',       name: 'WordPress',       category: 'CMS',           component: WordPress,      color: '#21759B' },
   'logo-google-analytics':{ id: 'logo-google-analytics',name: 'Google Analytics',category: 'Analytics',     component: GoogleAnalytics, color: '#F9AB00' },
+  'logo-telegram':        { id: 'logo-telegram',        name: 'Telegram',        category: 'Communication', component: Telegram,        color: '#26A5E4' },
+  'logo-teams':           { id: 'logo-teams',           name: 'Microsoft Teams', category: 'Communication', component: MicrosoftTeams,  color: '#5B5FC7' },
+  'logo-mailchimp':       { id: 'logo-mailchimp',       name: 'Mailchimp',       category: 'Email',         component: Mailchimp,       color: '#FFE01B' },
+  'logo-pipedrive':       { id: 'logo-pipedrive',       name: 'Pipedrive',       category: 'CRM',           component: Pipedrive,       color: '#017737' },
 };
 
 // ─── Unified Icon Renderer ────────────────────────────────────────────────────
