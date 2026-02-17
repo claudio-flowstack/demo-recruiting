@@ -30,7 +30,7 @@ import {
   // V2 feature icons
   Pin, PinOff, History, Variable, Code2,
   CheckCircle2, XCircle, AlertCircle, CircleDot,
-  Boxes, DollarSign,
+  Boxes, SlidersHorizontal,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '@/components/theme-provider';
@@ -488,9 +488,11 @@ interface WorkflowCanvasProps {
   startInPresentationMode?: boolean;
   /** Navigate to another system while in presentation mode */
   onPresNavigate?: (systemId: string) => void;
+  /** Called when presentation mode changes (enter/exit) */
+  onPresentationModeChange?: (active: boolean) => void;
 }
 
-export default function WorkflowCanvas({ onSave, onExecute, onStop, initialSystem, readOnly, className, style, nodeStates: externalNodeStates, onDrillDown, subSystemInfo, presNavigationSystems, startInPresentationMode, onPresNavigate }: WorkflowCanvasProps) {
+export default function WorkflowCanvas({ onSave, onExecute, onStop, initialSystem, readOnly, className, style, nodeStates: externalNodeStates, onDrillDown, subSystemInfo, presNavigationSystems, startInPresentationMode, onPresNavigate, onPresentationModeChange }: WorkflowCanvasProps) {
   const { t, lang } = useLanguage();
   const navigate = useNavigate();
   const viewportRef = useRef<HTMLDivElement>(null);
@@ -565,18 +567,19 @@ export default function WorkflowCanvas({ onSave, onExecute, onStop, initialSyste
   const [presBarVisible, setPresBarVisible] = useState(true);
   const [presEditEnabled, setPresEditEnabled] = useState(false);
 
-  // Auto-enter fullscreen when startInPresentationMode is set
+  // Auto-enter fullscreen when startInPresentationMode is set (mount + prop change)
   useEffect(() => {
     if (startInPresentationMode) {
+      setIsPresentationMode(true);
       setPaletteOpen(false);
-      // Fit to screen after layout settles
       requestAnimationFrame(() => fitToScreen());
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [startInPresentationMode]);
 
   // Auto-fade presentation bar after 3 seconds + hide grid/groups by default
   useEffect(() => {
+    onPresentationModeChange?.(isPresentationMode);
     if (isPresentationMode) {
       setPresBarVisible(true);
       setShowGrid(false);
@@ -587,6 +590,7 @@ export default function WorkflowCanvas({ onSave, onExecute, onStop, initialSyste
       setShowGrid(true);
       setShowGroupBackgrounds(true);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPresentationMode]);
 
   const [editNode, setEditNode] = useState<string | null>(null);
@@ -767,6 +771,22 @@ export default function WorkflowCanvas({ onSave, onExecute, onStop, initialSyste
   const [execDuration, setExecDuration] = useState(0);
   const execStartRef = useRef<number>(0);
 
+  // Feature Log + Presentation panels
+  const [showFeatureLog, setShowFeatureLog] = useState(false);
+  const [showPresDocuments, setShowPresDocuments] = useState(false);
+  const [presLiveMs, setPresLiveMs] = useState(0);
+
+  // Live timer for presentation mode runtime display
+  useEffect(() => {
+    if (!effectiveIsExecuting || effectiveExecutionDone) return;
+    const iv = setInterval(() => {
+      if (execStartRef.current > 0) {
+        setPresLiveMs(Date.now() - execStartRef.current);
+      }
+    }, 100);
+    return () => clearInterval(iv);
+  }, [effectiveIsExecuting, effectiveExecutionDone]);
+
   // V2: Mutual exclusivity — only one panel open at a time
   const closeAllPanels = useCallback(() => {
     setShowHistory(false);
@@ -774,6 +794,7 @@ export default function WorkflowCanvas({ onSave, onExecute, onStop, initialSyste
     setShowVariables(false);
     setShowExprEditor(false);
     setShowVersioning(false);
+    setShowFeatureLog(false);
     setInspectNodeId(null);
   }, []);
   const togglePanel = useCallback((panel: 'history' | 'insights' | 'variables' | 'expr' | 'versioning') => {
@@ -834,16 +855,6 @@ export default function WorkflowCanvas({ onSave, onExecute, onStop, initialSyste
     }
   }, [effectiveExecutionDone, nodes.length, executionDataMap.size]);
 
-  // V2: ROI calculation
-  const roi = useMemo(() => {
-    const totalExec = MOCK_HISTORY.length;
-    const avgDuration = MOCK_HISTORY.reduce((s, h) => s + h.duration, 0) / totalExec;
-    const manualMinutes = 35;
-    const timeSaved = (totalExec * manualMinutes) - (totalExec * avgDuration / 60);
-    const successRate = MOCK_HISTORY.filter(h => h.status === 'success').length / totalExec * 100;
-    const totalItems = MOCK_HISTORY.reduce((s, h) => s + h.itemsProcessed, 0);
-    return { totalExec, avgDuration: avgDuration.toFixed(1), timeSaved: Math.round(timeSaved), successRate: successRate.toFixed(0), totalItems };
-  }, []);
 
   // V2: Partial execution
   const executeNode = useCallback((nodeId: string) => {
@@ -1183,6 +1194,8 @@ export default function WorkflowCanvas({ onSave, onExecute, onStop, initialSyste
       }
 
       if (e.key === 'Escape') {
+        if (showFeatureLog) { setShowFeatureLog(false); return; }
+        if (showPresDocuments) { setShowPresDocuments(false); return; }
         if (isPresentationMode) { setIsPresentationMode(false); setIsFullscreen(false); return; }
         if (contextMenu) { setContextMenu(null); return; }
         if (showCanvasSettings) { setShowCanvasSettings(false); return; }
@@ -1642,11 +1655,11 @@ export default function WorkflowCanvas({ onSave, onExecute, onStop, initialSyste
 
   // #21 – Context menu handler
   const handleContextMenu = useCallback((e: React.MouseEvent, nodeId?: string, groupId?: string, connIdx?: number) => {
-    if (readOnly) return;
+    if (readOnly || (isPresentationMode && !presEditEnabled)) return;
     e.preventDefault();
     e.stopPropagation();
     setContextMenu({ x: e.clientX, y: e.clientY, nodeId, groupId, connIdx });
-  }, [readOnly]);
+  }, [readOnly, isPresentationMode, presEditEnabled]);
 
   // ─── Node Interactions ─────────────────────────────────────────────────────
 
@@ -1694,7 +1707,7 @@ export default function WorkflowCanvas({ onSave, onExecute, onStop, initialSyste
   }, [nodes, readOnly, spaceHeld, isPresentationMode, presEditEnabled, screenToCanvas, multiSelectedIds, connectingStickyId, stickyConnections, pushHistory]);
 
   const handlePortClick = useCallback((e: React.MouseEvent, nodeId: string, port: PortDirection) => {
-    if (readOnly) return;
+    if (readOnly || (isPresentationMode && !presEditEnabled)) return;
     e.stopPropagation();
 
     if (!connectState) {
@@ -2661,29 +2674,6 @@ export default function WorkflowCanvas({ onSave, onExecute, onStop, initialSyste
       {/* ─── Right: Canvas Area ─── */}
       <div className="flex-1 flex flex-col overflow-hidden relative">
 
-        {/* V2: ROI Dashboard Bar */}
-        {initialSystem && executionDataMap.size > 0 && (!isPresentationMode || presEditEnabled) && (
-          <div className="flex items-center gap-3 px-4 py-1.5 border-b border-gray-200 dark:border-zinc-800 bg-gradient-to-r from-purple-500/5 via-transparent to-emerald-500/5 shrink-0">
-            <TrendingUp size={13} className="text-purple-500 shrink-0" />
-            <span className="text-[10px] font-medium text-gray-500 dark:text-zinc-400 shrink-0">{lang === 'de' ? 'Workflow-ROI' : 'Workflow ROI'}</span>
-            <div className="flex items-center gap-3 ml-1 overflow-x-auto">
-              {[
-                { label: lang === 'de' ? 'Ausführungen' : 'Executions', value: roi.totalExec.toString(), icon: <Repeat size={10} />, color: 'text-purple-500' },
-                { label: lang === 'de' ? 'Ø Dauer' : 'Avg Duration', value: `${roi.avgDuration}s`, icon: <Clock size={10} />, color: 'text-blue-500' },
-                { label: lang === 'de' ? 'Zeitersparnis' : 'Time Saved', value: `~${roi.timeSaved}min`, icon: <DollarSign size={10} />, color: 'text-emerald-500' },
-                { label: lang === 'de' ? 'Erfolgsrate' : 'Success Rate', value: `${roi.successRate}%`, icon: <CheckCircle2 size={10} />, color: 'text-green-500' },
-                { label: 'Items', value: roi.totalItems.toString(), icon: <Boxes size={10} />, color: 'text-orange-500' },
-              ].map(kpi => (
-                <div key={kpi.label} className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-white/60 dark:bg-zinc-800/60 shrink-0">
-                  <span className={kpi.color}>{kpi.icon}</span>
-                  <span className="text-[10px] font-bold">{kpi.value}</span>
-                  <span className="text-[8px] text-gray-400 dark:text-zinc-500">{kpi.label}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
         {/* Toolbar */}
         {(!isPresentationMode || presEditEnabled) && <div className="flex items-center border-b border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 z-10 shrink-0" role="toolbar" aria-label="Canvas-Toolbar">
           {/* Scrollable tool section */}
@@ -2770,9 +2760,9 @@ export default function WorkflowCanvas({ onSave, onExecute, onStop, initialSyste
                   <div className="absolute right-0 top-full mt-1 z-40 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-lg shadow-xl py-1 min-w-[180px]">
                     {([
                       { key: 'history', icon: <History size={14} />, label: lang === 'en' ? 'Execution History' : 'Ausführungsverlauf', active: showHistory, color: 'blue' },
-                      { key: 'insights', icon: <BarChart3 size={14} />, label: 'Insights', active: showInsights, color: 'emerald' },
+                      { key: 'insights', icon: <BarChart3 size={14} />, label: lang === 'en' ? 'Insights' : 'Einblicke', active: showInsights, color: 'emerald' },
                       { key: 'variables', icon: <Variable size={14} />, label: lang === 'en' ? 'Variables' : 'Variablen', active: showVariables, color: 'orange' },
-                      { key: 'expr', icon: <Code2 size={14} />, label: 'Expression Editor', active: showExprEditor, color: 'pink' },
+                      { key: 'expr', icon: <Code2 size={14} />, label: lang === 'en' ? 'Expression Editor' : 'Ausdruck-Editor', active: showExprEditor, color: 'pink' },
                       { key: 'versioning', icon: <GitMerge size={14} />, label: lang === 'en' ? 'Version History' : 'Versionsverlauf', active: showVersioning, color: 'cyan' },
                       { key: 'dataPreview', icon: <Eye size={14} />, label: lang === 'en' ? 'Data Preview' : 'Daten-Vorschau', active: showDataPreview, color: 'green' },
                     ] as const).map(item => (
@@ -2826,6 +2816,15 @@ export default function WorkflowCanvas({ onSave, onExecute, onStop, initialSyste
               aria-label={t('toolbar.scrollSpeed')}
             />
           </div>
+
+          {/* Feature Log toggle */}
+          <button
+            onClick={() => { closeAllPanels(); setShowFeatureLog(f => !f); }}
+            className={`p-1.5 rounded-lg transition-colors ${showFeatureLog ? 'bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800'}`}
+            title={lang === 'en' ? 'Feature Log' : 'Feature-Log'}
+          >
+            <SlidersHorizontal size={15} />
+          </button>
 
           {/* Canvas Settings (opacity etc.) */}
           <div className="relative">
@@ -3006,7 +3005,7 @@ export default function WorkflowCanvas({ onSave, onExecute, onStop, initialSyste
                         {([1, 2, 3] as const).map(v => (
                           <button key={v} onClick={() => setConnStrokeWidth(v)}
                             className={`flex items-center justify-center w-10 h-7 rounded-md transition-colors ${connStrokeWidth === v ? 'bg-purple-100 dark:bg-purple-500/20 ring-1 ring-purple-400' : 'bg-gray-50 dark:bg-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-700'}`}
-                            title={v === 1 ? 'Thin' : v === 2 ? 'Normal' : 'Bold'}
+                            title={v === 1 ? (lang === 'en' ? 'Thin' : 'Dünn') : v === 2 ? 'Normal' : (lang === 'en' ? 'Bold' : 'Fett')}
                           >
                             <svg width="24" height="8" viewBox="0 0 24 8">
                               <line x1="0" y1="4" x2="24" y2="4" stroke={connStrokeWidth === v ? '#a855f7' : '#9ca3af'} strokeWidth={v} />
@@ -3200,6 +3199,24 @@ export default function WorkflowCanvas({ onSave, onExecute, onStop, initialSyste
                 {effectiveIsExecuting && !effectiveExecutionDone ? <Square size={12} className="fill-current" /> : effectiveExecutionDone ? <Check size={14} /> : <Play size={14} />}
                 <span className="hidden sm:inline">{effectiveIsExecuting && !effectiveExecutionDone ? (lang === 'en' ? 'Stop' : 'Stoppen') : effectiveExecutionDone ? t('toolbar.done') : t('toolbar.run')}</span>
               </button>
+              {/* Live execution timer */}
+              {(effectiveIsExecuting || (showExecKpis && execDuration > 0)) && (
+                <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-gray-100 dark:bg-zinc-800">
+                  {effectiveIsExecuting && !effectiveExecutionDone ? (
+                    <>
+                      <Loader2 size={11} className="text-purple-500 animate-spin" />
+                      <span className="text-[11px] font-mono tabular-nums text-gray-700 dark:text-zinc-300">
+                        {Math.floor(presLiveMs / 60000).toString().padStart(2, '0')}:{Math.floor((presLiveMs % 60000) / 1000).toString().padStart(2, '0')}.{Math.floor((presLiveMs % 1000) / 100)}
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 size={11} className="text-emerald-500" />
+                      <span className="text-[11px] font-mono tabular-nums text-gray-700 dark:text-zinc-300">{execDuration.toFixed(1)}s</span>
+                    </>
+                  )}
+                </div>
+              )}
             </>
           )}
 
@@ -3416,13 +3433,13 @@ export default function WorkflowCanvas({ onSave, onExecute, onStop, initialSyste
                   <g
                     key={i}
                     style={{ pointerEvents: 'stroke' }}
-                    onClick={(e) => { if (readOnly) return; e.stopPropagation(); setSelectedConnId(i); setSelectedNodeId(null); setSelectedGroupId(null); }}
-                    onDoubleClick={(e) => { if (readOnly) return; e.stopPropagation(); startConnLabelEdit(i); }}
-                    onMouseEnter={() => !readOnly && setHoveredConnId(i)}
+                    onClick={(e) => { if (readOnly || (isPresentationMode && !presEditEnabled)) return; e.stopPropagation(); setSelectedConnId(i); setSelectedNodeId(null); setSelectedGroupId(null); }}
+                    onDoubleClick={(e) => { if (readOnly || (isPresentationMode && !presEditEnabled)) return; e.stopPropagation(); startConnLabelEdit(i); }}
+                    onMouseEnter={() => !(readOnly || (isPresentationMode && !presEditEnabled)) && setHoveredConnId(i)}
                     onMouseLeave={() => setHoveredConnId(null)}
                     onContextMenu={e => handleContextMenu(e, undefined, undefined, i)}
                   >
-                    <path d={pathD} stroke="transparent" strokeWidth={12 / zoom} fill="none" style={{ cursor: readOnly ? 'default' : 'pointer', pointerEvents: 'stroke' }} />
+                    <path d={pathD} stroke="transparent" strokeWidth={12 / zoom} fill="none" style={{ cursor: (readOnly || (isPresentationMode && !presEditEnabled)) ? 'default' : 'pointer', pointerEvents: 'stroke' }} />
                     {connStyleMode === 'v3' ? (() => {
                       // V3 mode: ALWAYS accent-colored connections (like NodeLab V2/V3)
                       const isActive = fromStatus === 'completed' || fromStatus === 'running';
@@ -3531,7 +3548,7 @@ export default function WorkflowCanvas({ onSave, onExecute, onStop, initialSyste
                             }}
                             onBlur={() => saveConnLabel()}
                             onClick={e => e.stopPropagation()}
-                            placeholder={lang === 'en' ? 'Label...' : 'Label...'}
+                            placeholder={lang === 'en' ? 'Label...' : 'Bezeichnung...'}
                             style={{
                               width: 130,
                               height: 24,
@@ -3936,7 +3953,7 @@ export default function WorkflowCanvas({ onSave, onExecute, onStop, initialSyste
                   onMouseDown={e => handleNodeMouseDown(e, node.id)}
                   onMouseEnter={() => { if (!readOnly && !(isPresentationMode && !presEditEnabled)) setHoveredNodeId(node.id); }}
                   onMouseLeave={() => setHoveredNodeId(null)}
-                  onDoubleClick={() => { if (node.type === 'subsystem' && node.linkedSubSystemId && onDrillDown) { onDrillDown(node.linkedSubSystemId); } else { startNodeEdit(node.id); } }}
+                  onDoubleClick={() => { if (node.type === 'subsystem' && node.linkedSubSystemId && onDrillDown) { onDrillDown(node.linkedSubSystemId); } else if (!(isPresentationMode && !presEditEnabled)) { startNodeEdit(node.id); } }}
                   onContextMenu={e => handleContextMenu(e, node.id)}
                   role="button"
                   aria-label={`Node: ${node.label}`}
@@ -5018,6 +5035,74 @@ export default function WorkflowCanvas({ onSave, onExecute, onStop, initialSyste
                 </button>
               </div>
 
+              {/* Runtime badge + Documents panel (top-left, below edit toggle) */}
+              {(effectiveIsExecuting || (showExecKpis && execDuration > 0) || showPresDocuments) && (
+                <div className="absolute top-14 left-3 z-50 flex flex-col gap-2" style={{ maxHeight: 'calc(100vh - 80px)' }}>
+                  {/* Runtime Badge */}
+                  {(effectiveIsExecuting || (showExecKpis && execDuration > 0)) && (
+                    <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-black/60 backdrop-blur-xl border border-white/10">
+                      {effectiveIsExecuting && !effectiveExecutionDone ? (
+                        <>
+                          <Loader2 size={13} className="text-purple-400 animate-spin" />
+                          <span className="text-[12px] text-white/90 font-mono tabular-nums">
+                            {Math.floor(presLiveMs / 60000).toString().padStart(2, '0')}:{Math.floor((presLiveMs % 60000) / 1000).toString().padStart(2, '0')}.{Math.floor((presLiveMs % 1000) / 100)}
+                          </span>
+                          <span className="text-[10px] text-white/50">{lang === 'en' ? 'running' : 'läuft'}</span>
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle2 size={13} className="text-emerald-400" />
+                          <span className="text-[12px] text-white/90 font-mono tabular-nums">{execDuration.toFixed(1)}s</span>
+                          <span className="text-[10px] text-white/50">{lang === 'en' ? 'done' : 'abgeschlossen'}</span>
+                        </>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Documents Panel */}
+                  {showPresDocuments && initialSystem?.outputs && initialSystem.outputs.length > 0 && (
+                    <div className="w-60 bg-black/70 backdrop-blur-xl rounded-2xl border border-white/10 overflow-hidden">
+                      <div className="px-3 py-2 border-b border-white/10 flex items-center justify-between">
+                        <span className="text-[11px] text-white/80 font-semibold">{lang === 'en' ? 'Documents' : 'Dokumente'}</span>
+                        <button onClick={() => setShowPresDocuments(false)} className="p-0.5 rounded hover:bg-white/10"><X size={12} className="text-white/50" /></button>
+                      </div>
+                      <div className="max-h-[50vh] overflow-y-auto p-2 space-y-0.5">
+                        {initialSystem.outputs.map(out => (
+                          <a
+                            key={out.id}
+                            href={out.link || '#'}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={e => { if (!out.link) e.preventDefault(); }}
+                            className="flex items-start gap-2.5 px-2.5 py-2 rounded-xl hover:bg-white/10 transition-colors cursor-pointer group"
+                          >
+                            <div className="mt-0.5 shrink-0">
+                              {out.type === 'document' ? <FileText size={14} className="text-blue-400" /> :
+                               out.type === 'website' ? <Globe size={14} className="text-green-400" /> :
+                               out.type === 'email' ? <Mail size={14} className="text-orange-400" /> :
+                               out.type === 'spreadsheet' ? <Grid3X3 size={14} className="text-emerald-400" /> :
+                               out.type === 'image' ? <Image size={14} className="text-pink-400" /> :
+                               <FileOutput size={14} className="text-purple-400" />}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="text-[11px] text-white/80 font-medium truncate group-hover:text-white transition-colors">{out.name}</div>
+                              <div className="flex items-center gap-2 mt-0.5">
+                                <span className="text-[9px] text-white/40 uppercase">{out.type}</span>
+                                {out.createdAt && <span className="text-[9px] text-white/30">{out.createdAt}</span>}
+                              </div>
+                              {out.contentPreview && (
+                                <div className="text-[10px] text-white/35 mt-0.5 line-clamp-2">{out.contentPreview}</div>
+                              )}
+                            </div>
+                            <ArrowRight size={11} className="text-white/0 group-hover:text-white/50 transition-colors mt-1 shrink-0" />
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Presentation mode navigation pills (top-right) */}
               {presNavigationSystems && presNavigationSystems.length > 1 && (
                 <div className="absolute top-3 right-3 z-50">
@@ -5062,6 +5147,23 @@ export default function WorkflowCanvas({ onSave, onExecute, onStop, initialSyste
                     <Layers size={14} />
                   </button>
                   <div className="w-px h-4 bg-white/20" />
+                  {initialSystem?.outputs && initialSystem.outputs.length > 0 && (
+                    <button
+                      onClick={() => setShowPresDocuments(d => !d)}
+                      className={`p-1.5 rounded-full transition-colors ${showPresDocuments ? 'text-white bg-white/15' : 'text-white/40 hover:text-white hover:bg-white/10'}`}
+                      title={lang === 'en' ? 'Documents' : 'Dokumente'}
+                    >
+                      <FileOutput size={14} />
+                    </button>
+                  )}
+                  <button
+                    onClick={() => { closeAllPanels(); setShowFeatureLog(f => !f); }}
+                    className={`p-1.5 rounded-full transition-colors ${showFeatureLog ? 'text-white bg-white/15' : 'text-white/40 hover:text-white hover:bg-white/10'}`}
+                    title={lang === 'en' ? 'Feature Log' : 'Feature-Log'}
+                  >
+                    <SlidersHorizontal size={14} />
+                  </button>
+                  <div className="w-px h-4 bg-white/20" />
                   <button
                     onClick={() => fitToScreen()}
                     className="p-1.5 rounded-full text-white/60 hover:text-white hover:bg-white/10 transition-colors"
@@ -5069,6 +5171,23 @@ export default function WorkflowCanvas({ onSave, onExecute, onStop, initialSyste
                   >
                     <Crosshair size={14} />
                   </button>
+                  {initialSystem && (
+                    <button
+                      onClick={effectiveIsExecuting && !effectiveExecutionDone ? onStop : handleExecute}
+                      disabled={effectiveExecutionDone}
+                      className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-all ${
+                        effectiveExecutionDone
+                          ? 'bg-emerald-500/80 text-white cursor-default'
+                          : effectiveIsExecuting && !effectiveExecutionDone
+                          ? 'bg-red-500/80 hover:bg-red-400/80 text-white'
+                          : 'bg-purple-500/80 hover:bg-purple-400/80 text-white'
+                      }`}
+                      title={effectiveIsExecuting && !effectiveExecutionDone ? (lang === 'en' ? 'Stop' : 'Stoppen') : effectiveExecutionDone ? (lang === 'en' ? 'Done' : 'Fertig') : (lang === 'en' ? 'Run' : 'Starten')}
+                    >
+                      {effectiveIsExecuting && !effectiveExecutionDone ? <Square size={11} className="fill-current" /> : effectiveExecutionDone ? <Check size={13} /> : <Play size={13} />}
+                      <span>{effectiveIsExecuting && !effectiveExecutionDone ? (lang === 'en' ? 'Stop' : 'Stopp') : effectiveExecutionDone ? (lang === 'en' ? 'Done' : 'Fertig') : (lang === 'en' ? 'Run' : 'Starten')}</span>
+                    </button>
+                  )}
                   <button
                     onClick={() => { setIsPresentationMode(false); setIsFullscreen(false); setPresEditEnabled(false); }}
                     className="px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-medium transition-colors"
@@ -5135,31 +5254,6 @@ export default function WorkflowCanvas({ onSave, onExecute, onStop, initialSyste
             onCancel={() => setDeleteConfirm(null)}
           />
 
-          {/* V2: Execution KPIs (floating bottom bar — fade-in after execution) */}
-          {initialSystem && showExecKpis && executionDataMap.size > 0 && (
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-3 px-5 py-2.5 rounded-2xl bg-white/95 dark:bg-zinc-800/95 backdrop-blur-lg shadow-xl border border-gray-200/60 dark:border-zinc-700/60 z-20 animate-[fadeSlideUp_0.5s_ease-out_forwards]">
-              <div className="flex items-center gap-1.5">
-                <CheckCircle2 size={14} className="text-emerald-500" />
-                <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">{lang === 'de' ? 'Erfolgreich' : 'Completed'}</span>
-              </div>
-              <div className="w-px h-4 bg-gray-200 dark:bg-zinc-700" />
-              {[
-                { label: lang === 'de' ? 'Dauer' : 'Duration', value: `${execDuration.toFixed(1)}s`, icon: <Clock size={11} />, color: 'text-blue-500' },
-                { label: 'Nodes', value: `${executionDataMap.size}`, icon: <Boxes size={11} />, color: 'text-purple-500' },
-                { label: 'Items', value: `${Array.from(executionDataMap.values()).reduce((s, d) => s + d.items, 0)}`, icon: <TrendingUp size={11} />, color: 'text-orange-500' },
-                { label: lang === 'de' ? 'Erfolgsrate' : 'Success', value: '100%', icon: <CheckCircle2 size={11} />, color: 'text-green-500' },
-              ].map(kpi => (
-                <div key={kpi.label} className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-gray-50/80 dark:bg-zinc-700/50">
-                  <span className={kpi.color}>{kpi.icon}</span>
-                  <span className="text-[11px] font-bold text-gray-800 dark:text-zinc-200">{kpi.value}</span>
-                  <span className="text-[9px] text-gray-400 dark:text-zinc-500">{kpi.label}</span>
-                </div>
-              ))}
-              <button onClick={() => setShowExecKpis(false)} className="p-0.5 rounded hover:bg-gray-100 dark:hover:bg-zinc-700 ml-1">
-                <X size={12} className="text-gray-400" />
-              </button>
-            </div>
-          )}
 
           {/* V2: Variables Panel (floating) */}
           {showVariables && (
@@ -5193,14 +5287,14 @@ export default function WorkflowCanvas({ onSave, onExecute, onStop, initialSyste
                 <div className="p-4 border-b border-gray-200 dark:border-zinc-800 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Code2 size={16} className="text-pink-500" />
-                    <h3 className="text-sm font-bold">Expression Editor</h3>
+                    <h3 className="text-sm font-bold">{lang === 'en' ? 'Expression Editor' : 'Ausdruck-Editor'}</h3>
                   </div>
                   <button onClick={() => setShowExprEditor(false)} className="p-1 rounded hover:bg-gray-100 dark:hover:bg-zinc-800"><X size={16} /></button>
                 </div>
                 <div className="flex h-[350px]">
                   {/* Editor */}
                   <div className="flex-1 p-4 border-r border-gray-200 dark:border-zinc-800">
-                    <div className="text-[10px] text-gray-400 uppercase tracking-wider mb-2">Expression</div>
+                    <div className="text-[10px] text-gray-400 uppercase tracking-wider mb-2">{lang === 'en' ? 'Expression' : 'Ausdruck'}</div>
                     <textarea
                       className="w-full h-40 bg-gray-50 dark:bg-zinc-800 rounded-lg p-3 font-mono text-sm text-gray-800 dark:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-purple-500/30 resize-none"
                       placeholder="{{$node.webhook.data.email}}"
@@ -5254,7 +5348,7 @@ export default function WorkflowCanvas({ onSave, onExecute, onStop, initialSyste
               </div>
               <div className="p-3 space-y-3">
                 <div>
-                  <div className="text-[10px] font-medium text-gray-400 uppercase mb-1">Type</div>
+                  <div className="text-[10px] font-medium text-gray-400 uppercase mb-1">{lang === 'en' ? 'Type' : 'Typ'}</div>
                   <span className="px-2 py-0.5 rounded text-[10px] font-medium" style={{ background: inspStyle.accent + '18', color: inspStyle.accent }}>
                     {inspStyle.label}
                   </span>
@@ -5275,7 +5369,7 @@ export default function WorkflowCanvas({ onSave, onExecute, onStop, initialSyste
                           {ns === 'pending' && <Clock size={12} className="text-yellow-500" />}
                           {ns === 'running' && <Loader2 size={12} className="text-purple-500 animate-spin" />}
                           {ns === 'failed' && <XCircle size={12} className="text-red-500" />}
-                          <span className="text-xs capitalize">{ns}</span>
+                          <span className="text-xs capitalize">{lang === 'en' ? ns : ns === 'completed' ? 'Abgeschlossen' : ns === 'idle' ? 'Bereit' : ns === 'pending' ? 'Wartend' : ns === 'running' ? 'Läuft' : ns === 'failed' ? 'Fehlgeschlagen' : ns}</span>
                         </>
                       );
                     })()}
@@ -5317,7 +5411,7 @@ export default function WorkflowCanvas({ onSave, onExecute, onStop, initialSyste
         {showHistory && (
           <div className="absolute right-0 top-0 bottom-0 w-72 border-l border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/95 overflow-y-auto z-30 shadow-xl">
             <div className="p-3 border-b border-gray-200 dark:border-zinc-800 flex items-center justify-between">
-              <h3 className="text-sm font-bold">Execution History</h3>
+              <h3 className="text-sm font-bold">{lang === 'en' ? 'Execution History' : 'Ausführungsverlauf'}</h3>
               <button onClick={() => setShowHistory(false)} className="p-1 rounded hover:bg-gray-100 dark:hover:bg-zinc-800"><X size={14} /></button>
             </div>
             {MOCK_HISTORY.map(h => (
@@ -5344,7 +5438,7 @@ export default function WorkflowCanvas({ onSave, onExecute, onStop, initialSyste
         {showInsights && (
           <div className="absolute right-0 top-0 bottom-0 w-72 border-l border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/95 overflow-y-auto z-30 shadow-xl">
             <div className="p-3 border-b border-gray-200 dark:border-zinc-800 flex items-center justify-between">
-              <h3 className="text-sm font-bold">Insights</h3>
+              <h3 className="text-sm font-bold">{lang === 'en' ? 'Insights' : 'Einblicke'}</h3>
               <button onClick={() => setShowInsights(false)} className="p-1 rounded hover:bg-gray-100 dark:hover:bg-zinc-800"><X size={14} /></button>
             </div>
             <div className="p-3 space-y-4">
@@ -5427,6 +5521,71 @@ export default function WorkflowCanvas({ onSave, onExecute, onStop, initialSyste
                 )}
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Feature-Log Panel (right sidebar overlay) */}
+        {showFeatureLog && (
+          <div className="absolute right-0 top-0 bottom-0 w-72 border-l border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/95 overflow-y-auto z-30 shadow-xl">
+            <div className="p-3 border-b border-gray-200 dark:border-zinc-800 flex items-center justify-between">
+              <h3 className="text-sm font-bold">{lang === 'en' ? 'Feature Log' : 'Feature-Log'}</h3>
+              <button onClick={() => setShowFeatureLog(false)} className="p-1 rounded hover:bg-gray-100 dark:hover:bg-zinc-800"><X size={14} /></button>
+            </div>
+            <div className="p-3 space-y-1">
+              {/* Canvas */}
+              <div className="text-[10px] font-semibold text-gray-400 dark:text-zinc-600 uppercase tracking-wider mb-2 mt-1">Canvas</div>
+              {([
+                { label: 'Grid', labelEn: 'Grid', value: showGrid, set: setShowGrid },
+                { label: 'Phasen-Hintergründe', labelEn: 'Phase Backgrounds', value: showGroupBackgrounds, set: setShowGroupBackgrounds },
+                { label: 'Datenvorschau', labelEn: 'Data Preview', value: showDataPreview, set: setShowDataPreview },
+              ]).map((f, i) => (
+                <div key={i} className="flex items-center justify-between py-1.5">
+                  <span className="text-xs text-gray-600 dark:text-zinc-400">{lang === 'en' ? f.labelEn : f.label}</span>
+                  <button onClick={() => f.set(!f.value)} className={`w-8 h-4.5 rounded-full transition-colors relative ${f.value ? 'bg-purple-500' : 'bg-gray-300 dark:bg-zinc-600'}`}>
+                    <div className={`absolute top-0.5 w-3.5 h-3.5 rounded-full bg-white shadow transition-transform ${f.value ? 'translate-x-4' : 'translate-x-0.5'}`} />
+                  </button>
+                </div>
+              ))}
+
+              {/* Nodes */}
+              <div className="text-[10px] font-semibold text-gray-400 dark:text-zinc-600 uppercase tracking-wider mb-2 mt-4">{lang === 'en' ? 'Nodes' : 'Nodes'}</div>
+              {([
+                { label: 'Typ-Badges', labelEn: 'Type Badges', value: showTypeBadges, set: setShowTypeBadges },
+                { label: 'Beschreibungen', labelEn: 'Descriptions', value: showDescriptions, set: setShowDescriptions },
+                { label: 'Einrasten', labelEn: 'Snap', value: snapEnabled, set: setSnapEnabled },
+              ]).map((f, i) => (
+                <div key={i} className="flex items-center justify-between py-1.5">
+                  <span className="text-xs text-gray-600 dark:text-zinc-400">{lang === 'en' ? f.labelEn : f.label}</span>
+                  <button onClick={() => f.set(!f.value)} className={`w-8 h-4.5 rounded-full transition-colors relative ${f.value ? 'bg-purple-500' : 'bg-gray-300 dark:bg-zinc-600'}`}>
+                    <div className={`absolute top-0.5 w-3.5 h-3.5 rounded-full bg-white shadow transition-transform ${f.value ? 'translate-x-4' : 'translate-x-0.5'}`} />
+                  </button>
+                </div>
+              ))}
+
+              {/* Connections */}
+              <div className="text-[10px] font-semibold text-gray-400 dark:text-zinc-600 uppercase tracking-wider mb-2 mt-4">{lang === 'en' ? 'Connections' : 'Verbindungen'}</div>
+              <div className="flex items-center justify-between py-1.5">
+                <span className="text-xs text-gray-600 dark:text-zinc-400">{lang === 'en' ? 'Style' : 'Stil'}</span>
+                <div className="flex items-center gap-1">
+                  {(['v3', 'classic'] as const).map(m => (
+                    <button key={m} onClick={() => setConnStyleMode(m)}
+                      className={`text-[10px] px-2 py-0.5 rounded-md transition-colors ${connStyleMode === m ? 'bg-purple-100 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400 font-semibold' : 'text-gray-400 dark:text-zinc-600 bg-gray-50 dark:bg-zinc-800'}`}
+                    >{m === 'v3' ? 'V3' : (lang === 'en' ? 'Classic' : 'Klassisch')}</button>
+                  ))}
+                </div>
+              </div>
+              {([
+                { label: 'Fluss-Animation', labelEn: 'Flow Animation', value: showFlowDots, set: setShowFlowDots },
+                { label: 'Leuchteffekt', labelEn: 'Glow Effect', value: connGlow, set: setConnGlow },
+              ]).map((f, i) => (
+                <div key={i} className="flex items-center justify-between py-1.5">
+                  <span className="text-xs text-gray-600 dark:text-zinc-400">{lang === 'en' ? f.labelEn : f.label}</span>
+                  <button onClick={() => f.set(!f.value)} className={`w-8 h-4.5 rounded-full transition-colors relative ${f.value ? 'bg-purple-500' : 'bg-gray-300 dark:bg-zinc-600'}`}>
+                    <div className={`absolute top-0.5 w-3.5 h-3.5 rounded-full bg-white shadow transition-transform ${f.value ? 'translate-x-4' : 'translate-x-0.5'}`} />
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>

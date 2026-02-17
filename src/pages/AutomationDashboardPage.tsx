@@ -1517,7 +1517,7 @@ function ResourcesPanel({ systemId, systemNodes, onToast }: { systemId: string; 
 
 // ─── System Detail View (Redesigned) ─────────────────────────────────────────
 
-function SystemDetailView({ system, onSave, onExecute, onDelete, onToggleStatus, isUserSystem, isDemoSystem, onToast, onDrillDown, onDrillUp, parentSystem, subSystemInfo, presNavigationSystems, startInPresentationMode, onPresNavigate }: {
+function SystemDetailView({ system, onSave, onExecute, onDelete, onToggleStatus, isUserSystem, isDemoSystem, onToast, onDrillDown, onDrillUp, parentSystem, subSystemInfo, presNavigationSystems, startInPresentationMode, onPresNavigate, onPresentationModeChange }: {
   system: AutomationSystem;
   onSave?: (system: AutomationSystem) => void;
   onExecute?: () => void;
@@ -1533,6 +1533,7 @@ function SystemDetailView({ system, onSave, onExecute, onDelete, onToggleStatus,
   presNavigationSystems?: { id: string; name: string; isCurrent: boolean }[];
   startInPresentationMode?: boolean;
   onPresNavigate?: (systemId: string) => void;
+  onPresentationModeChange?: (active: boolean) => void;
 }) {
   const { t, lang } = useLanguage();
   const SystemIcon = getIcon(system.icon);
@@ -1884,7 +1885,7 @@ function SystemDetailView({ system, onSave, onExecute, onDelete, onToggleStatus,
         </div>
         <div className="rounded-2xl border border-gray-200 dark:border-zinc-800/40 overflow-hidden mr-3">
           <CanvasErrorBoundary>
-            <WorkflowCanvas initialSystem={system} onSave={handleSaveWithVersion} onExecute={handleExecuteWithEvents} onStop={() => { stop(); execTimersRef.current.forEach(t => clearTimeout(t)); execTimersRef.current = []; }} onDrillDown={onDrillDown} nodeStates={nodeStates} subSystemInfo={subSystemInfo} presNavigationSystems={presNavigationSystems} startInPresentationMode={startInPresentationMode} onPresNavigate={onPresNavigate} style={{ height: canvasHeight }} />
+            <WorkflowCanvas initialSystem={system} onSave={handleSaveWithVersion} onExecute={handleExecuteWithEvents} onStop={() => { stop(); execTimersRef.current.forEach(t => clearTimeout(t)); execTimersRef.current = []; }} onDrillDown={onDrillDown} nodeStates={nodeStates} subSystemInfo={subSystemInfo} presNavigationSystems={presNavigationSystems} startInPresentationMode={startInPresentationMode} onPresNavigate={onPresNavigate} onPresentationModeChange={onPresentationModeChange} style={{ height: canvasHeight }} />
           </CanvasErrorBoundary>
         </div>
         {/* Resize handle */}
@@ -3256,6 +3257,10 @@ function AutomationDashboardContent() {
                 ];
               })()}
               startInPresentationMode={startInPresentation}
+              onPresentationModeChange={(active) => {
+                if (active) setPresSessionActive(true);
+                else setPresSessionActive(false);
+              }}
               onPresNavigate={(systemId) => {
                 // Seamless switch: presSessionActive keeps sidebar/header hidden permanently
                 // Direct setSectionRaw bypasses the 150ms tabVisible fade for instant swap
