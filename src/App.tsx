@@ -23,6 +23,7 @@ import ColdMailDashboardPage from "./pages/ColdMailDashboardPage";
 import HubDashboardPage from "./pages/HubDashboardPage";
 import OnboardingPage from "./pages/OnboardingPage";
 import NodeLabPage from "./pages/NodeLabPage";
+import RecruitingDashboardPage from "./pages/RecruitingDashboardPage";
 import CookieBanner from "./components/CookieBanner";
 import "./App.css";
 
@@ -50,6 +51,7 @@ function App() {
         <Route path="/hub" element={<HubDashboardPage />} />
         <Route path="/onboarding" element={<OnboardingPage />} />
         <Route path="/node-lab" element={<NodeLabPage />} />
+        <Route path="/recruiting" element={<RecruitingDashboardPage />} />
         <Route path="/kostenlose-beratung" element={<FormularPage />} />
         <Route path="/danke" element={<DankePage />} />
         <Route path="/impressum" element={<ImpressumPage />} />
