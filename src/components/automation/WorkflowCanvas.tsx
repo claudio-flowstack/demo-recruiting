@@ -27,6 +27,10 @@ import {
   FileOutput, GitMerge, Scale, ShieldAlert, Bookmark,
   CopyCheck, Package, Smartphone, FileType2, ImagePlus, Video,
   FileJson, Shuffle, Code, ArrowRight, Grid3X3, Square,
+  // V2 feature icons
+  Pin, PinOff, History, Variable, Code2,
+  CheckCircle2, XCircle, AlertCircle, CircleDot,
+  Boxes, DollarSign,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '@/components/theme-provider';
@@ -391,6 +395,77 @@ interface CanvasSnapshot {
 import { PALETTE_ITEMS } from '@/data/paletteItems';
 import type { PaletteItem } from '@/data/paletteItems';
 
+// ─── V2 Feature: Mock Execution Data ────────────────────────────────────────
+
+interface NodeExecutionData {
+  input: Record<string, unknown>;
+  output: Record<string, unknown>;
+  duration: number;
+  items: number;
+}
+
+interface ExecutionRecord {
+  id: string;
+  timestamp: string;
+  duration: number;
+  status: 'success' | 'error' | 'partial';
+  nodesExecuted: number;
+  itemsProcessed: number;
+}
+
+interface WorkflowVersion {
+  id: string;
+  version: string;
+  timestamp: string;
+  author: string;
+  status: 'current' | 'published';
+  changes: Array<{ type: 'added' | 'modified' | 'removed'; desc: string }>;
+}
+
+const MOCK_HISTORY: ExecutionRecord[] = [
+  { id: 'ex-1', timestamp: '2026-02-17 10:32', duration: 8.4, status: 'success', nodesExecuted: 15, itemsProcessed: 5 },
+  { id: 'ex-2', timestamp: '2026-02-17 09:15', duration: 12.1, status: 'success', nodesExecuted: 15, itemsProcessed: 12 },
+  { id: 'ex-3', timestamp: '2026-02-17 08:03', duration: 4.2, status: 'error', nodesExecuted: 8, itemsProcessed: 3 },
+  { id: 'ex-4', timestamp: '2026-02-16 17:45', duration: 6.8, status: 'success', nodesExecuted: 15, itemsProcessed: 7 },
+  { id: 'ex-5', timestamp: '2026-02-16 14:22', duration: 9.5, status: 'partial', nodesExecuted: 11, itemsProcessed: 4 },
+  { id: 'ex-6', timestamp: '2026-02-16 11:10', duration: 7.2, status: 'success', nodesExecuted: 15, itemsProcessed: 8 },
+  { id: 'ex-7', timestamp: '2026-02-15 16:30', duration: 5.1, status: 'success', nodesExecuted: 15, itemsProcessed: 2 },
+];
+
+const MOCK_VERSIONS: WorkflowVersion[] = [
+  { id: 'v-1', version: '1.4.0', timestamp: '2026-02-17 10:30', author: 'Claudio', status: 'current', changes: [
+    { type: 'added', desc: 'Router-Node für Multi-Channel-Verteilung' },
+    { type: 'modified', desc: 'KI-Score-Schwellenwert von 60 auf 70 erhöht' },
+  ]},
+  { id: 'v-2', version: '1.3.0', timestamp: '2026-02-16 14:15', author: 'Claudio', status: 'published', changes: [
+    { type: 'modified', desc: 'E-Mail-Template auf welcome-v2 aktualisiert' },
+    { type: 'removed', desc: 'Alte Slack-Integration entfernt' },
+  ]},
+  { id: 'v-3', version: '1.2.1', timestamp: '2026-02-15 09:45', author: 'Max', status: 'published', changes: [
+    { type: 'modified', desc: 'CRM-Mapping-Felder angepasst' },
+  ]},
+  { id: 'v-4', version: '1.2.0', timestamp: '2026-02-14 16:20', author: 'Claudio', status: 'published', changes: [
+    { type: 'added', desc: 'Iterator für Batch-Verarbeitung' },
+    { type: 'added', desc: 'Merge-Node für Pfad-Zusammenführung' },
+  ]},
+];
+
+const MOCK_VARIABLES = [
+  { name: 'API_KEY', value: 'sk-***...***f8a2', scope: 'global' as const },
+  { name: 'SLACK_CHANNEL', value: '#leads', scope: 'workflow' as const },
+  { name: 'SCORE_THRESHOLD', value: '70', scope: 'workflow' as const },
+  { name: 'EMAIL_TEMPLATE', value: 'welcome-v2', scope: 'workflow' as const },
+];
+
+// V2 CSS animations
+const V2_CSS = `
+@keyframes v2-bubble-in { 0% { transform: scale(0); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+.v2-bubble { animation: v2-bubble-in 0.3s ease-out forwards; }
+@keyframes v2-data-flow { 0% { stroke-dashoffset: 20; } 100% { stroke-dashoffset: 0; } }
+.v2-connection-active { stroke-dasharray: 8 4; animation: v2-data-flow 0.6s linear infinite; }
+@keyframes fadeSlideUp { 0% { opacity: 0; transform: translate(-50%, 12px); } 100% { opacity: 1; transform: translate(-50%, 0); } }
+`;
+
 // ─── Main Component ──────────────────────────────────────────────────────────
 
 interface WorkflowCanvasProps {
@@ -474,8 +549,12 @@ export default function WorkflowCanvas({ onSave, onExecute, onStop, initialSyste
   const [showFlowDots, setShowFlowDots] = useState(true); // flow animation dots on connections
 
   // Node design themes
-  type NodeDesignTheme = 'default' | 'glass' | 'minimal' | 'outlined' | 'neon' | 'gradient' | 'solid' | 'wire';
-  const [nodeDesignTheme, setNodeDesignTheme] = useState<NodeDesignTheme>('default');
+  type NodeDesignTheme = 'nodelab' | 'classic' | 'glass' | 'minimal' | 'outlined' | 'neon' | 'gradient' | 'solid' | 'wire';
+  const [nodeDesignTheme, setNodeDesignTheme] = useState<NodeDesignTheme>('nodelab');
+  // V3 connection style mode
+  type ConnStyleMode = 'v3' | 'classic';
+  const [connStyleMode, setConnStyleMode] = useState<ConnStyleMode>('v3');
+  const [showTypeBadges, setShowTypeBadges] = useState(true);
   type NodeLayout = 'standard' | 'centered' | 'compact' | 'icon-focus';
   const [nodeLayout, setNodeLayout] = useState<NodeLayout>('standard');
   const [showDescriptions, setShowDescriptions] = useState(true); // global toggle
@@ -562,6 +641,25 @@ export default function WorkflowCanvas({ onSave, onExecute, onStop, initialSyste
         stickyNotes: initialSystem.stickyNotes || [],
       };
       setHasUnsavedChanges(false);
+      // Reset execution + V2 state to prevent cross-system leakage
+      executionTimeoutsRef.current.forEach(clearTimeout);
+      executionTimeoutsRef.current = [];
+      setIsExecuting(false);
+      setExecutionDone(false);
+      setExecutingNodes(new Set());
+      setExecutionDataMap(new Map());
+      setPinnedNodes(new Set());
+      setCustomNodeColors(new Map());
+      setInspectNodeId(null);
+      setShowExecKpis(false);
+      setExecDuration(0);
+      setShowHistory(false);
+      setShowInsights(false);
+      setShowVariables(false);
+      setShowExprEditor(false);
+      setShowVersioning(false);
+      setSelectedVersionId(null);
+      setHoveredPreviewNodeId(null);
       // Preserve presentation mode when navigating between systems
       if (startInPresentationMode) {
         setIsPresentationMode(true);
@@ -648,6 +746,48 @@ export default function WorkflowCanvas({ onSave, onExecute, onStop, initialSyste
   const [connectingStickyId, setConnectingStickyId] = useState<string | null>(null);
   const [stickyConnMousePos, setStickyConnMousePos] = useState<{ x: number; y: number } | null>(null);
 
+  // ─── V2 Feature State ─────────────────────────────────────────────────────
+  const [showHistory, setShowHistory] = useState(false);
+  const [showInsights, setShowInsights] = useState(false);
+  const [showVariables, setShowVariables] = useState(false);
+  const [showExprEditor, setShowExprEditor] = useState(false);
+  const [showVersioning, setShowVersioning] = useState(false);
+  const [showDataPreview, setShowDataPreview] = useState(true);
+  const [showPanelsMenu, setShowPanelsMenu] = useState(false);
+  const [hoveredPreviewNodeId, setHoveredPreviewNodeId] = useState<string | null>(null);
+  const [inspectNodeId, setInspectNodeId] = useState<string | null>(null);
+  const [pinnedNodes, setPinnedNodes] = useState<Set<string>>(new Set());
+  const [customNodeColors, setCustomNodeColors] = useState<Map<string, string>>(new Map());
+  // Mock execution data (generated after execution)
+  const [executionDataMap, setExecutionDataMap] = useState<Map<string, NodeExecutionData>>(new Map());
+  // Version diff
+  const [selectedVersionId, setSelectedVersionId] = useState<string | null>(null);
+  // V2: Execution KPI fade-in
+  const [showExecKpis, setShowExecKpis] = useState(false);
+  const [execDuration, setExecDuration] = useState(0);
+  const execStartRef = useRef<number>(0);
+
+  // V2: Mutual exclusivity — only one panel open at a time
+  const closeAllPanels = useCallback(() => {
+    setShowHistory(false);
+    setShowInsights(false);
+    setShowVariables(false);
+    setShowExprEditor(false);
+    setShowVersioning(false);
+    setInspectNodeId(null);
+  }, []);
+  const togglePanel = useCallback((panel: 'history' | 'insights' | 'variables' | 'expr' | 'versioning') => {
+    const isOpen = panel === 'history' ? showHistory : panel === 'insights' ? showInsights : panel === 'variables' ? showVariables : panel === 'expr' ? showExprEditor : showVersioning;
+    closeAllPanels();
+    if (!isOpen) {
+      if (panel === 'history') setShowHistory(true);
+      else if (panel === 'insights') setShowInsights(true);
+      else if (panel === 'variables') setShowVariables(true);
+      else if (panel === 'expr') setShowExprEditor(true);
+      else if (panel === 'versioning') setShowVersioning(true);
+    }
+  }, [showHistory, showInsights, showVariables, showExprEditor, showVersioning, closeAllPanels]);
+
   // ─── Touch state for pinch-to-zoom & touch interactions ──────────────────
   const touchStateRef = useRef<{
     lastDistance: number;
@@ -662,6 +802,74 @@ export default function WorkflowCanvas({ onSave, onExecute, onStop, initialSyste
     touchNodeId: null,
     touchNodeOffset: { x: 0, y: 0 },
   });
+
+  // V2: Inject CSS
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = V2_CSS;
+    document.head.appendChild(style);
+    return () => { document.head.removeChild(style); };
+  }, []);
+
+  // V2: Generate mock execution data when execution completes
+  useEffect(() => {
+    if (effectiveExecutionDone && nodes.length > 0 && executionDataMap.size === 0) {
+      const map = new Map<string, NodeExecutionData>();
+      const sampleOutputs: Record<string, Record<string, unknown>> = {
+        trigger: { leadId: 'LD-4821', email: 'max@firma.de', company: 'TechCorp GmbH' },
+        process: { hubspotId: 'HS-9921', dealStage: 'Qualified', merged: true },
+        ai: { score: 87, tier: 'hot', reasoning: 'SaaS + 50k budget = high potential', proposal: 'Sehr geehrter Herr Müller...' },
+        output: { sent: true, messageId: 'msg-8832', updated: true },
+        subsystem: { sequenceStarted: true, nextEmail: '2026-02-18T09:00:00Z' },
+      };
+      nodes.forEach(n => {
+        map.set(n.id, {
+          input: { source: 'api', nodeId: n.id },
+          output: sampleOutputs[n.type] || { result: 'ok' },
+          duration: Math.floor(Math.random() * 3000) + 100,
+          items: Math.floor(Math.random() * 8) + 1,
+        });
+      });
+      setExecutionDataMap(map);
+    }
+  }, [effectiveExecutionDone, nodes.length, executionDataMap.size]);
+
+  // V2: ROI calculation
+  const roi = useMemo(() => {
+    const totalExec = MOCK_HISTORY.length;
+    const avgDuration = MOCK_HISTORY.reduce((s, h) => s + h.duration, 0) / totalExec;
+    const manualMinutes = 35;
+    const timeSaved = (totalExec * manualMinutes) - (totalExec * avgDuration / 60);
+    const successRate = MOCK_HISTORY.filter(h => h.status === 'success').length / totalExec * 100;
+    const totalItems = MOCK_HISTORY.reduce((s, h) => s + h.itemsProcessed, 0);
+    return { totalExec, avgDuration: avgDuration.toFixed(1), timeSaved: Math.round(timeSaved), successRate: successRate.toFixed(0), totalItems };
+  }, []);
+
+  // V2: Partial execution
+  const executeNode = useCallback((nodeId: string) => {
+    setContextMenu(null);
+    // Simulate single node execution
+    const map = new Map(executionDataMap);
+    map.set(nodeId, {
+      input: { source: 'manual', nodeId },
+      output: { result: 'ok', executedAt: new Date().toISOString() },
+      duration: Math.floor(Math.random() * 2000) + 200,
+      items: Math.floor(Math.random() * 5) + 1,
+    });
+    setExecutionDataMap(map);
+    setToastMessage(lang === 'de' ? `Node "${nodes.find(n => n.id === nodeId)?.label}" ausgeführt` : `Node "${nodes.find(n => n.id === nodeId)?.label}" executed`);
+    if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
+    toastTimeoutRef.current = setTimeout(() => setToastMessage(null), 2000);
+  }, [executionDataMap, lang, nodes]);
+
+  // V2: Toggle pin
+  const togglePin = useCallback((nodeId: string) => {
+    setPinnedNodes(prev => {
+      const next = new Set(prev);
+      if (next.has(nodeId)) next.delete(nodeId); else next.add(nodeId);
+      return next;
+    });
+  }, []);
 
   // Drag & drop from palette
   const [isDragOver, setIsDragOver] = useState(false);
@@ -977,6 +1185,8 @@ export default function WorkflowCanvas({ onSave, onExecute, onStop, initialSyste
       if (e.key === 'Escape') {
         if (isPresentationMode) { setIsPresentationMode(false); setIsFullscreen(false); return; }
         if (contextMenu) { setContextMenu(null); return; }
+        if (showCanvasSettings) { setShowCanvasSettings(false); return; }
+        if (showPanelsMenu) { setShowPanelsMenu(false); return; }
         if (searchOpen) { setSearchOpen(false); setSearchQuery(''); return; }
         if (showShortcuts) { setShowShortcuts(false); return; }
         if (connectingStickyId) { setConnectingStickyId(null); setStickyConnMousePos(null); return; }
@@ -1111,7 +1321,7 @@ export default function WorkflowCanvas({ onSave, onExecute, onStop, initialSyste
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [selectedNodeId, selectedConnId, selectedGroupId, selectedStickyId, editNode, editGroupId, editStickyId, editingConnLabel, connectState, connectingStickyId, isFullscreen, readOnly, multiSelectedIds, contextMenu, searchOpen, showShortcuts, historyUndo, historyRedo, pushHistory, clipboard, nodes, connections, groups, stickyNotes, lang]);
+  }, [selectedNodeId, selectedConnId, selectedGroupId, selectedStickyId, editNode, editGroupId, editStickyId, editingConnLabel, connectState, connectingStickyId, isFullscreen, readOnly, multiSelectedIds, contextMenu, searchOpen, showShortcuts, showCanvasSettings, showPanelsMenu, historyUndo, historyRedo, pushHistory, clipboard, nodes, connections, groups, stickyNotes, lang]);
 
   // ─── Viewport Mouse Handlers ───────────────────────────────────────────────
 
@@ -2181,6 +2391,8 @@ export default function WorkflowCanvas({ onSave, onExecute, onStop, initialSyste
     setIsExecuting(true);
     setExecutionDone(false);
     setExecutingNodes(new Set());
+    setShowExecKpis(false);
+    execStartRef.current = Date.now();
     onExecute?.();
 
     // #3 – Clear any lingering timeouts
@@ -2218,6 +2430,10 @@ export default function WorkflowCanvas({ onSave, onExecute, onStop, initialSyste
     const totalDuration = schedule.length > 0 ? Math.max(...schedule.map(s => s.delay)) + 800 : 800;
     const t1 = setTimeout(() => {
       setExecutionDone(true);
+      setExecDuration(((Date.now() - execStartRef.current) / 1000));
+      // Show KPIs with fade-in after execution completes
+      const t3 = setTimeout(() => setShowExecKpis(true), 300);
+      executionTimeoutsRef.current.push(t3);
       const t2 = setTimeout(() => {
         setIsExecuting(false);
         setExecutingNodes(new Set());
@@ -2443,10 +2659,33 @@ export default function WorkflowCanvas({ onSave, onExecute, onStop, initialSyste
       )}
 
       {/* ─── Right: Canvas Area ─── */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden relative">
+
+        {/* V2: ROI Dashboard Bar */}
+        {initialSystem && executionDataMap.size > 0 && (!isPresentationMode || presEditEnabled) && (
+          <div className="flex items-center gap-3 px-4 py-1.5 border-b border-gray-200 dark:border-zinc-800 bg-gradient-to-r from-purple-500/5 via-transparent to-emerald-500/5 shrink-0">
+            <TrendingUp size={13} className="text-purple-500 shrink-0" />
+            <span className="text-[10px] font-medium text-gray-500 dark:text-zinc-400 shrink-0">{lang === 'de' ? 'Workflow-ROI' : 'Workflow ROI'}</span>
+            <div className="flex items-center gap-3 ml-1 overflow-x-auto">
+              {[
+                { label: lang === 'de' ? 'Ausführungen' : 'Executions', value: roi.totalExec.toString(), icon: <Repeat size={10} />, color: 'text-purple-500' },
+                { label: lang === 'de' ? 'Ø Dauer' : 'Avg Duration', value: `${roi.avgDuration}s`, icon: <Clock size={10} />, color: 'text-blue-500' },
+                { label: lang === 'de' ? 'Zeitersparnis' : 'Time Saved', value: `~${roi.timeSaved}min`, icon: <DollarSign size={10} />, color: 'text-emerald-500' },
+                { label: lang === 'de' ? 'Erfolgsrate' : 'Success Rate', value: `${roi.successRate}%`, icon: <CheckCircle2 size={10} />, color: 'text-green-500' },
+                { label: 'Items', value: roi.totalItems.toString(), icon: <Boxes size={10} />, color: 'text-orange-500' },
+              ].map(kpi => (
+                <div key={kpi.label} className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-white/60 dark:bg-zinc-800/60 shrink-0">
+                  <span className={kpi.color}>{kpi.icon}</span>
+                  <span className="text-[10px] font-bold">{kpi.value}</span>
+                  <span className="text-[8px] text-gray-400 dark:text-zinc-500">{kpi.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Toolbar */}
-        {(!isPresentationMode || presEditEnabled) && <div className="flex items-center gap-2 px-3 py-2 border-b border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 z-10 shrink-0" role="toolbar" aria-label="Canvas-Toolbar">
+        {(!isPresentationMode || presEditEnabled) && <div className="flex items-center gap-2 px-3 py-2 border-b border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 z-10 shrink-0 overflow-x-auto" role="toolbar" aria-label="Canvas-Toolbar">
           {!readOnly && (
             <button onClick={() => setPaletteOpen(!paletteOpen)} className={`p-1.5 rounded-lg transition-colors ${paletteOpen ? 'bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800'}`} title={t('toolbar.palette')} aria-label={t('toolbar.paletteToggle')}>
               <Plus size={16} />
@@ -2464,7 +2703,7 @@ export default function WorkflowCanvas({ onSave, onExecute, onStop, initialSyste
             <span className="text-sm font-medium text-gray-900 dark:text-white">{initialSystem.name}</span>
           )}
 
-          <div className="flex-1" />
+          <div className="flex-1 min-w-[8px]" />
 
           {/* #15 – Undo/Redo */}
           {!readOnly && (
@@ -2513,6 +2752,45 @@ export default function WorkflowCanvas({ onSave, onExecute, onStop, initialSyste
 
           <div className="h-4 w-px bg-gray-200 dark:bg-zinc-700" />
 
+          {/* ── V2 Feature Panels (dropdown) ── */}
+          {initialSystem && (
+            <div className="relative">
+              <button
+                onClick={() => setShowPanelsMenu(!showPanelsMenu)}
+                className={`p-1.5 rounded-lg transition-colors ${(showHistory || showInsights || showVariables || showExprEditor || showVersioning || showDataPreview) ? 'bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800'}`}
+                title={lang === 'en' ? 'Panels' : 'Panels'}
+              >
+                <Layers size={15} />
+              </button>
+              {showPanelsMenu && (
+                <>
+                  <div className="fixed inset-0 z-30" onClick={() => setShowPanelsMenu(false)} />
+                  <div className="absolute right-0 top-full mt-1 z-40 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-lg shadow-xl py-1 min-w-[180px]">
+                    {([
+                      { key: 'history', icon: <History size={14} />, label: lang === 'en' ? 'Execution History' : 'Ausführungsverlauf', active: showHistory, color: 'blue' },
+                      { key: 'insights', icon: <BarChart3 size={14} />, label: 'Insights', active: showInsights, color: 'emerald' },
+                      { key: 'variables', icon: <Variable size={14} />, label: lang === 'en' ? 'Variables' : 'Variablen', active: showVariables, color: 'orange' },
+                      { key: 'expr', icon: <Code2 size={14} />, label: 'Expression Editor', active: showExprEditor, color: 'pink' },
+                      { key: 'versioning', icon: <GitMerge size={14} />, label: lang === 'en' ? 'Version History' : 'Versionsverlauf', active: showVersioning, color: 'cyan' },
+                      { key: 'dataPreview', icon: <Eye size={14} />, label: lang === 'en' ? 'Data Preview' : 'Daten-Vorschau', active: showDataPreview, color: 'green' },
+                    ] as const).map(item => (
+                      <button
+                        key={item.key}
+                        onClick={() => { if (item.key === 'dataPreview') setShowDataPreview(!showDataPreview); else togglePanel(item.key as 'history' | 'insights' | 'variables' | 'expr' | 'versioning'); }}
+                        className={`w-full flex items-center gap-2.5 px-3 py-1.5 text-xs transition-colors ${item.active ? `text-${item.color}-600 dark:text-${item.color}-400 bg-${item.color}-50 dark:bg-${item.color}-500/10` : 'text-gray-600 dark:text-zinc-400 hover:bg-gray-50 dark:hover:bg-zinc-800'}`}
+                      >
+                        {item.icon}
+                        <span>{item.label}</span>
+                        {item.active && <Check size={12} className="ml-auto" />}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
+
           {/* Zoom Controls */}
           <div className="flex items-center gap-1">
             <button onClick={() => { const r = 0.8; setZoom(z => Math.max(0.1, z * r)); setPan(p => { const rect = viewportRef.current?.getBoundingClientRect(); if (!rect) return p; const cx = rect.width / 2; const cy = rect.height / 2; return { x: cx - (cx - p.x) * r, y: cy - (cy - p.y) * r }; }); }} className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors" title={t('toolbar.zoomOut')} aria-label={t('toolbar.zoomOut')}>
@@ -2560,7 +2838,7 @@ export default function WorkflowCanvas({ onSave, onExecute, onStop, initialSyste
             {showCanvasSettings && (
               <>
                 <div className="fixed inset-0 z-30" onClick={() => setShowCanvasSettings(false)} />
-                <div className="absolute right-0 top-full mt-1.5 z-40 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl shadow-2xl p-4 min-w-[220px] max-h-[70vh] overflow-y-auto">
+                <div className="fixed right-4 z-40 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl shadow-2xl p-4 min-w-[220px] max-h-[80vh] overflow-y-auto" style={{ top: '60px' }}>
                   <div className="text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wider mb-3">{t('toolbar.canvasSettings')}</div>
 
                   {/* Phase navigation section */}
@@ -2625,7 +2903,34 @@ export default function WorkflowCanvas({ onSave, onExecute, onStop, initialSyste
                     )}
                   </div>
 
-                  {/* ── Connection Settings ── */}
+                  {/* ── Connection Style Mode ── */}
+                  <div className="border-t border-gray-200 dark:border-zinc-700 pt-3 mt-3">
+                    <div className="text-[10px] font-semibold text-gray-400 dark:text-zinc-600 uppercase tracking-wider mb-2">{lang === 'en' ? 'Connection Style' : 'Verbindungsstil'}</div>
+                    <div className="flex items-center gap-1 mb-3">
+                      {([{ key: 'v3' as const, de: 'V3 Animiert', en: 'V3 Animated' }, { key: 'classic' as const, de: 'Klassisch', en: 'Classic' }]).map(m => (
+                        <button key={m.key} onClick={() => setConnStyleMode(m.key)}
+                          className={`text-[10px] px-2.5 py-1 rounded-md transition-colors ${connStyleMode === m.key ? 'bg-purple-100 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400 font-semibold' : 'text-gray-400 dark:text-zinc-600 hover:text-gray-600 dark:hover:text-zinc-400 bg-gray-50 dark:bg-zinc-800'}`}
+                        >
+                          {lang === 'en' ? m.en : m.de}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* ── Type Badges Toggle ── */}
+                  <div className="border-t border-gray-200 dark:border-zinc-700 pt-3 mt-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-gray-600 dark:text-zinc-400">{lang === 'en' ? 'Type Badges' : 'Typ-Badges'}</span>
+                      <button onClick={() => setShowTypeBadges(!showTypeBadges)}
+                        className={`relative w-8 h-4.5 rounded-full transition-colors ${showTypeBadges ? 'bg-purple-500' : 'bg-gray-300 dark:bg-zinc-600'}`}
+                      >
+                        <div className={`absolute top-0.5 w-3.5 h-3.5 rounded-full bg-white shadow transition-transform ${showTypeBadges ? 'translate-x-4' : 'translate-x-0.5'}`} />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* ── Connection Settings (Classic mode) ── */}
+                  {connStyleMode === 'classic' && (
                   <div className="border-t border-gray-200 dark:border-zinc-700 pt-3 mt-3">
                     <div className="text-[10px] font-semibold text-gray-400 dark:text-zinc-600 uppercase tracking-wider mb-2">{t('settings.connSection')}</div>
 
@@ -2731,13 +3036,15 @@ export default function WorkflowCanvas({ onSave, onExecute, onStop, initialSyste
                       </button>
                     </div>
                   </div>
+                  )}
 
                   {/* ── Node Design Themes ── */}
                   <div className="border-t border-gray-200 dark:border-zinc-700 pt-3 mt-3">
                     <div className="text-[10px] font-semibold text-gray-400 dark:text-zinc-600 uppercase tracking-wider mb-2">{t('settings.nodeDesign')}</div>
                     <div className="grid grid-cols-2 gap-1.5">
                       {([
-                        { key: 'default' as const, de: 'Standard', en: 'Default', preview: 'bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700' },
+                        { key: 'nodelab' as const, de: 'NodeLab V2', en: 'NodeLab V2', preview: 'bg-purple-50/30 dark:bg-purple-500/5 border border-purple-300/40 dark:border-purple-500/20 shadow-[0_0_8px_rgba(168,85,247,0.15)]' },
+                        { key: 'classic' as const, de: 'Klassisch', en: 'Classic', preview: 'bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700' },
                         { key: 'glass' as const, de: 'Glas', en: 'Glass', preview: 'bg-purple-50/50 dark:bg-purple-500/5 border border-purple-200/40 backdrop-blur-sm' },
                         { key: 'minimal' as const, de: 'Minimal', en: 'Minimal', preview: 'bg-transparent border border-gray-300 dark:border-zinc-600' },
                         { key: 'outlined' as const, de: 'Outlined', en: 'Outlined', preview: 'bg-white dark:bg-zinc-800 border-l-[3px] border-l-purple-500 border border-gray-200 dark:border-zinc-700' },
@@ -2810,7 +3117,7 @@ export default function WorkflowCanvas({ onSave, onExecute, onStop, initialSyste
                     <div className="text-[10px] font-semibold text-gray-400 dark:text-zinc-600 uppercase tracking-wider mb-2">{lang === 'en' ? 'Connection Presets' : 'Verbindungs-Presets'}</div>
                     <div className="grid grid-cols-2 gap-1.5">
                       {([
-                        { key: 'default', de: 'Standard', en: 'Default', curve: 'bezier' as const, line: 'solid' as const, width: 2 as const, arrow: 'arrow' as const, color: 'purple', glow: false },
+                        { key: 'classic', de: 'Klassisch', en: 'Classic', curve: 'bezier' as const, line: 'solid' as const, width: 2 as const, arrow: 'arrow' as const, color: 'purple', glow: false },
                         { key: 'neon-glow', de: 'Neon-Glow', en: 'Neon Glow', curve: 'bezier' as const, line: 'solid' as const, width: 2 as const, arrow: 'arrow' as const, color: 'neon', glow: true },
                         { key: 'blueprint', de: 'Blueprint', en: 'Blueprint', curve: 'straight' as const, line: 'dashed' as const, width: 1 as const, arrow: 'circle' as const, color: 'blue', glow: false },
                         { key: 'bold', de: 'Kräftig', en: 'Bold', curve: 'elbow' as const, line: 'solid' as const, width: 3 as const, arrow: 'diamond' as const, color: 'mono', glow: false },
@@ -2838,17 +3145,24 @@ export default function WorkflowCanvas({ onSave, onExecute, onStop, initialSyste
                       ))}
                     </div>
                   </div>
+
+                  {/* ── Keyboard Shortcuts ── */}
+                  <div className="border-t border-gray-200 dark:border-zinc-700 pt-3 mt-3">
+                    <button
+                      onClick={() => { setShowShortcuts(true); setShowCanvasSettings(false); }}
+                      className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[10px] font-medium transition-colors bg-gray-50 dark:bg-zinc-800 text-gray-500 dark:text-zinc-500 hover:bg-gray-100 dark:hover:bg-zinc-700"
+                    >
+                      <HelpCircle size={12} />
+                      {lang === 'en' ? 'Keyboard Shortcuts' : 'Tastenkürzel'}
+                      <span className="ml-auto text-[9px] text-gray-400 dark:text-zinc-600">?</span>
+                    </button>
+                  </div>
                 </div>
               </>
             )}
           </div>
 
           <div className="h-4 w-px bg-gray-200 dark:bg-zinc-700" />
-
-          {/* #24 – Shortcuts Help */}
-          <button onClick={() => setShowShortcuts(!showShortcuts)} className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors" title={t('toolbar.shortcutsKey')} aria-label={t('toolbar.shortcutsShow')}>
-            <HelpCircle size={15} />
-          </button>
 
           <button onClick={() => setIsFullscreen(!isFullscreen)} className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors" title={isFullscreen ? t('toolbar.fullscreenExit') : t('toolbar.fullscreen')} aria-label={isFullscreen ? t('toolbar.fullscreenExit') : t('toolbar.fullscreen')}>
             {isFullscreen ? <Minimize2 size={15} /> : <Maximize2 size={15} />}
@@ -2870,7 +3184,7 @@ export default function WorkflowCanvas({ onSave, onExecute, onStop, initialSyste
               <button
                 onClick={effectiveIsExecuting && !effectiveExecutionDone ? onStop : handleExecute}
                 disabled={effectiveExecutionDone}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-300 ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-300 shrink-0 ${
                   effectiveExecutionDone
                     ? 'bg-emerald-600 text-white shadow-[0_0_12px_4px_rgba(16,185,129,0.25)]'
                     : effectiveIsExecuting
@@ -2889,7 +3203,7 @@ export default function WorkflowCanvas({ onSave, onExecute, onStop, initialSyste
             <>
               <div className="h-4 w-px bg-gray-200 dark:bg-zinc-700" />
 
-              <div className="text-[11px] text-gray-400 dark:text-zinc-600">
+              <div className="text-[11px] text-gray-400 dark:text-zinc-600 whitespace-nowrap shrink-0">
                 {nodes.length} Nodes · {connections.length} Conn
               </div>
 
@@ -2937,7 +3251,7 @@ export default function WorkflowCanvas({ onSave, onExecute, onStop, initialSyste
                 </button>
               )}
 
-              <button onClick={handleSave} disabled={!systemName.trim() || nodes.length === 0 || saveState === 'saving'} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-300 ${saveState === 'saved' ? 'bg-emerald-600 shadow-[0_0_12px_4px_rgba(16,185,129,0.25)]' : 'bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400'}`} aria-label={t('toolbar.saveSystem')}>
+              <button onClick={handleSave} disabled={!systemName.trim() || nodes.length === 0 || saveState === 'saving'} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-300 shrink-0 ${saveState === 'saved' ? 'bg-emerald-600 shadow-[0_0_12px_4px_rgba(16,185,129,0.25)]' : 'bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400'}`} aria-label={t('toolbar.saveSystem')}>
                 {saveState === 'saving' ? <Loader2 size={14} className="animate-spin" /> : saveState === 'saved' ? <Check size={14} /> : <Save size={14} />}
                 {saveState === 'saving' ? t('toolbar.saving') : saveState === 'saved' ? t('toolbar.saved') : t('toolbar.save')}
               </button>
@@ -3104,21 +3418,51 @@ export default function WorkflowCanvas({ onSave, onExecute, onStop, initialSyste
                     onContextMenu={e => handleContextMenu(e, undefined, undefined, i)}
                   >
                     <path d={pathD} stroke="transparent" strokeWidth={12 / zoom} fill="none" style={{ cursor: readOnly ? 'default' : 'pointer', pointerEvents: 'stroke' }} />
-                    {connGlow && (
-                      <path d={pathD} stroke={cc.selected} strokeWidth={connStrokeWidth * 4} fill="none" opacity={0.1} />
-                    )}
-                    <path
-                      d={pathD}
-                      stroke={isSelected ? cc.selected : isHovered ? cc.hover : cc.default}
-                      strokeWidth={isSelected ? connStrokeWidth + 1 : isHovered ? connStrokeWidth + 0.5 : connStrokeWidth}
-                      strokeDasharray={dashArr}
-                      markerEnd={markerEnd}
-                      fill="none"
-                    />
-                    {showFlowDots && (
-                      <circle r={dotR} fill={dotColor} opacity={0.8}>
-                        <animateMotion dur={`${dotSpeed}s`} repeatCount="indefinite" path={pathD} />
-                      </circle>
+                    {connStyleMode === 'v3' ? (() => {
+                      // V3 mode: ALWAYS accent-colored connections (like NodeLab V2/V3)
+                      const isActive = fromStatus === 'completed' || fromStatus === 'running';
+                      const fromStyle = NODE_STYLES[fromNode.type];
+                      // Always use source node accent color - brighter when active, softer when idle
+                      const v3Color = isSelected ? fromStyle.accent
+                        : isActive ? fromStyle.accent
+                        : fromStyle.accent + (isDark ? '70' : '55');
+                      const v3Width = isSelected ? 3 : isActive ? 2.5 : 1.8;
+                      const v3Class = (isActive && !isSelected) ? 'v2-connection-active' : '';
+                      return (
+                        <>
+                          {isActive && (
+                            <path d={pathD} stroke={fromStyle.accent} strokeWidth={v3Width * 3} fill="none" opacity={0.1} />
+                          )}
+                          <path
+                            d={pathD}
+                            stroke={v3Color}
+                            strokeWidth={isHovered ? v3Width + 0.5 : v3Width}
+                            strokeLinecap="round"
+                            fill="none"
+                            className={v3Class}
+                            style={{ transition: 'stroke 0.5s, stroke-width 0.3s' }}
+                          />
+                        </>
+                      );
+                    })() : (
+                      <>
+                        {connGlow && (
+                          <path d={pathD} stroke={cc.selected} strokeWidth={connStrokeWidth * 4} fill="none" opacity={0.1} />
+                        )}
+                        <path
+                          d={pathD}
+                          stroke={isSelected ? cc.selected : isHovered ? cc.hover : cc.default}
+                          strokeWidth={isSelected ? connStrokeWidth + 1 : isHovered ? connStrokeWidth + 0.5 : connStrokeWidth}
+                          strokeDasharray={dashArr}
+                          markerEnd={markerEnd}
+                          fill="none"
+                        />
+                        {showFlowDots && (
+                          <circle r={dotR} fill={dotColor} opacity={0.8}>
+                            <animateMotion dur={`${dotSpeed}s`} repeatCount="indefinite" path={pathD} />
+                          </circle>
+                        )}
+                      </>
                     )}
 
                     {/* Connection label (pill at midpoint) */}
@@ -3338,12 +3682,25 @@ export default function WorkflowCanvas({ onSave, onExecute, onStop, initialSyste
             {showGroupBackgrounds && groups.map(group => {
               const colors = GROUP_COLORS[group.color] || GROUP_COLORS.gray;
               const isSelected = selectedGroupId === group.id;
+              // Dynamic height: extend if any node's bottom edge overflows the stored group height
+              let effectiveHeight = group.height;
+              const gRight = group.x + group.width;
+              const gBottom = group.y + group.height;
+              for (const n of nodes) {
+                const ns = NODE_SIZES[n.type] || NODE_SIZES.process;
+                if (n.x >= group.x && n.x + ns.w <= gRight && n.y >= group.y && n.y < gBottom + 40) {
+                  const nodeBottom = n.y + ns.h + 16; // 16px bottom padding
+                  if (nodeBottom > group.y + effectiveHeight) {
+                    effectiveHeight = nodeBottom - group.y;
+                  }
+                }
+              }
               return (
                 <div
                   key={group.id}
                   className={`absolute rounded-2xl border-2 border-dashed transition-shadow ${isSelected && !readOnly ? 'ring-2 ring-purple-500/50 shadow-lg' : ''}`}
                   style={{
-                    left: group.x, top: group.y, width: group.width, height: group.height,
+                    left: group.x, top: group.y, width: group.width, height: effectiveHeight,
                     background: colors.bg, borderColor: colors.border,
                     opacity: (100 - groupTransparency) / 100,
                     // #11 – Selected group gets higher z-index
@@ -3460,6 +3817,8 @@ export default function WorkflowCanvas({ onSave, onExecute, onStop, initialSyste
               // Derive execution status: external event-system states take priority, fallback to legacy executingNodes
               const nodeStatus: NodeExecutionStatus = externalNodeStates?.get(node.id)
                 || (executingNodes.has(node.id) ? 'completed' : 'idle');
+              // V2: hasExecData stays true after animation ends (for bubbles, data preview)
+              const hasExecData = executionDataMap.has(node.id);
               const isNodeActive = nodeStatus !== 'idle';
 
               // Per-status visual config — single accent color (purple), subtle transitions
@@ -3526,9 +3885,34 @@ export default function WorkflowCanvas({ onSave, onExecute, onStop, initialSyste
                   themeClass = 'absolute select-none';
                   themeStyle = { background: 'transparent', border: `2px dashed ${style.accent}60` };
                   break;
-                default:
+                case 'nodelab': {
+                  themeClass = 'absolute border backdrop-blur-sm select-none';
+                  // NodeLab V2: each node type gets a distinctive glow + stronger border
+                  const nlGlow = node.type === 'ai' ? `0 0 30px ${style.accent}25, 0 0 60px ${style.accent}0c`
+                    : node.type === 'subsystem' ? `0 0 24px ${style.accent}20, 0 0 48px ${style.accent}0a`
+                    : `0 0 18px ${style.accent}18`;
+                  themeStyle = {
+                    background: node.type === 'ai' || node.type === 'subsystem'
+                      ? (isDark ? style.accent + '0c' : style.accent + '0a')
+                      : (isDark ? style.accent + '09' : style.accent + '07'),
+                    borderColor: style.accent + (isDark ? '40' : '35'),
+                    boxShadow: nlGlow,
+                  };
+                  break;
+                }
+                default: // 'classic'
                   themeClass = 'absolute border backdrop-blur-sm select-none';
                   themeStyle = { background: ss.bg, borderColor: ss.border };
+              }
+
+              // V2: Apply custom node color override
+              const customColor = customNodeColors.get(node.id);
+              if (customColor && !isNodeActive) {
+                themeStyle = { ...themeStyle, borderColor: customColor, background: customColor + '12' };
+              }
+              // V2: Pinned node glow
+              if (pinnedNodes.has(node.id)) {
+                themeStyle = { ...themeStyle, boxShadow: `0 0 0 2px #3b82f6, 0 0 16px rgba(59,130,246,0.25)` };
               }
 
               return (
@@ -3622,9 +4006,11 @@ export default function WorkflowCanvas({ onSave, onExecute, onStop, initialSyste
                     );
                   })()}
 
+                  {showTypeBadges && (
                   <div className={`absolute -top-2 -right-2 text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 border ${nodeDesignTheme === 'outlined' ? 'rounded-sm' : nodeDesignTheme === 'minimal' ? 'rounded text-[8px]' : 'rounded-md'}`} style={isLightText ? { background: 'rgba(255,255,255,0.15)', borderColor: 'rgba(255,255,255,0.25)', color: 'rgba(255,255,255,0.9)' } : { background: style.bg, borderColor: style.border, color: style.accent }}>
                     {style.label}
                   </div>
+                  )}
 
                   {/* Resource badge (top-left) */}
                   {node.linkedResourceType && (
@@ -3671,13 +4057,65 @@ export default function WorkflowCanvas({ onSave, onExecute, onStop, initialSyste
                   )}
 
                   {/* Status overlay icon (bottom-right) — minimal, single accent */}
-                  {node.type !== 'subsystem' && (nodeStatus === 'running' || nodeStatus === 'completed' || nodeStatus === 'failed') && (
+                  {node.type !== 'subsystem' && (nodeStatus === 'running' || nodeStatus === 'completed' || nodeStatus === 'failed' || hasExecData) && (
                     <div className="absolute -bottom-1.5 -right-1.5 w-5 h-5 rounded-full flex items-center justify-center z-20 border border-white dark:border-zinc-900 transition-colors duration-300"
-                      style={{ background: nodeStatus === 'completed' ? '#10b981' : nodeStatus === 'failed' ? '#ef4444' : '#a855f7' }}
+                      style={{ background: nodeStatus === 'completed' ? '#10b981' : nodeStatus === 'failed' ? '#ef4444' : nodeStatus === 'running' ? '#a855f7' : hasExecData ? '#10b981' : '#a855f7', opacity: nodeStatus === 'idle' && hasExecData ? 0.7 : 1 }}
                     >
                       {nodeStatus === 'running' && <Loader2 size={10} className="text-white animate-spin" />}
-                      {nodeStatus === 'completed' && <Check size={10} className="text-white" />}
+                      {(nodeStatus === 'completed' || (nodeStatus === 'idle' && hasExecData)) && <Check size={10} className="text-white" />}
                       {nodeStatus === 'failed' && <X size={10} className="text-white" />}
+                    </div>
+                  )}
+
+                  {/* V2: Execution Bubble (item count) */}
+                  {hasExecData && (
+                    <div className="absolute -top-3 -left-2 w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold text-white z-30 v2-bubble"
+                      style={{ background: '#10b981' }}>
+                      {executionDataMap.get(node.id)!.items}
+                    </div>
+                  )}
+
+                  {/* V2: Pin indicator */}
+                  {pinnedNodes.has(node.id) && (
+                    <div className="absolute -top-2 left-1/2 -translate-x-1/2 z-30">
+                      <Pin size={12} className="text-blue-500" fill="currentColor" />
+                    </div>
+                  )}
+
+                  {/* V2: Live Data Preview (under node) + Hover Popup */}
+                  {showDataPreview && hasExecData && (
+                    <div
+                      className="absolute left-0 right-0 flex justify-center"
+                      style={{ top: nodeH(node) + 4, pointerEvents: 'auto', zIndex: hoveredPreviewNodeId === node.id ? 100 : 30 }}
+                      onMouseEnter={(e) => { e.stopPropagation(); setHoveredPreviewNodeId(node.id); }}
+                      onMouseLeave={() => setHoveredPreviewNodeId(null)}
+                    >
+                      <div className="px-2 py-0.5 rounded text-[8px] font-mono bg-gray-800/90 text-green-400 truncate max-w-[200px] cursor-pointer relative">
+                        {JSON.stringify(executionDataMap.get(node.id)!.output).slice(0, 40)}...
+
+                        {/* Full code popup on hover */}
+                        {hoveredPreviewNodeId === node.id && (
+                          <div
+                            className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 bg-gray-900 border border-gray-700 rounded-xl shadow-2xl p-3 min-w-[280px] max-w-[420px] max-h-[300px] overflow-auto"
+                            style={{ pointerEvents: 'auto', zIndex: 200 }}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="text-[9px] font-semibold text-gray-400 uppercase tracking-wider">Output</span>
+                              <span className="text-[8px] text-gray-500">{executionDataMap.get(node.id)!.duration}ms · {executionDataMap.get(node.id)!.items} items</span>
+                            </div>
+                            <pre className="text-[10px] font-mono text-green-400 whitespace-pre-wrap break-all leading-relaxed">
+{JSON.stringify(executionDataMap.get(node.id)!.output, null, 2)}
+                            </pre>
+                            <div className="border-t border-gray-700 mt-2 pt-2">
+                              <span className="text-[9px] font-semibold text-gray-400 uppercase tracking-wider">Input</span>
+                              <pre className="text-[10px] font-mono text-blue-400 whitespace-pre-wrap break-all leading-relaxed mt-1">
+{JSON.stringify(executionDataMap.get(node.id)!.input, null, 2)}
+                              </pre>
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   )}
 
@@ -4427,6 +4865,49 @@ export default function WorkflowCanvas({ onSave, onExecute, onStop, initialSyste
                   <button onClick={() => handleContextAction('duplicate')} className="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-700 dark:text-zinc-300 hover:bg-gray-50 dark:hover:bg-zinc-800">
                     <Copy size={13} /> {t('contextMenu.duplicate')}
                   </button>
+                  <div className="border-t border-gray-100 dark:border-zinc-800 my-0.5" />
+                  {/* V2: Partial Execution */}
+                  <button onClick={() => executeNode(contextMenu.nodeId!)} className="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-700 dark:text-zinc-300 hover:bg-gray-50 dark:hover:bg-zinc-800">
+                    <Play size={13} className="text-green-500" /> {lang === 'en' ? 'Execute Node' : 'Node ausführen'}
+                  </button>
+                  {/* V2: Pin Data */}
+                  <button onClick={() => { togglePin(contextMenu.nodeId!); setContextMenu(null); }} className="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-700 dark:text-zinc-300 hover:bg-gray-50 dark:hover:bg-zinc-800">
+                    {pinnedNodes.has(contextMenu.nodeId!) ? <PinOff size={13} className="text-blue-500" /> : <Pin size={13} className="text-blue-500" />}
+                    {pinnedNodes.has(contextMenu.nodeId!) ? (lang === 'en' ? 'Unpin Data' : 'Daten lösen') : (lang === 'en' ? 'Pin Data' : 'Daten pinnen')}
+                  </button>
+                  {/* V2: Inspect Data */}
+                  <button onClick={() => { setInspectNodeId(contextMenu.nodeId!); setContextMenu(null); }} className="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-700 dark:text-zinc-300 hover:bg-gray-50 dark:hover:bg-zinc-800">
+                    <Search size={13} className="text-purple-500" /> {lang === 'en' ? 'Inspect Data' : 'Daten inspizieren'}
+                  </button>
+                  {/* V2: Custom Color */}
+                  <div className="border-t border-gray-100 dark:border-zinc-800 my-0.5" />
+                  <div className="px-3 py-2">
+                    <div className="text-[10px] text-gray-400 dark:text-zinc-500 mb-1.5">{lang === 'en' ? 'Color' : 'Farbe'}</div>
+                    <div className="flex items-center gap-1.5">
+                      {['#3b82f6', '#8b5cf6', '#d946ef', '#10b981', '#f59e0b', '#ef4444', '#ec4899', '#6366f1'].map(color => (
+                        <button
+                          key={color}
+                          onClick={() => {
+                            setCustomNodeColors(prev => {
+                              const next = new Map(prev);
+                              if (next.get(contextMenu.nodeId!) === color) next.delete(contextMenu.nodeId!);
+                              else next.set(contextMenu.nodeId!, color);
+                              return next;
+                            });
+                            setContextMenu(null);
+                          }}
+                          className={`w-5 h-5 rounded-full transition-transform hover:scale-110 ${customNodeColors.get(contextMenu.nodeId!) === color ? 'ring-2 ring-offset-1 ring-gray-400 dark:ring-offset-zinc-900' : ''}`}
+                          style={{ background: color }}
+                        />
+                      ))}
+                      <button
+                        onClick={() => { setCustomNodeColors(prev => { const next = new Map(prev); next.delete(contextMenu.nodeId!); return next; }); setContextMenu(null); }}
+                        className="w-5 h-5 rounded-full border border-dashed border-gray-300 dark:border-zinc-600 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-zinc-700"
+                      >
+                        <X size={8} className="text-gray-400" />
+                      </button>
+                    </div>
+                  </div>
                 </>
               )}
               {contextMenu.groupId && (
@@ -4648,7 +5129,301 @@ export default function WorkflowCanvas({ onSave, onExecute, onStop, initialSyste
             onConfirm={executeDelete}
             onCancel={() => setDeleteConfirm(null)}
           />
+
+          {/* V2: Execution KPIs (floating bottom bar — fade-in after execution) */}
+          {initialSystem && showExecKpis && executionDataMap.size > 0 && (
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-3 px-5 py-2.5 rounded-2xl bg-white/95 dark:bg-zinc-800/95 backdrop-blur-lg shadow-xl border border-gray-200/60 dark:border-zinc-700/60 z-20 animate-[fadeSlideUp_0.5s_ease-out_forwards]">
+              <div className="flex items-center gap-1.5">
+                <CheckCircle2 size={14} className="text-emerald-500" />
+                <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">{lang === 'de' ? 'Erfolgreich' : 'Completed'}</span>
+              </div>
+              <div className="w-px h-4 bg-gray-200 dark:bg-zinc-700" />
+              {[
+                { label: lang === 'de' ? 'Dauer' : 'Duration', value: `${execDuration.toFixed(1)}s`, icon: <Clock size={11} />, color: 'text-blue-500' },
+                { label: 'Nodes', value: `${executionDataMap.size}`, icon: <Boxes size={11} />, color: 'text-purple-500' },
+                { label: 'Items', value: `${Array.from(executionDataMap.values()).reduce((s, d) => s + d.items, 0)}`, icon: <TrendingUp size={11} />, color: 'text-orange-500' },
+                { label: lang === 'de' ? 'Erfolgsrate' : 'Success', value: '100%', icon: <CheckCircle2 size={11} />, color: 'text-green-500' },
+              ].map(kpi => (
+                <div key={kpi.label} className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-gray-50/80 dark:bg-zinc-700/50">
+                  <span className={kpi.color}>{kpi.icon}</span>
+                  <span className="text-[11px] font-bold text-gray-800 dark:text-zinc-200">{kpi.value}</span>
+                  <span className="text-[9px] text-gray-400 dark:text-zinc-500">{kpi.label}</span>
+                </div>
+              ))}
+              <button onClick={() => setShowExecKpis(false)} className="p-0.5 rounded hover:bg-gray-100 dark:hover:bg-zinc-700 ml-1">
+                <X size={12} className="text-gray-400" />
+              </button>
+            </div>
+          )}
+
+          {/* V2: Variables Panel (floating) */}
+          {showVariables && (
+            <>
+              <div className="absolute inset-0 z-30" onClick={() => setShowVariables(false)} />
+              <div className="absolute top-14 right-4 z-40 w-72 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl shadow-2xl overflow-hidden">
+                <div className="p-3 border-b border-gray-200 dark:border-zinc-800 flex items-center justify-between">
+                  <h3 className="text-sm font-bold">{lang === 'de' ? 'Variablen' : 'Variables'}</h3>
+                  <button onClick={() => setShowVariables(false)} className="p-1 rounded hover:bg-gray-100 dark:hover:bg-zinc-800"><X size={14} /></button>
+                </div>
+                <div className="p-3 space-y-2 max-h-[300px] overflow-y-auto">
+                  {MOCK_VARIABLES.map(v => (
+                    <div key={v.name} className="flex items-center justify-between px-2 py-1.5 rounded-lg bg-gray-50 dark:bg-zinc-800">
+                      <div className="flex items-center gap-2">
+                        <Variable size={11} className={v.scope === 'global' ? 'text-blue-500' : 'text-orange-500'} />
+                        <span className="text-xs font-mono font-medium">{v.name}</span>
+                      </div>
+                      <span className="text-[10px] text-gray-500 dark:text-zinc-400 font-mono truncate max-w-[100px]">{v.value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* V2: Expression Editor (modal) */}
+          {showExprEditor && (
+            <>
+              <div className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm" onClick={() => setShowExprEditor(false)} />
+              <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[600px] max-h-[500px] bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-2xl shadow-2xl overflow-hidden" onKeyDown={e => { if (e.key === 'Escape') setShowExprEditor(false); }}>
+                <div className="p-4 border-b border-gray-200 dark:border-zinc-800 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Code2 size={16} className="text-pink-500" />
+                    <h3 className="text-sm font-bold">Expression Editor</h3>
+                  </div>
+                  <button onClick={() => setShowExprEditor(false)} className="p-1 rounded hover:bg-gray-100 dark:hover:bg-zinc-800"><X size={16} /></button>
+                </div>
+                <div className="flex h-[350px]">
+                  {/* Editor */}
+                  <div className="flex-1 p-4 border-r border-gray-200 dark:border-zinc-800">
+                    <div className="text-[10px] text-gray-400 uppercase tracking-wider mb-2">Expression</div>
+                    <textarea
+                      className="w-full h-40 bg-gray-50 dark:bg-zinc-800 rounded-lg p-3 font-mono text-sm text-gray-800 dark:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-purple-500/30 resize-none"
+                      placeholder="{{$node.webhook.data.email}}"
+                      defaultValue={'{{ $node["KI: Lead-Analyse"].output.score >= 70 ? "Hot Lead" : "Nurturing" }}'}
+                    />
+                    <div className="mt-3">
+                      <div className="text-[10px] text-gray-400 uppercase tracking-wider mb-1">{lang === 'de' ? 'Vorschau' : 'Preview'}</div>
+                      <div className="px-3 py-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg text-sm font-mono text-emerald-700 dark:text-emerald-400">
+                        "Hot Lead"
+                      </div>
+                    </div>
+                  </div>
+                  {/* Variable Browser */}
+                  <div className="w-48 p-3 overflow-y-auto">
+                    <div className="text-[10px] text-gray-400 uppercase tracking-wider mb-2">{lang === 'de' ? 'Verfügbare Variablen' : 'Available Variables'}</div>
+                    <div className="space-y-1">
+                      {nodes.slice(0, 8).map(n => (
+                        <button key={n.id} className="w-full text-left px-2 py-1.5 rounded-lg text-[10px] font-mono hover:bg-gray-100 dark:hover:bg-zinc-800 truncate text-gray-600 dark:text-zinc-400">
+                          $node["{n.label}"]
+                        </button>
+                      ))}
+                      {MOCK_VARIABLES.map(v => (
+                        <button key={v.name} className="w-full text-left px-2 py-1.5 rounded-lg text-[10px] font-mono hover:bg-gray-100 dark:hover:bg-zinc-800 text-orange-500">
+                          ${'{'}$vars.{v.name}{'}'}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
         </div>
+
+        {/* V2: Inspect Panel (right sidebar overlay) */}
+        {inspectNodeId && (() => {
+          const inspectNode = nodes.find(n => n.id === inspectNodeId);
+          if (!inspectNode) return null;
+          const inspData = executionDataMap.get(inspectNodeId);
+          const inspStyle = NODE_STYLES[inspectNode.type];
+          return (
+            <div className="absolute right-0 top-0 bottom-0 w-80 border-l border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/95 overflow-y-auto z-30 shadow-xl">
+              <div className="p-3 border-b border-gray-200 dark:border-zinc-800 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-md flex items-center justify-center" style={{ background: inspStyle.accent + '18' }}>
+                    {renderIcon(inspectNode, 12)}
+                  </div>
+                  <span className="text-sm font-bold truncate">{inspectNode.label}</span>
+                </div>
+                <button onClick={() => setInspectNodeId(null)} className="p-1 rounded hover:bg-gray-100 dark:hover:bg-zinc-800"><X size={14} /></button>
+              </div>
+              <div className="p-3 space-y-3">
+                <div>
+                  <div className="text-[10px] font-medium text-gray-400 uppercase mb-1">Type</div>
+                  <span className="px-2 py-0.5 rounded text-[10px] font-medium" style={{ background: inspStyle.accent + '18', color: inspStyle.accent }}>
+                    {inspStyle.label}
+                  </span>
+                </div>
+                <div>
+                  <div className="text-[10px] font-medium text-gray-400 uppercase mb-1">{lang === 'de' ? 'Beschreibung' : 'Description'}</div>
+                  <div className="text-xs text-gray-600 dark:text-zinc-400">{inspectNode.description}</div>
+                </div>
+                <div>
+                  <div className="text-[10px] font-medium text-gray-400 uppercase mb-1">Status</div>
+                  <div className="flex items-center gap-1.5">
+                    {(() => {
+                      const ns = externalNodeStates?.get(inspectNodeId) || (executingNodes.has(inspectNodeId) ? 'completed' : executionDataMap.has(inspectNodeId) ? 'completed' : 'idle');
+                      return (
+                        <>
+                          {ns === 'completed' && <CheckCircle2 size={12} className="text-green-500" />}
+                          {ns === 'idle' && <CircleDot size={12} className="text-gray-400" />}
+                          {ns === 'pending' && <Clock size={12} className="text-yellow-500" />}
+                          {ns === 'running' && <Loader2 size={12} className="text-purple-500 animate-spin" />}
+                          {ns === 'failed' && <XCircle size={12} className="text-red-500" />}
+                          <span className="text-xs capitalize">{ns}</span>
+                        </>
+                      );
+                    })()}
+                  </div>
+                </div>
+                {/* Pin Toggle */}
+                <button onClick={() => togglePin(inspectNodeId)}
+                  className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${pinnedNodes.has(inspectNodeId) ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600' : 'bg-gray-100 dark:bg-zinc-800 text-gray-500 hover:bg-gray-200 dark:hover:bg-zinc-700'}`}>
+                  {pinnedNodes.has(inspectNodeId) ? <PinOff size={12} /> : <Pin size={12} />}
+                  {pinnedNodes.has(inspectNodeId) ? (lang === 'de' ? 'Daten lösen' : 'Unpin Data') : (lang === 'de' ? 'Daten pinnen' : 'Pin Data')}
+                </button>
+                {/* Execution Data */}
+                {inspData && (
+                  <>
+                    <div className="flex items-center justify-between">
+                      <div className="text-[10px] font-medium text-gray-400 uppercase">Input</div>
+                    </div>
+                    <pre className="text-[10px] font-mono bg-gray-50 dark:bg-zinc-800 rounded-lg p-2 overflow-x-auto text-gray-600 dark:text-zinc-400 max-h-32">
+                      {JSON.stringify(inspData.input, null, 2)}
+                    </pre>
+                    <div className="flex items-center justify-between">
+                      <div className="text-[10px] font-medium text-gray-400 uppercase">Output</div>
+                    </div>
+                    <pre className="text-[10px] font-mono bg-gray-50 dark:bg-zinc-800 rounded-lg p-2 overflow-x-auto text-green-600 dark:text-green-400 max-h-32">
+                      {JSON.stringify(inspData.output, null, 2)}
+                    </pre>
+                    <div className="flex items-center gap-3 text-[10px] text-gray-400">
+                      <span><Clock size={10} className="inline mr-1" />{inspData.duration}ms</span>
+                      <span><Boxes size={10} className="inline mr-1" />{inspData.items} items</span>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          );
+        })()}
+
+        {/* V2: Execution History Panel (right sidebar overlay) */}
+        {showHistory && (
+          <div className="absolute right-0 top-0 bottom-0 w-72 border-l border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/95 overflow-y-auto z-30 shadow-xl">
+            <div className="p-3 border-b border-gray-200 dark:border-zinc-800 flex items-center justify-between">
+              <h3 className="text-sm font-bold">Execution History</h3>
+              <button onClick={() => setShowHistory(false)} className="p-1 rounded hover:bg-gray-100 dark:hover:bg-zinc-800"><X size={14} /></button>
+            </div>
+            {MOCK_HISTORY.map(h => (
+              <div key={h.id} className="px-3 py-3 border-b border-gray-100 dark:border-zinc-800/50 hover:bg-gray-50 dark:hover:bg-zinc-800/30 cursor-pointer">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    {h.status === 'success' && <CheckCircle2 size={13} className="text-green-500" />}
+                    {h.status === 'error' && <XCircle size={13} className="text-red-500" />}
+                    {h.status === 'partial' && <AlertCircle size={13} className="text-yellow-500" />}
+                    <span className="text-xs font-medium">{h.timestamp}</span>
+                  </div>
+                  <span className="text-[10px] text-gray-400">{h.duration}s</span>
+                </div>
+                <div className="flex items-center gap-3 mt-1.5 pl-5">
+                  <span className="text-[10px] text-gray-500 dark:text-zinc-500">{h.nodesExecuted} Nodes</span>
+                  <span className="text-[10px] text-gray-500 dark:text-zinc-500">{h.itemsProcessed} Items</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* V2: Insights Panel (right sidebar overlay) */}
+        {showInsights && (
+          <div className="absolute right-0 top-0 bottom-0 w-72 border-l border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/95 overflow-y-auto z-30 shadow-xl">
+            <div className="p-3 border-b border-gray-200 dark:border-zinc-800 flex items-center justify-between">
+              <h3 className="text-sm font-bold">Insights</h3>
+              <button onClick={() => setShowInsights(false)} className="p-1 rounded hover:bg-gray-100 dark:hover:bg-zinc-800"><X size={14} /></button>
+            </div>
+            <div className="p-3 space-y-4">
+              {/* Mini Chart */}
+              <div>
+                <div className="text-[10px] font-medium text-gray-400 uppercase mb-2">{lang === 'de' ? 'Ausführungen (7 Tage)' : 'Executions (7 days)'}</div>
+                <div className="flex items-end gap-1 h-16">
+                  {[3, 5, 2, 7, 4, 6, 8].map((v, i) => (
+                    <div key={i} className="flex-1 rounded-t transition-all" style={{
+                      height: `${(v / 8) * 100}%`,
+                      background: i === 6 ? '#8b5cf6' : (isDark ? 'rgba(139,92,246,0.2)' : 'rgba(139,92,246,0.15)'),
+                    }} />
+                  ))}
+                </div>
+                <div className="flex justify-between text-[8px] text-gray-400 mt-1">
+                  <span>Mo</span><span>Di</span><span>Mi</span><span>Do</span><span>Fr</span><span>Sa</span><span>So</span>
+                </div>
+              </div>
+              {/* KPIs */}
+              {[
+                { label: lang === 'de' ? 'Durchschnittl. Dauer' : 'Avg Duration', value: '7.6s', trend: '-12%', positive: true },
+                { label: lang === 'de' ? 'Fehlerrate' : 'Error Rate', value: '14.3%', trend: '+2.1%', positive: false },
+                { label: lang === 'de' ? 'Zeitersparnis/Woche' : 'Time Saved/Week', value: '~4.2h', trend: '+18%', positive: true },
+              ].map(kpi => (
+                <div key={kpi.label} className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-zinc-800/50">
+                  <div>
+                    <div className="text-[10px] text-gray-400">{kpi.label}</div>
+                    <div className="text-sm font-bold">{kpi.value}</div>
+                  </div>
+                  <span className={`text-[10px] font-medium ${kpi.positive ? 'text-green-500' : 'text-red-400'}`}>{kpi.trend}</span>
+                </div>
+              ))}
+              {/* Heatmap */}
+              <div>
+                <div className="text-[10px] font-medium text-gray-400 uppercase mb-2">{lang === 'de' ? 'Aktivitäts-Heatmap' : 'Activity Heatmap'}</div>
+                <div className="grid grid-cols-6 gap-1">
+                  {Array.from({ length: 24 }, (_, i) => {
+                    const v = [0.2, 0.5, 0.3, 0.8, 0.1, 0.9, 0.4, 0.7, 0.6, 0.3, 0.5, 0.8, 0.2, 0.4, 0.9, 0.1, 0.6, 0.7, 0.3, 0.5, 0.4, 0.8, 0.2, 0.6][i];
+                    return <div key={i} className="w-full aspect-square rounded-sm" style={{ background: `rgba(139,92,246,${v * 0.6 + 0.05})` }} />;
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* V2: Versioning Panel (right sidebar overlay) */}
+        {showVersioning && (
+          <div className="absolute right-0 top-0 bottom-0 w-72 border-l border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/95 overflow-y-auto z-30 shadow-xl">
+            <div className="p-3 border-b border-gray-200 dark:border-zinc-800 flex items-center justify-between">
+              <h3 className="text-sm font-bold">{lang === 'de' ? 'Versionsverlauf' : 'Version History'}</h3>
+              <button onClick={() => setShowVersioning(false)} className="p-1 rounded hover:bg-gray-100 dark:hover:bg-zinc-800"><X size={14} /></button>
+            </div>
+            {MOCK_VERSIONS.map(v => (
+              <div key={v.id} className={`px-3 py-3 border-b border-gray-100 dark:border-zinc-800/50 hover:bg-gray-50 dark:hover:bg-zinc-800/30 cursor-pointer ${selectedVersionId === v.id ? 'bg-purple-50 dark:bg-purple-900/20' : ''}`}
+                onClick={() => { setSelectedVersionId(v.id === selectedVersionId ? null : v.id); }}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-2 h-2 rounded-full ${v.status === 'current' ? 'bg-green-500' : 'bg-gray-300 dark:bg-zinc-600'}`} />
+                    <span className="text-xs font-bold">v{v.version}</span>
+                  </div>
+                  <span className="text-[10px] text-gray-400">{v.timestamp}</span>
+                </div>
+                <div className="flex items-center gap-2 mt-1 pl-4">
+                  <span className="text-[9px] text-gray-400">{v.author}</span>
+                  {v.status === 'current' && <span className="text-[8px] px-1.5 py-0.5 rounded bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 font-bold">{lang === 'de' ? 'Aktuell' : 'Current'}</span>}
+                </div>
+                {selectedVersionId === v.id && (
+                  <div className="mt-2 space-y-1 pl-4">
+                    {v.changes.map((c, ci) => (
+                      <div key={ci} className="flex items-center gap-1.5 text-[10px]">
+                        <span className={`w-1.5 h-1.5 rounded-full ${c.type === 'added' ? 'bg-green-500' : c.type === 'modified' ? 'bg-blue-500' : 'bg-red-500'}`} />
+                        <span className="text-gray-600 dark:text-zinc-400">{c.desc}</span>
+                      </div>
+                    ))}
+                    <button className="mt-1 text-[10px] text-purple-500 hover:underline">
+                      {lang === 'de' ? 'Diff anzeigen' : 'Show Diff'}
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

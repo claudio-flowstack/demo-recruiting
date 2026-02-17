@@ -2602,13 +2602,39 @@ function AutomationDashboardContent() {
   const [systemStack, setSystemStack] = useState<string[]>([]);
   const drillDown = useCallback((subSystemId: string) => {
     setSystemStack(prev => [...prev, section]);
-    setSection(subSystemId);
-  }, [section, setSection]);
+    // In presentation mode: seamless switch without fade (same as onPresNavigate)
+    if (presSessionActive || startInPresentation) {
+      setPresSessionActive(true);
+      setStartInPresentation(true);
+      setSectionRaw(subSystemId);
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setStartInPresentation(false);
+        });
+      });
+    } else {
+      setSection(subSystemId);
+    }
+  }, [section, setSection, presSessionActive, startInPresentation]);
   const drillUp = useCallback(() => {
     const prev = systemStack[systemStack.length - 1];
     setSystemStack(s => s.slice(0, -1));
-    if (prev) setSection(prev);
-  }, [systemStack, setSection]);
+    if (prev) {
+      // In presentation mode: seamless switch without fade
+      if (presSessionActive || startInPresentation) {
+        setPresSessionActive(true);
+        setStartInPresentation(true);
+        setSectionRaw(prev);
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            setStartInPresentation(false);
+          });
+        });
+      } else {
+        setSection(prev);
+      }
+    }
+  }, [systemStack, setSection, presSessionActive, startInPresentation]);
 
   // Sub-system info map for canvas badge rendering
   const subSystemInfoMap = useMemo(() => {
