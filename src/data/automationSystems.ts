@@ -73,170 +73,389 @@ export const DEMO_SYSTEMS: AutomationSystem[] = [
   },
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // 2. Content Pipeline — 12 Nodes
+  // 2. Marketing Agentur Fulfillment — 33 Nodes
   // ═══════════════════════════════════════════════════════════════════════════
   {
     id: 'demo-2',
-    name: 'Content Pipeline',
-    description: 'Von der Content-Idee über KI-Recherche und Erstellung bis zur Multi-Channel-Veröffentlichung und Performance-Tracking.',
-    category: 'Marketing',
-    icon: 'file-text',
-    status: 'active',
-    webhookUrl: '',
-    nodes: [
-      // ─── Phase 1: Eingang (col 0) ───
-      { id: 'cp1', label: 'Content-Briefing', description: 'Thema & Zielgruppe definiert', icon: 'clipboard', type: 'trigger', ...p(0, 1) },
-      // ─── Phase 2: Recherche & Planung (col 1-2) ───
-      { id: 'cp2', label: 'KI-Recherche', description: 'Quellen, Trends & Daten gesammelt', icon: 'logo-openai', type: 'ai', ...p(1, 1) },
-      { id: 'cp3', label: 'Keyword-Analyse', description: 'SEO-Keywords & Suchvolumen ermittelt', icon: 'logo-google-sheets', type: 'process', ...p(1, 2) },
-      { id: 'cp4', label: 'Content-Plan', description: 'Struktur & Verteilungsplan erstellt', icon: 'logo-notion', type: 'process', ...p(2, 1) },
-      // ─── Phase 3: KI-Erstellung (col 3) ───
-      { id: 'cp5', label: 'KI: Blog-Artikel', description: 'SEO-optimierter Longform-Artikel', icon: 'logo-claude', type: 'ai', ...p(3, 0) },
-      { id: 'cp6', label: 'KI: Social Posts', description: 'Captions, Hashtags & Hooks', icon: 'logo-claude', type: 'ai', ...p(3, 1) },
-      { id: 'cp7', label: 'KI: Newsletter', description: 'E-Mail-Copy & Betreffzeilen', icon: 'logo-openai', type: 'ai', ...p(3, 2) },
-      // ─── Phase 4: Publishing & Analytics (col 4-5) ───
-      { id: 'cp8', label: 'Blog veröffentlichen', description: 'Artikel in WordPress hochgeladen', icon: 'logo-wordpress', type: 'output', ...p(4, 0) },
-      { id: 'cp9', label: 'Social Media posten', description: 'Posts auf allen Kanälen veröffentlicht', icon: 'logo-instagram', type: 'output', ...p(4, 1) },
-      { id: 'cp10', label: 'Newsletter senden', description: 'E-Mail-Kampagne gestartet', icon: 'logo-gmail', type: 'output', ...p(4, 2) },
-      { id: 'cp11', label: 'Performance-Tracking', description: 'Views, Clicks & Engagement messen', icon: 'logo-google-analytics', type: 'process', ...p(5, 1) },
-      { id: 'cp12', label: 'Slack: Team-Update', description: 'Ergebnisse ans Team senden', icon: 'logo-slack', type: 'output', ...p(5, 0) },
-    ],
-    connections: [
-      { from: 'cp1', to: 'cp2' },
-      { from: 'cp2', to: 'cp3' }, { from: 'cp2', to: 'cp4' },
-      { from: 'cp4', to: 'cp5' }, { from: 'cp4', to: 'cp6' }, { from: 'cp4', to: 'cp7' },
-      { from: 'cp5', to: 'cp8' }, { from: 'cp6', to: 'cp9' }, { from: 'cp7', to: 'cp10' },
-      { from: 'cp8', to: 'cp11' }, { from: 'cp9', to: 'cp11' }, { from: 'cp10', to: 'cp11' },
-      { from: 'cp11', to: 'cp12' },
-    ],
-    groups: [
-      { id: 'gc1', label: 'Eingang',               x: 15,   y: 168, width: 280, height: 148, color: 'blue' },
-      { id: 'gc2', label: 'Recherche & Planung',    x: 355,  y: 168, width: 620, height: 308, color: 'purple' },
-      { id: 'gc3', label: 'KI-Erstellung',          x: 1035, y: 8,   width: 280, height: 468, color: 'purple' },
-      { id: 'gc4', label: 'Publishing & Analytics',  x: 1375, y: 8,   width: 620, height: 468, color: 'green' },
-    ],
-    outputs: [
-      { id: 'o1', name: 'Blog: KI im Mittelstand', type: 'document', link: 'https://docs.google.com/document/d/blog1', createdAt: '2025-01-25T09:00:00Z' },
-      { id: 'o2', name: 'Social Media Posts – KW 04', type: 'document', link: 'https://docs.google.com/document/d/social1', createdAt: '2025-01-25T10:30:00Z' },
-      { id: 'o3', name: 'Newsletter – KI Guide', type: 'email', link: 'https://mail.google.com/mail/example', createdAt: '2025-01-25T11:00:00Z' },
-    ],
-    lastExecuted: '2025-01-25T11:00:00Z',
-    executionCount: 23,
-  },
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // 3. Lead Qualifikation — 12 Nodes
-  // ═══════════════════════════════════════════════════════════════════════════
-  {
-    id: 'demo-3',
-    name: 'Lead Qualifikation',
-    description: 'Eingehende Leads automatisch anreichern, KI-basiert bewerten, segmentieren und mit personalisierten Follow-ups ins CRM überführen.',
-    category: 'Sales',
+    name: 'Marketing Agentur Fulfillment',
+    description: 'Kompletter Agentur-Workflow mit 4 parallelen Lanes: Website, Social Media, Ads und E-Mail — vom Onboarding bis zum Abschluss-Reporting.',
+    category: 'Agentur',
     icon: 'target',
     status: 'active',
     webhookUrl: '',
     nodes: [
-      // ─── Phase 1: Lead-Eingang (col 0) ───
-      { id: 'lq1', label: 'Lead-Formular', description: 'Neue Anfrage über Formular', icon: 'logo-typeform', type: 'trigger', ...p(0, 0) },
-      { id: 'lq2', label: 'E-Mail-Eingang', description: 'Neue Anfrage per Mail', icon: 'logo-gmail', type: 'trigger', ...p(0, 2) },
-      // ─── Phase 2: Anreicherung (col 1-2) ───
-      { id: 'lq3', label: 'Daten zusammenführen', description: 'Lead-Daten aus Quellen mergen', icon: 'git-merge', type: 'process', ...p(1, 1) },
-      { id: 'lq4', label: 'KI: Firmendaten anreichern', description: 'Branche, Größe & Umsatz ergänzen', icon: 'logo-openai', type: 'ai', ...p(2, 1) },
-      // ─── Phase 3: Bewertung & CRM (col 3-4) ───
-      { id: 'lq5', label: 'KI: Lead-Scoring', description: 'Automatische Bewertung 0–100', icon: 'logo-claude', type: 'ai', ...p(3, 1) },
-      { id: 'lq6', label: 'Segmentierung', description: 'Hot / Warm / Cold einstufen', icon: 'logo-google-sheets', type: 'process', ...p(4, 0) },
-      { id: 'lq7', label: 'CRM-Eintrag', description: 'Kontakt in HubSpot anlegen', icon: 'logo-hubspot', type: 'output', ...p(4, 2) },
-      // ─── Phase 4: Follow-up (col 5-6) ───
-      { id: 'lq8', label: 'Slack: Hot-Lead Alert', description: 'Sales-Team sofort benachrichtigen', icon: 'logo-slack', type: 'output', ...p(5, 0) },
-      { id: 'lq9', label: 'KI: Personalisierte Mail', description: 'Individuelle Follow-up-Mail generieren', icon: 'logo-claude', type: 'ai', ...p(5, 1) },
-      { id: 'lq10', label: 'Follow-up senden', description: 'Personalisierte E-Mail versenden', icon: 'logo-gmail', type: 'output', ...p(6, 1) },
-      { id: 'lq11', label: 'Meeting-Buchung', description: 'Automatischer Kalender-Link', icon: 'logo-google-calendar', type: 'output', ...p(6, 0) },
-      { id: 'lq12', label: 'Pipeline-Update', description: 'Deal-Stage aktualisieren', icon: 'logo-hubspot', type: 'output', ...p(6, 2) },
+      // ═══ Shared: Onboarding (c0–c3) ═══
+      { id: 'f1',  label: 'Neukunde eingeht',       description: 'Deal in HubSpot gewonnen – Trigger',              icon: 'logo-hubspot',         type: 'trigger', ...p(0, 2) },
+      { id: 'f2',  label: 'CRM-Setup',              description: 'Kundenprofil, Pipeline & Tags anlegen',           icon: 'logo-hubspot',         type: 'process', ...p(1, 2) },
+      { id: 'f3',  label: 'Willkommens-Mail',       description: 'Automatische Begrüßungs-Sequenz',                icon: 'logo-gmail',           type: 'output',  ...p(2, 0) },
+      { id: 'f4',  label: 'Kundenordner',           description: 'Google Drive Struktur erstellen',                 icon: 'logo-google-drive',    type: 'output',  ...p(2, 1) },
+      { id: 'f5',  label: 'Projekt-Board',          description: 'Notion-Projekt mit Aufgaben anlegen',             icon: 'logo-notion',          type: 'process', ...p(2, 2) },
+      { id: 'f6',  label: 'Kick-off Termin',        description: 'Google Calendar Einladung',                       icon: 'logo-google-calendar', type: 'output',  ...p(2, 3) },
+      { id: 'f7',  label: 'Team-Slack',             description: 'Team wird im Kanal informiert',                   icon: 'logo-slack',           type: 'output',  ...p(2, 4) },
+      { id: 'f8',  label: 'KI-Marktanalyse',        description: 'Branche, Wettbewerb & Trends analysieren',        icon: 'logo-openai',          type: 'ai',      ...p(3, 2) },
+      // ═══ Strategie fan-out → 4 unabhängige Lanes (c4) ═══
+      { id: 'f9',  label: 'Zielgruppen-Analyse',    description: 'KI-basiertes Audience Profiling für Website',     icon: 'logo-claude',          type: 'ai',      ...p(4, 0) },
+      { id: 'f10', label: 'Social-Strategie',       description: 'Content-Typen, Formate & Posting-Plan',           icon: 'logo-instagram',       type: 'process', ...p(4, 1) },
+      { id: 'f11', label: 'Strategie-Dokument',     description: 'Gesamt-Strategie & Positionierung',               icon: 'logo-google-docs',     type: 'output',  ...p(4, 2) },
+      { id: 'f12', label: 'Ad-Strategie',           description: 'Targeting, Budgets & Kampagnenstruktur',          icon: 'logo-google-ads',      type: 'process', ...p(4, 3) },
+      { id: 'f13', label: 'E-Mail-Strategie',       description: 'Sequenzen, Segmente & Automationen',              icon: 'logo-gmail',           type: 'process', ...p(4, 5) },
+      // ═══ LANE W – Website ═══
+      { id: 'f14', label: 'KI-Copywriting',         description: 'Website-Texte, Headlines & CTAs',                 icon: 'logo-claude',          type: 'ai',      ...p(5, 0) },
+      { id: 'f15', label: 'Website-Erstellung',     description: 'Landing Page mit Copy aufbauen',                  icon: 'logo-wordpress',       type: 'process', ...p(6, 0) },
+      { id: 'f16', label: 'Website Live',           description: 'Landing Page veröffentlichen',                    icon: 'logo-wordpress',       type: 'output',  ...p(7, 0) },
+      // ═══ LANE S – Social Media ═══
+      { id: 'f17', label: 'Visual-Erstellung',      description: 'Bilder, Reels & Grafiken via KI',                 icon: 'logo-openai',          type: 'ai',      ...p(5, 1) },
+      { id: 'f18', label: 'Social Content',         description: 'Posts mit Captions & Visuals zusammenstellen',    icon: 'logo-meta',            type: 'process', ...p(6, 1) },
+      { id: 'f19', label: 'Instagram Posting',      description: 'Posts automatisch veröffentlichen',               icon: 'logo-instagram',       type: 'output',  ...p(7, 1) },
+      // ═══ LANE A – Advertising ═══
+      { id: 'f20', label: 'Kampagnen-Planung',      description: 'Zielgruppen, Budgets & Anzeigengruppen',          icon: 'logo-google-ads',      type: 'process', ...p(5, 3) },
+      { id: 'f21', label: 'Ad-Creatives',           description: 'Anzeigen-Texte, Bilder & Videos',                 icon: 'logo-google-ads',      type: 'process', ...p(6, 3) },
+      { id: 'f22', label: 'Meta Ads Upload',        description: 'Anzeigen direkt in Meta hochladen',               icon: 'logo-meta',            type: 'output',  ...p(7, 3) },
+      { id: 'f23', label: 'Google Ads Upload',      description: 'Anzeigen direkt in Google Ads hochladen',         icon: 'logo-google-ads',      type: 'output',  ...p(7, 4) },
+      // ═══ LANE E – E-Mail ═══
+      { id: 'f24', label: 'E-Mail Texte',           description: 'Newsletter-Copy & Betreffzeilen via KI',          icon: 'logo-claude',          type: 'ai',      ...p(5, 5) },
+      { id: 'f25', label: 'E-Mail Design',          description: 'Templates & Layouts gestalten',                   icon: 'logo-gmail',           type: 'process', ...p(6, 5) },
+      { id: 'f26', label: 'E-Mail Kampagne',        description: 'Newsletter-Sequenz starten',                      icon: 'logo-gmail',           type: 'output',  ...p(7, 5) },
+      // ═══ Shared: Monitoring & Abschluss ═══
+      { id: 'f27', label: 'Performance-Tracking',   description: 'KPIs aller Kanäle in Echtzeit',                  icon: 'logo-google-analytics', type: 'process', ...p(8, 2) },
+      { id: 'f28', label: 'KI-Optimierung',         description: 'Automatische Kampagnen-Anpassung',               icon: 'logo-openai',          type: 'ai',      ...p(9, 1) },
+      { id: 'f29', label: 'Wöchentliches Update',   description: 'Status-Report via Slack an Kunden',              icon: 'logo-slack',           type: 'output',  ...p(9, 2) },
+      { id: 'f30', label: 'Ergebnis-Report',        description: 'KI-generierter Abschlussbericht',                icon: 'logo-claude',          type: 'ai',      ...p(10, 2) },
+      { id: 'f31', label: 'Abschluss-PDF',          description: 'Formatierter PDF-Report für den Kunden',         icon: 'logo-google-docs',     type: 'output',  ...p(11, 1) },
+      { id: 'f32', label: 'Kundenfeedback',         description: 'Bewertungs-Formular senden',                     icon: 'logo-typeform',        type: 'output',  ...p(11, 2) },
+      { id: 'f33', label: 'Archivierung',           description: 'Projekt archivieren & übergeben',                icon: 'logo-google-drive',    type: 'output',  ...p(11, 3) },
     ],
     connections: [
-      { from: 'lq1', to: 'lq3' }, { from: 'lq2', to: 'lq3' },
-      { from: 'lq3', to: 'lq4' },
-      { from: 'lq4', to: 'lq5' },
-      { from: 'lq5', to: 'lq6' }, { from: 'lq5', to: 'lq7' },
-      { from: 'lq6', to: 'lq8' }, { from: 'lq6', to: 'lq9' },
-      { from: 'lq9', to: 'lq10' }, { from: 'lq9', to: 'lq11' },
-      { from: 'lq8', to: 'lq12' }, { from: 'lq10', to: 'lq12' },
+      { from: 'f1', to: 'f2' },
+      { from: 'f2', to: 'f3' }, { from: 'f2', to: 'f4' }, { from: 'f2', to: 'f5' }, { from: 'f2', to: 'f6' }, { from: 'f2', to: 'f7' },
+      { from: 'f5', to: 'f8' },
+      { from: 'f8', to: 'f9' }, { from: 'f8', to: 'f10' }, { from: 'f8', to: 'f11' }, { from: 'f8', to: 'f12' }, { from: 'f8', to: 'f13' },
+      { from: 'f9',  to: 'f14' }, { from: 'f14', to: 'f15' }, { from: 'f15', to: 'f16' },
+      { from: 'f10', to: 'f17' }, { from: 'f17', to: 'f18' }, { from: 'f18', to: 'f19' },
+      { from: 'f12', to: 'f20' }, { from: 'f20', to: 'f21' }, { from: 'f21', to: 'f22' }, { from: 'f21', to: 'f23' },
+      { from: 'f13', to: 'f24' }, { from: 'f24', to: 'f25' }, { from: 'f25', to: 'f26' },
+      { from: 'f16', to: 'f27' }, { from: 'f19', to: 'f27' }, { from: 'f22', to: 'f27' }, { from: 'f23', to: 'f27' }, { from: 'f26', to: 'f27' },
+      { from: 'f27', to: 'f28' }, { from: 'f27', to: 'f29' },
+      { from: 'f28', to: 'f30' }, { from: 'f29', to: 'f30' },
+      { from: 'f30', to: 'f31' }, { from: 'f30', to: 'f32' }, { from: 'f30', to: 'f33' },
     ],
     groups: [
-      { id: 'gl1', label: 'Lead-Eingang',       x: 15,   y: 8,   width: 280, height: 468, color: 'blue' },
-      { id: 'gl2', label: 'Anreicherung',        x: 355,  y: 168, width: 620, height: 148, color: 'purple' },
-      { id: 'gl3', label: 'Bewertung & CRM',     x: 1035, y: 8,   width: 620, height: 468, color: 'purple' },
-      { id: 'gl4', label: 'Follow-up',           x: 1715, y: 8,   width: 620, height: 468, color: 'green' },
+      { id: 'gf1', label: 'Kunden-Eingang',            x: 15,   y: 338, width: 620,  height: 148, color: 'blue' },
+      { id: 'gf2', label: 'Projekt-Setup',              x: 695,  y: 18,  width: 280,  height: 788, color: 'blue' },
+      { id: 'gf3', label: 'KI-Analyse',                 x: 1035, y: 338, width: 280,  height: 148, color: 'purple' },
+      { id: 'gf4', label: 'Website · Konzeption → Live',       x: 1375, y: 18,  width: 1300, height: 148, color: 'blue' },
+      { id: 'gf5', label: 'Social Media · Content → Posting',  x: 1375, y: 178, width: 1300, height: 148, color: 'purple' },
+      { id: 'gf6', label: 'Advertising · Creatives → Upload',  x: 1375, y: 498, width: 1300, height: 308, color: 'orange' },
+      { id: 'gf7', label: 'E-Mail · Texte → Versand',          x: 1375, y: 818, width: 1300, height: 148, color: 'green' },
+      { id: 'gf8', label: 'Monitoring & Optimierung',   x: 2735, y: 178, width: 620,  height: 308, color: 'green' },
+      { id: 'gf9', label: 'Abschluss & Übergabe',       x: 3415, y: 178, width: 620,  height: 468, color: 'red' },
     ],
     outputs: [
-      { id: 'o1', name: 'Lead-Report Januar 2025', type: 'spreadsheet', link: 'https://docs.google.com/spreadsheets/d/report1', createdAt: '2025-01-27T16:00:00Z' },
-      { id: 'o2', name: 'Follow-up Mail – Müller AG', type: 'email', link: 'https://mail.google.com/mail/example', createdAt: '2025-01-28T09:00:00Z' },
-      { id: 'o3', name: 'CRM Update – 12 neue Kontakte', type: 'other', link: 'https://app.hubspot.com/contacts/example', createdAt: '2025-01-29T14:00:00Z' },
+      { id: 'o1', name: 'Landing Page – Schmidt GmbH', type: 'website', link: 'https://schmidt-gmbh.example.com', createdAt: '2025-01-28T10:00:00Z' },
+      { id: 'o2', name: 'Social Media Content Pack – KW 05', type: 'document', link: 'https://docs.google.com/document/d/social-pack', createdAt: '2025-01-29T14:00:00Z' },
+      { id: 'o3', name: 'Abschlussbericht – Schmidt GmbH', type: 'document', link: 'https://docs.google.com/document/d/report-schmidt', createdAt: '2025-01-30T16:00:00Z' },
     ],
-    lastExecuted: '2025-01-29T14:00:00Z',
-    executionCount: 47,
+    lastExecuted: '2025-01-30T16:00:00Z',
+    executionCount: 5,
   },
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // 4. Report Generator — 12 Nodes
+  // 3. Recruiting Agentur — MASTER SYSTEM (Subsystem nodes auto-created)
   // ═══════════════════════════════════════════════════════════════════════════
   {
-    id: 'demo-4',
-    name: 'Report Generator',
-    description: 'Daten aus verschiedenen Quellen automatisch sammeln, KI-analysieren und als professionellen Report über mehrere Kanäle verteilen.',
-    category: 'Operations',
+    id: 'demo-recruiting',
+    name: 'Recruiting Agentur',
+    description: 'Vollständiger Agentur-Fulfillment-Prozess: Vom gewonnenen Client über Onboarding, Knowledge Processing und Content-Produktion bis zum Launch mit Performance-Tracking.',
+    category: 'Recruiting',
+    icon: 'building-2',
+    status: 'active',
+    webhookUrl: '',
+    nodes: [
+      // Intake — two entry points merge into one validated dataset
+      { id: 'rm1', label: 'Client gewonnen',           description: 'Vertrag unterschrieben – Übergabe von Sales',  icon: 'trophy',          type: 'trigger', x: 60,  y: 200 },
+      { id: 'rm2', label: 'Handover-Formular',         description: 'Internes Formular mit allen Client-Daten',     icon: 'clipboard-check', type: 'trigger', x: 60,  y: 370 },
+      { id: 'rm3', label: 'Daten zusammenführen',      description: 'Sales-Daten & Formular validieren und mergen', icon: 'git-merge',       type: 'process', x: 340, y: 270 },
+      // Subsystem nodes are auto-injected from child systems (parentId: 'demo-recruiting')
+    ],
+    connections: [
+      { from: 'rm1', to: 'rm3' },
+      { from: 'rm2', to: 'rm3' },
+      { from: 'rm3', to: 'sub-demo-recruiting-kickoff' },
+      { from: 'sub-demo-recruiting-kickoff', to: 'sub-demo-recruiting-onboarding' },
+      { from: 'sub-demo-recruiting-onboarding', to: 'sub-demo-recruiting-knowledge' },
+      { from: 'sub-demo-recruiting-knowledge', to: 'sub-demo-recruiting-content' },
+      { from: 'sub-demo-recruiting-content', to: 'sub-demo-recruiting-review' },
+      { from: 'sub-demo-recruiting-review', to: 'sub-demo-recruiting-tracking' },
+    ],
+    groups: [],
+    outputs: [
+      { id: 'o1', name: 'Abschlussbericht – TechStart GmbH', type: 'document', link: 'https://docs.google.com/document/d/report-techstart', createdAt: '2025-01-30T16:00:00Z' },
+    ],
+    lastExecuted: '2025-01-30T16:00:00Z',
+    executionCount: 8,
+  },
+
+  // ─── 3a. Kickoff & Client Setup (Phase 1–2) ──────────────────────────────
+  {
+    id: 'demo-recruiting-kickoff',
+    parentId: 'demo-recruiting',
+    subSystemOrder: 0,
+    name: 'Kickoff & Client Setup',
+    description: 'Internes Setup: CRM-Eintrag, Kommunikation, Projekt-Board, Ordnerstruktur und Arbeitsdokumente.',
+    category: 'Recruiting',
+    icon: 'clipboard-check',
+    status: 'active',
+    webhookUrl: '',
+    nodes: [
+      // Eingang
+      { id: 'ks1',  label: 'Handover-Formular',    description: 'Internes Übergabeformular ausgefüllt',            icon: 'logo-typeform',        type: 'trigger', ...p(0, 2) },
+      { id: 'ks2',  label: 'CRM-Eintrag',          description: 'Client-Profil, Pipeline & Tags anlegen',          icon: 'logo-hubspot',         type: 'process', ...p(1, 2) },
+      // Kommunikation (fan-out)
+      { id: 'ks3',  label: 'Interner Slack-Kanal',  description: 'Dedizierter Team-Kanal für den Kunden',           icon: 'logo-slack',           type: 'output',  ...p(2, 0) },
+      { id: 'ks4',  label: 'Willkommens-Mail',      description: 'Automatische Begrüßungs-Sequenz an Client',      icon: 'logo-gmail',           type: 'output',  ...p(2, 1) },
+      { id: 'ks5',  label: 'Onboarding-Anleitung',  description: 'Vorbereitungsinstruktionen an Client senden',     icon: 'logo-gmail',           type: 'output',  ...p(2, 2) },
+      { id: 'ks6',  label: 'Kick-off Termin',       description: 'Onboarding-Call im Kalender erstellen',           icon: 'logo-google-calendar', type: 'output',  ...p(2, 3) },
+      // Projekt & Dateien
+      { id: 'ks7',  label: 'Projekt-Board',         description: 'Client-Projekt mit Standard-Aufgaben anlegen',    icon: 'logo-notion',          type: 'process', ...p(3, 1) },
+      { id: 'ks8',  label: 'Aufgaben generieren',   description: 'Onboarding, Review, Go-Live Checklisten',        icon: 'list-checks',          type: 'process', ...p(4, 1) },
+      { id: 'ks9',  label: 'Ordnerstruktur',        description: 'Assets, Copy, Tracking, Reports, Website',       icon: 'logo-google-drive',    type: 'output',  ...p(3, 3) },
+      { id: 'ks10', label: 'Arbeitsdokumente',      description: 'Templates duplizieren & personalisieren',        icon: 'logo-google-docs',     type: 'output',  ...p(4, 3) },
+      // Status
+      { id: 'ks11', label: 'Status: Onboarding',    description: 'CRM-Status auf "Onboarding läuft" setzen',       icon: 'logo-hubspot',         type: 'process', ...p(5, 2) },
+    ],
+    connections: [
+      { from: 'ks1', to: 'ks2' },
+      { from: 'ks2', to: 'ks3' }, { from: 'ks2', to: 'ks4' }, { from: 'ks2', to: 'ks5' }, { from: 'ks2', to: 'ks6' },
+      { from: 'ks2', to: 'ks7' }, { from: 'ks7', to: 'ks8' },
+      { from: 'ks2', to: 'ks9' }, { from: 'ks9', to: 'ks10' },
+      { from: 'ks8', to: 'ks11' }, { from: 'ks10', to: 'ks11' },
+    ],
+    groups: [
+      { id: 'gks1', label: 'Eingang',             x: 15,   y: 338, width: 620,  height: 148, color: 'blue' },
+      { id: 'gks2', label: 'Kommunikation',        x: 695,  y: 18,  width: 280,  height: 628, color: 'blue' },
+      { id: 'gks3', label: 'Projekt & Dateien',    x: 1035, y: 178, width: 620,  height: 468, color: 'purple' },
+      { id: 'gks4', label: 'Abschluss',            x: 1715, y: 338, width: 280,  height: 148, color: 'green' },
+    ],
+    outputs: [],
+    executionCount: 0,
+  },
+
+  // ─── 3b. Client Onboarding (Phase 3–4) ───────────────────────────────────
+  {
+    id: 'demo-recruiting-onboarding',
+    parentId: 'demo-recruiting',
+    subSystemOrder: 1,
+    name: 'Client Onboarding',
+    description: 'Material-Sammlung, Onboarding-Gespräch und KI-Transkription — der strategische Input für das gesamte System.',
+    category: 'Recruiting',
+    icon: 'users',
+    status: 'active',
+    webhookUrl: '',
+    nodes: [
+      // Vorbereitung & Upload
+      { id: 'ob1', label: 'Upload-Anleitung',        description: 'Client erhält Anweisungen für Material-Upload',   icon: 'logo-gmail',          type: 'output',  ...p(0, 2) },
+      { id: 'ob2', label: 'Material-Upload',          description: 'Client lädt Bilder, Texte, Brand Assets hoch',   icon: 'upload',              type: 'process', ...p(1, 2) },
+      { id: 'ob3', label: 'Material-Ordner',          description: 'Alle Materialien zentral organisiert',            icon: 'logo-google-drive',   type: 'output',  ...p(1, 3) },
+      // Onboarding Call
+      { id: 'ob4', label: 'Onboarding Call',           description: 'Standardisiertes Gespräch nach Fragebogen',      icon: 'video',               type: 'process', ...p(2, 2) },
+      { id: 'ob5', label: 'KI-Transkription',          description: 'Call aufnehmen, transkribieren und analysieren', icon: 'logo-openai',         type: 'ai',      ...p(3, 2) },
+      // Ergebnis
+      { id: 'ob6', label: 'Transkript gespeichert',    description: 'Maschinenlesbares Wissen dauerhaft gesichert',   icon: 'logo-google-docs',    type: 'output',  ...p(4, 1) },
+      { id: 'ob7', label: 'Slack: Call abgeschlossen', description: 'Team über erfolgreichen Call informieren',       icon: 'logo-slack',          type: 'output',  ...p(4, 3) },
+    ],
+    connections: [
+      { from: 'ob1', to: 'ob2' },
+      { from: 'ob2', to: 'ob3' },
+      { from: 'ob2', to: 'ob4' },
+      { from: 'ob4', to: 'ob5' },
+      { from: 'ob5', to: 'ob6' },
+      { from: 'ob5', to: 'ob7' },
+    ],
+    groups: [
+      { id: 'gob1', label: 'Material-Sammlung',  x: 15,   y: 338, width: 620,  height: 308, color: 'blue' },
+      { id: 'gob2', label: 'Onboarding Call',     x: 695,  y: 338, width: 620,  height: 148, color: 'purple' },
+      { id: 'gob3', label: 'Ergebnis',            x: 1375, y: 178, width: 280,  height: 468, color: 'green' },
+    ],
+    outputs: [],
+    executionCount: 0,
+  },
+
+  // ─── 3c. Knowledge Processing (Phase 5) ──────────────────────────────────
+  {
+    id: 'demo-recruiting-knowledge',
+    parentId: 'demo-recruiting',
+    subSystemOrder: 2,
+    name: 'Knowledge Processing',
+    description: 'Transkript analysieren, Zielgruppen-Avatar, Anbieter-Profil und Core Messaging als strategische Basis-Dokumente erstellen.',
+    category: 'Recruiting',
+    icon: 'sparkles',
+    status: 'active',
+    webhookUrl: '',
+    nodes: [
+      // Analyse
+      { id: 'kp1', label: 'Transkript-Analyse',      description: 'KI analysiert und strukturiert das Transkript',   icon: 'logo-openai',         type: 'ai',      ...p(0, 2) },
+      { id: 'kp2', label: 'Daten extrahieren',        description: 'Pain Points, Benefits, Sprachmuster extrahieren', icon: 'logo-claude',        type: 'ai',      ...p(1, 2) },
+      // Strategische Dokumente (fan-out)
+      { id: 'kp3', label: 'Zielgruppen-Avatar',       description: 'Detailliertes Profil der Zielgruppe',            icon: 'logo-google-docs',    type: 'output',  ...p(2, 1) },
+      { id: 'kp4', label: 'Anbieter-Avatar',          description: 'Marken- und Anbieter-Steckbrief',               icon: 'logo-google-docs',    type: 'output',  ...p(2, 2) },
+      { id: 'kp5', label: 'Core Messaging',           description: 'Kern-Botschaften und Positionierung',           icon: 'logo-google-docs',    type: 'output',  ...p(2, 3) },
+      // Zusammenführung & Qualität
+      { id: 'kp6', label: 'Zusammenführen',           description: 'Alle Dokumente als Single Source of Truth',      icon: 'git-merge',           type: 'process', ...p(3, 2) },
+      { id: 'kp7', label: 'Qualitätsprüfung',         description: 'Manuelle Faktenprüfung (Human Review)',         icon: 'shield-check',        type: 'process', ...p(4, 2) },
+      { id: 'kp8', label: 'Slack: Basis fertig',      description: 'Team über fertige Strategie-Basis informieren', icon: 'logo-slack',          type: 'output',  ...p(5, 2) },
+    ],
+    connections: [
+      { from: 'kp1', to: 'kp2' },
+      { from: 'kp2', to: 'kp3' }, { from: 'kp2', to: 'kp4' }, { from: 'kp2', to: 'kp5' },
+      { from: 'kp3', to: 'kp6' }, { from: 'kp4', to: 'kp6' }, { from: 'kp5', to: 'kp6' },
+      { from: 'kp6', to: 'kp7' },
+      { from: 'kp7', to: 'kp8' },
+    ],
+    groups: [
+      { id: 'gkp1', label: 'KI-Analyse',                x: 15,   y: 338, width: 620,  height: 148, color: 'purple' },
+      { id: 'gkp2', label: 'Strategische Dokumente',    x: 695,  y: 178, width: 280,  height: 468, color: 'purple' },
+      { id: 'gkp3', label: 'Qualitätssicherung',        x: 1035, y: 338, width: 960,  height: 148, color: 'green' },
+    ],
+    outputs: [],
+    executionCount: 0,
+  },
+
+  // ─── 3d. Content & Asset Production (Phase 6) ────────────────────────────
+  {
+    id: 'demo-recruiting-content',
+    parentId: 'demo-recruiting',
+    subSystemOrder: 3,
+    name: 'Content & Asset Production',
+    description: 'Marketing-Copy generieren, Website bauen, Bilder vorbereiten und alles veröffentlichen.',
+    category: 'Recruiting',
+    icon: 'file-text',
+    status: 'active',
+    webhookUrl: '',
+    nodes: [
+      // KI-Generierung (parallel)
+      { id: 'cp1', label: 'KI: Website-Texte',    description: 'Website & Landing Page Copy generieren',         icon: 'logo-claude',         type: 'ai',      ...p(0, 0) },
+      { id: 'cp2', label: 'KI: Ad Copy',           description: 'Meta, Google & weitere Anzeigentexte',          icon: 'logo-claude',         type: 'ai',      ...p(0, 2) },
+      // Website-Erstellung
+      { id: 'cp3', label: 'Template auswählen',    description: 'Passendes Website-Template selektieren',         icon: 'layout',              type: 'process', ...p(1, 1) },
+      { id: 'cp4', label: 'Copy einsetzen',        description: 'Generierte Texte in Template einsetzen',         icon: 'text-cursor-input',   type: 'process', ...p(2, 1) },
+      { id: 'cp5', label: 'Bilder vorbereiten',    description: 'Client-Bilder oder KI-generierte Bilder',       icon: 'image',               type: 'process', ...p(2, 2) },
+      { id: 'cp6', label: 'Design anpassen',       description: 'Farben, Stil & Layout finalisieren',            icon: 'palette',             type: 'process', ...p(3, 1) },
+      { id: 'cp7', label: 'Website bauen',         description: 'Alle Elemente zusammenfügen',                   icon: 'logo-wordpress',      type: 'process', ...p(4, 1) },
+      { id: 'cp8', label: 'Domain verbinden',      description: 'Domain konfigurieren & SSL',                    icon: 'globe',               type: 'process', ...p(5, 1) },
+      { id: 'cp9', label: 'Website Live',          description: 'Seite veröffentlichen',                         icon: 'globe',               type: 'output',  ...p(6, 0) },
+      { id: 'cp10', label: 'Copy-Dokumente',       description: 'Alle generierten Texte gespeichert',            icon: 'logo-google-docs',    type: 'output',  ...p(6, 2) },
+    ],
+    connections: [
+      { from: 'cp1', to: 'cp3' }, { from: 'cp1', to: 'cp4' },
+      { from: 'cp2', to: 'cp4' }, { from: 'cp2', to: 'cp10' },
+      { from: 'cp3', to: 'cp4' },
+      { from: 'cp4', to: 'cp6' }, { from: 'cp5', to: 'cp6' },
+      { from: 'cp6', to: 'cp7' },
+      { from: 'cp7', to: 'cp8' },
+      { from: 'cp8', to: 'cp9' },
+    ],
+    groups: [
+      { id: 'gcp1', label: 'KI-Generierung',         x: 15,   y: 18,  width: 280,  height: 468, color: 'purple' },
+      { id: 'gcp2', label: 'Website-Erstellung',      x: 355,  y: 178, width: 1580, height: 308, color: 'blue' },
+      { id: 'gcp3', label: 'Ergebnis',                x: 2055, y: 18,  width: 280,  height: 468, color: 'green' },
+    ],
+    outputs: [],
+    executionCount: 0,
+  },
+
+  // ─── 3e. Review & Launch (Phase 7–9) ─────────────────────────────────────
+  {
+    id: 'demo-recruiting-review',
+    parentId: 'demo-recruiting',
+    subSystemOrder: 4,
+    name: 'Review & Launch',
+    description: 'Kampagnen vorbereiten, interne Reviews durchführen, finale Freigabe und Zusammenfassung erstellen.',
+    category: 'Recruiting',
+    icon: 'shield-check',
+    status: 'active',
+    webhookUrl: '',
+    nodes: [
+      // Kampagnen-Vorbereitung
+      { id: 'rl1', label: 'Kampagnen-Struktur',       description: 'Targeting, Budgets & Anzeigengruppen',          icon: 'logo-google-ads',     type: 'process', ...p(0, 1) },
+      { id: 'rl2', label: 'Ad-Creatives',             description: 'Anzeigen mit Copy, Media & URLs vorbereiten',   icon: 'logo-meta',           type: 'process', ...p(1, 1) },
+      { id: 'rl3', label: 'Interne Benachrichtigung', description: 'Team erhält Übersicht aller fertigen Assets',   icon: 'logo-slack',          type: 'output',  ...p(2, 1) },
+      // Reviews (parallel)
+      { id: 'rl4', label: 'Review-Aufgaben',          description: 'Checklisten-basierte Prüfaufgaben erstellen',   icon: 'list-checks',         type: 'process', ...p(3, 1) },
+      { id: 'rl5', label: 'Copy-Check',               description: 'Texte auf Korrektheit & Tonalität prüfen',     icon: 'spell-check',         type: 'process', ...p(4, 0) },
+      { id: 'rl6', label: 'Seiten-Check',             description: 'Website & Landing Pages verifizieren',          icon: 'monitor-check',       type: 'process', ...p(4, 1) },
+      { id: 'rl7', label: 'Tracking-Check',           description: 'Analytics & Conversion-Tracking prüfen',       icon: 'chart-bar',           type: 'process', ...p(4, 2) },
+      // Freigabe & Launch
+      { id: 'rl8', label: 'Finale Freigabe',          description: 'Manuelle Endabnahme (Human Review)',           icon: 'shield-check',        type: 'process', ...p(5, 1) },
+      { id: 'rl9', label: 'KI: Zusammenfassung',      description: 'Abschluss-PDF mit Zielgruppe, Links & Status', icon: 'logo-claude',         type: 'ai',      ...p(6, 1) },
+      { id: 'rl10', label: 'Projekt → Live',          description: 'Transition zu laufendem Betrieb',              icon: 'rocket',              type: 'output',  ...p(7, 1) },
+    ],
+    connections: [
+      { from: 'rl1', to: 'rl2' },
+      { from: 'rl2', to: 'rl3' },
+      { from: 'rl3', to: 'rl4' },
+      { from: 'rl4', to: 'rl5' }, { from: 'rl4', to: 'rl6' }, { from: 'rl4', to: 'rl7' },
+      { from: 'rl5', to: 'rl8' }, { from: 'rl6', to: 'rl8' }, { from: 'rl7', to: 'rl8' },
+      { from: 'rl8', to: 'rl9' },
+      { from: 'rl9', to: 'rl10' },
+    ],
+    groups: [
+      { id: 'grl1', label: 'Kampagnen-Vorbereitung',  x: 15,   y: 178, width: 960,  height: 148, color: 'blue' },
+      { id: 'grl2', label: 'Parallele Reviews',        x: 1035, y: 18,  width: 620,  height: 468, color: 'orange' },
+      { id: 'grl3', label: 'Freigabe & Launch',        x: 1715, y: 178, width: 960,  height: 148, color: 'green' },
+    ],
+    outputs: [],
+    executionCount: 0,
+  },
+
+  // ─── 3f. Performance Tracking (Phase 10) ─────────────────────────────────
+  {
+    id: 'demo-recruiting-tracking',
+    parentId: 'demo-recruiting',
+    subSystemOrder: 5,
+    name: 'Performance Tracking',
+    description: 'Tägliche Performance-Daten sammeln, KPIs analysieren, Reports erstellen und KI-basierte Optimierungsvorschläge.',
+    category: 'Recruiting',
     icon: 'bar-chart',
     status: 'active',
     webhookUrl: '',
     nodes: [
-      // ─── Phase 1: Datenquellen (col 0) ───
-      { id: 'rg1', label: 'Google Sheets Import', description: 'Daten aus Sheets', icon: 'logo-google-sheets', type: 'trigger', ...p(0, 0) },
-      { id: 'rg2', label: 'HubSpot Export', description: 'CRM-Daten exportiert', icon: 'logo-hubspot', type: 'trigger', ...p(0, 2) },
-      // ─── Phase 2: Verarbeitung (col 1-2) ───
-      { id: 'rg3', label: 'Daten zusammenführen', description: 'Quellen zu einem Datensatz vereint', icon: 'database', type: 'process', ...p(1, 1) },
-      { id: 'rg4', label: 'KI: Datenanalyse', description: 'Muster, Trends & Anomalien erkannt', icon: 'logo-openai', type: 'ai', ...p(2, 1) },
-      // ─── Phase 3: Report-Erstellung (col 3) ───
-      { id: 'rg5', label: 'KI: Report schreiben', description: 'Automatischer Analysebericht', icon: 'logo-claude', type: 'ai', ...p(3, 1) },
-      { id: 'rg6', label: 'Visualisierungen', description: 'Charts & Diagramme erzeugt', icon: 'logo-google-sheets', type: 'process', ...p(3, 0) },
-      // ─── Phase 4: Distribution (col 4-5) ───
-      { id: 'rg7', label: 'PDF in Drive', description: 'Report als PDF gespeichert', icon: 'logo-google-drive', type: 'output', ...p(4, 0) },
-      { id: 'rg8', label: 'Dashboard', description: 'Live-Ansicht aktualisiert', icon: 'logo-google-sheets', type: 'output', ...p(4, 1) },
-      { id: 'rg9', label: 'E-Mail Versand', description: 'Report an Stakeholder gesendet', icon: 'logo-gmail', type: 'output', ...p(4, 2) },
-      { id: 'rg10', label: 'Slack: Report Update', description: 'Team über neuen Report informiert', icon: 'logo-slack', type: 'output', ...p(5, 0) },
-      { id: 'rg11', label: 'Archiv', description: 'Report in Notion dokumentiert', icon: 'logo-notion', type: 'output', ...p(5, 1) },
-      { id: 'rg12', label: 'CRM: KPIs updaten', description: 'Deal-Properties mit KPIs befüllt', icon: 'logo-hubspot', type: 'output', ...p(5, 2) },
+      // Datenerfassung
+      { id: 'pt1', label: 'Zeitplan (täglich)',       description: 'Täglicher/periodischer Daten-Refresh',         icon: 'calendar',            type: 'trigger', ...p(0, 1) },
+      { id: 'pt2', label: 'Ad-Daten abrufen',        description: 'Performance-Daten von Meta, Google & Co.',     icon: 'logo-google-ads',     type: 'process', ...p(1, 1) },
+      // Analyse & Reporting
+      { id: 'pt3', label: 'KI: KPI-Analyse',          description: 'KPIs berechnen, Trends erkennen',             icon: 'logo-openai',         type: 'ai',      ...p(2, 1) },
+      { id: 'pt4', label: 'Tracking-Sheet',           description: 'Impressions, Clicks, CTR, CPC, Leads',        icon: 'logo-google-sheets',  type: 'output',  ...p(3, 0) },
+      { id: 'pt5', label: 'Dashboard Update',         description: 'Live-Dashboard für Team & Client',            icon: 'logo-google-sheets',  type: 'output',  ...p(3, 1) },
+      { id: 'pt6', label: 'Slack: Daily Report',      description: 'Täglichen Performance-Report posten',         icon: 'logo-slack',          type: 'output',  ...p(3, 2) },
+      { id: 'pt7', label: 'KI-Optimierung',           description: 'Automatische Kampagnen-Anpassungsvorschläge', icon: 'logo-claude',         type: 'ai',      ...p(4, 1) },
     ],
     connections: [
-      { from: 'rg1', to: 'rg3' }, { from: 'rg2', to: 'rg3' },
-      { from: 'rg3', to: 'rg4' },
-      { from: 'rg4', to: 'rg5' }, { from: 'rg4', to: 'rg6' },
-      { from: 'rg5', to: 'rg7' }, { from: 'rg5', to: 'rg8' }, { from: 'rg5', to: 'rg9' },
-      { from: 'rg6', to: 'rg7' },
-      { from: 'rg7', to: 'rg10' }, { from: 'rg8', to: 'rg11' }, { from: 'rg9', to: 'rg12' },
+      { from: 'pt1', to: 'pt2' },
+      { from: 'pt2', to: 'pt3' },
+      { from: 'pt3', to: 'pt4' }, { from: 'pt3', to: 'pt5' }, { from: 'pt3', to: 'pt6' },
+      { from: 'pt3', to: 'pt7' },
     ],
     groups: [
-      { id: 'gr1', label: 'Datenquellen',       x: 15,   y: 8,   width: 280, height: 468, color: 'blue' },
-      { id: 'gr2', label: 'Verarbeitung',        x: 355,  y: 168, width: 620, height: 148, color: 'purple' },
-      { id: 'gr3', label: 'Report-Erstellung',   x: 1035, y: 8,   width: 280, height: 308, color: 'purple' },
-      { id: 'gr4', label: 'Distribution',         x: 1375, y: 8,   width: 620, height: 468, color: 'green' },
+      { id: 'gpt1', label: 'Datenerfassung',          x: 15,   y: 178, width: 620,  height: 148, color: 'blue' },
+      { id: 'gpt2', label: 'Analyse & Reporting',     x: 695,  y: 18,  width: 960,  height: 468, color: 'purple' },
     ],
-    outputs: [
-      { id: 'o1', name: 'Monatsbericht Dezember', type: 'document', link: 'https://docs.google.com/document/d/report-dec', createdAt: '2025-01-20T08:00:00Z' },
-      { id: 'o2', name: 'Performance Dashboard Q4', type: 'website', link: 'https://dashboard.example.com/q4', createdAt: '2025-01-20T09:00:00Z' },
-      { id: 'o3', name: 'Executive Summary Q4', type: 'document', link: 'https://docs.google.com/document/d/exec-q4', createdAt: '2025-01-22T10:00:00Z' },
-    ],
-    lastExecuted: '2025-01-22T10:00:00Z',
-    executionCount: 8,
+    outputs: [],
+    executionCount: 0,
   },
 ];
 
 // ─── English Translations for Demo Systems ──────────────────────────────────
 
 const DEMO_META_EN: Record<string, { name: string; description: string }> = {
-  'demo-1': { name: 'Client Onboarding',   description: 'From the initial meeting to finished website, ad copy and Google Ads — fully automated with AI analysis, content production and multi-channel deployment.' },
-  'demo-2': { name: 'Content Pipeline',     description: 'From content idea through AI research and creation to multi-channel publishing and performance tracking.' },
-  'demo-3': { name: 'Lead Qualification',   description: 'Automatically enrich incoming leads, AI-score them, segment and convert with personalized follow-ups into CRM.' },
-  'demo-4': { name: 'Report Generator',     description: 'Automatically collect data from various sources, AI-analyze and distribute as professional reports through multiple channels.' },
+  'demo-1': { name: 'Client Onboarding',           description: 'From the initial meeting to finished website, ad copy and Google Ads — fully automated with AI analysis, content production and multi-channel deployment.' },
+  'demo-2': { name: 'Marketing Agency Fulfillment', description: 'Complete agency workflow with 4 parallel lanes: Website, Social Media, Ads, and Email — from onboarding to final reporting.' },
+  'demo-recruiting': { name: 'Recruiting Agency',              description: 'Complete agency fulfillment: from won client through onboarding, knowledge processing and content production to launch with performance tracking.' },
+  'demo-recruiting-kickoff':    { name: 'Kickoff & Client Setup',      description: 'Internal setup: CRM entry, communication, project board, folder structure and working documents.' },
+  'demo-recruiting-onboarding': { name: 'Client Onboarding',           description: 'Material collection, onboarding call and AI transcription — the strategic input for the entire system.' },
+  'demo-recruiting-knowledge':  { name: 'Knowledge Processing',        description: 'Analyze transcript, create target audience avatar, provider profile and core messaging as strategic foundation.' },
+  'demo-recruiting-content':    { name: 'Content & Asset Production',  description: 'Generate marketing copy, build website, prepare images and publish everything.' },
+  'demo-recruiting-review':     { name: 'Review & Launch',             description: 'Prepare campaigns, run internal reviews, final approval and generate summary.' },
+  'demo-recruiting-tracking':   { name: 'Performance Tracking',        description: 'Collect daily performance data, analyze KPIs, create reports and AI-based optimization suggestions.' },
 };
 
 /** Composite key: "systemId:nodeId" → { label, description } */
@@ -256,45 +475,103 @@ const DEMO_NODE_EN: Record<string, { label: string; description: string }> = {
   'demo-1:n12': { label: 'Status Aggregation',        description: 'Merge all results' },
   'demo-1:n13': { label: 'Slack: Project Complete',   description: 'Notify team about completion' },
   'demo-1:n14': { label: 'CRM: Update Deal',          description: 'Update HubSpot deal stage' },
-  // ─── demo-2: Content Pipeline ───
-  'demo-2:cp1':  { label: 'Content Briefing',        description: 'Topic & audience defined' },
-  'demo-2:cp2':  { label: 'AI Research',              description: 'Sources, trends & data collected' },
-  'demo-2:cp3':  { label: 'Keyword Analysis',         description: 'SEO keywords & search volume determined' },
-  'demo-2:cp4':  { label: 'Content Plan',             description: 'Structure & distribution plan created' },
-  'demo-2:cp5':  { label: 'AI: Blog Article',         description: 'SEO-optimized longform article' },
-  'demo-2:cp6':  { label: 'AI: Social Posts',         description: 'Captions, hashtags & hooks' },
-  'demo-2:cp7':  { label: 'AI: Newsletter',           description: 'Email copy & subject lines' },
-  'demo-2:cp8':  { label: 'Publish Blog',             description: 'Article uploaded to WordPress' },
-  'demo-2:cp9':  { label: 'Post to Social Media',     description: 'Posts published on all channels' },
-  'demo-2:cp10': { label: 'Send Newsletter',          description: 'Email campaign started' },
-  'demo-2:cp11': { label: 'Performance Tracking',     description: 'Measure views, clicks & engagement' },
-  'demo-2:cp12': { label: 'Slack: Team Update',       description: 'Send results to team' },
-  // ─── demo-3: Lead Qualification ───
-  'demo-3:lq1':  { label: 'Lead Form',               description: 'New inquiry via form' },
-  'demo-3:lq2':  { label: 'Email Intake',             description: 'New inquiry via email' },
-  'demo-3:lq3':  { label: 'Merge Data',               description: 'Merge lead data from sources' },
-  'demo-3:lq4':  { label: 'AI: Enrich Company Data',  description: 'Add industry, size & revenue' },
-  'demo-3:lq5':  { label: 'AI: Lead Scoring',         description: 'Automatic scoring 0–100' },
-  'demo-3:lq6':  { label: 'Segmentation',             description: 'Classify as Hot / Warm / Cold' },
-  'demo-3:lq7':  { label: 'CRM Entry',                description: 'Create contact in HubSpot' },
-  'demo-3:lq8':  { label: 'Slack: Hot Lead Alert',    description: 'Notify sales team immediately' },
-  'demo-3:lq9':  { label: 'AI: Personalized Email',   description: 'Generate individual follow-up email' },
-  'demo-3:lq10': { label: 'Send Follow-up',           description: 'Send personalized email' },
-  'demo-3:lq11': { label: 'Book Meeting',             description: 'Automatic calendar link' },
-  'demo-3:lq12': { label: 'Pipeline Update',          description: 'Update deal stage' },
-  // ─── demo-4: Report Generator ───
-  'demo-4:rg1':  { label: 'Google Sheets Import',    description: 'Data from Sheets' },
-  'demo-4:rg2':  { label: 'HubSpot Export',          description: 'CRM data exported' },
-  'demo-4:rg3':  { label: 'Merge Data',               description: 'Sources combined into one dataset' },
-  'demo-4:rg4':  { label: 'AI: Data Analysis',        description: 'Patterns, trends & anomalies detected' },
-  'demo-4:rg5':  { label: 'AI: Write Report',         description: 'Automatic analysis report' },
-  'demo-4:rg6':  { label: 'Visualizations',           description: 'Charts & diagrams generated' },
-  'demo-4:rg7':  { label: 'PDF to Drive',             description: 'Report saved as PDF' },
-  'demo-4:rg8':  { label: 'Dashboard',                description: 'Live view updated' },
-  'demo-4:rg9':  { label: 'Email Delivery',           description: 'Report sent to stakeholders' },
-  'demo-4:rg10': { label: 'Slack: Report Update',     description: 'Team informed about new report' },
-  'demo-4:rg11': { label: 'Archive',                  description: 'Report documented in Notion' },
-  'demo-4:rg12': { label: 'CRM: Update KPIs',         description: 'Deal properties filled with KPIs' },
+  // ─── demo-2: Marketing Agency Fulfillment ───
+  'demo-2:f1':  { label: 'New Client Intake',         description: 'Deal won in HubSpot – Trigger' },
+  'demo-2:f2':  { label: 'CRM Setup',                 description: 'Create client profile, pipeline & tags' },
+  'demo-2:f3':  { label: 'Welcome Email',             description: 'Automatic welcome sequence' },
+  'demo-2:f4':  { label: 'Client Folder',             description: 'Create Google Drive structure' },
+  'demo-2:f5':  { label: 'Project Board',             description: 'Create Notion project with tasks' },
+  'demo-2:f6':  { label: 'Kick-off Meeting',          description: 'Google Calendar invitation' },
+  'demo-2:f7':  { label: 'Team Slack',                description: 'Team notified in channel' },
+  'demo-2:f8':  { label: 'AI Market Analysis',        description: 'Analyze industry, competition & trends' },
+  'demo-2:f9':  { label: 'Audience Analysis',         description: 'AI-based audience profiling for website' },
+  'demo-2:f10': { label: 'Social Strategy',           description: 'Content types, formats & posting plan' },
+  'demo-2:f11': { label: 'Strategy Document',         description: 'Overall strategy & positioning' },
+  'demo-2:f12': { label: 'Ad Strategy',               description: 'Targeting, budgets & campaign structure' },
+  'demo-2:f13': { label: 'Email Strategy',            description: 'Sequences, segments & automations' },
+  'demo-2:f14': { label: 'AI Copywriting',            description: 'Website texts, headlines & CTAs' },
+  'demo-2:f15': { label: 'Website Build',             description: 'Build landing page with copy' },
+  'demo-2:f16': { label: 'Website Live',              description: 'Publish landing page' },
+  'demo-2:f17': { label: 'Visual Creation',           description: 'Images, reels & graphics via AI' },
+  'demo-2:f18': { label: 'Social Content',            description: 'Compile posts with captions & visuals' },
+  'demo-2:f19': { label: 'Instagram Posting',         description: 'Automatically publish posts' },
+  'demo-2:f20': { label: 'Campaign Planning',         description: 'Audiences, budgets & ad groups' },
+  'demo-2:f21': { label: 'Ad Creatives',              description: 'Ad texts, images & videos' },
+  'demo-2:f22': { label: 'Meta Ads Upload',           description: 'Upload ads directly to Meta' },
+  'demo-2:f23': { label: 'Google Ads Upload',         description: 'Upload ads directly to Google Ads' },
+  'demo-2:f24': { label: 'Email Copy',                description: 'Newsletter copy & subject lines via AI' },
+  'demo-2:f25': { label: 'Email Design',              description: 'Design templates & layouts' },
+  'demo-2:f26': { label: 'Email Campaign',            description: 'Start newsletter sequence' },
+  'demo-2:f27': { label: 'Performance Tracking',      description: 'Real-time KPIs across all channels' },
+  'demo-2:f28': { label: 'AI Optimization',           description: 'Automatic campaign adjustments' },
+  'demo-2:f29': { label: 'Weekly Update',             description: 'Status report via Slack to client' },
+  'demo-2:f30': { label: 'Results Report',            description: 'AI-generated final report' },
+  'demo-2:f31': { label: 'Final PDF',                 description: 'Formatted PDF report for client' },
+  'demo-2:f32': { label: 'Client Feedback',           description: 'Send review form' },
+  'demo-2:f33': { label: 'Archival',                  description: 'Archive & hand over project' },
+  // ─── demo-recruiting: Recruiting Agency (Master) ───
+  'demo-recruiting:rm1':  { label: 'Client Won',                description: 'Contract signed — handover from Sales' },
+  'demo-recruiting:rm2':  { label: 'Handover Form',             description: 'Internal form with all client data' },
+  'demo-recruiting:rm3':  { label: 'Merge Data',                description: 'Validate and merge sales & form data' },
+  // ─── demo-recruiting-kickoff: Kickoff & Client Setup ───
+  'demo-recruiting-kickoff:ks1':  { label: 'Handover Form',          description: 'Internal handover form completed' },
+  'demo-recruiting-kickoff:ks2':  { label: 'CRM Entry',              description: 'Create client profile, pipeline & tags' },
+  'demo-recruiting-kickoff:ks3':  { label: 'Internal Slack Channel', description: 'Dedicated team channel for client' },
+  'demo-recruiting-kickoff:ks4':  { label: 'Welcome Email',          description: 'Automatic welcome sequence to client' },
+  'demo-recruiting-kickoff:ks5':  { label: 'Onboarding Guide',       description: 'Send preparation instructions to client' },
+  'demo-recruiting-kickoff:ks6':  { label: 'Kick-off Meeting',       description: 'Create onboarding call in calendar' },
+  'demo-recruiting-kickoff:ks7':  { label: 'Project Board',          description: 'Create client project with standard tasks' },
+  'demo-recruiting-kickoff:ks8':  { label: 'Generate Tasks',         description: 'Onboarding, review, go-live checklists' },
+  'demo-recruiting-kickoff:ks9':  { label: 'Folder Structure',       description: 'Assets, Copy, Tracking, Reports, Website' },
+  'demo-recruiting-kickoff:ks10': { label: 'Working Documents',      description: 'Duplicate and personalize templates' },
+  'demo-recruiting-kickoff:ks11': { label: 'Status: Onboarding',     description: 'Set CRM status to "Onboarding in progress"' },
+  // ─── demo-recruiting-onboarding: Client Onboarding ───
+  'demo-recruiting-onboarding:ob1': { label: 'Upload Instructions',    description: 'Client receives material upload guide' },
+  'demo-recruiting-onboarding:ob2': { label: 'Material Upload',        description: 'Client uploads images, texts, brand assets' },
+  'demo-recruiting-onboarding:ob3': { label: 'Material Folder',        description: 'All materials organized centrally' },
+  'demo-recruiting-onboarding:ob4': { label: 'Onboarding Call',        description: 'Standardized meeting with questionnaire' },
+  'demo-recruiting-onboarding:ob5': { label: 'AI Transcription',       description: 'Record, transcribe and analyze call' },
+  'demo-recruiting-onboarding:ob6': { label: 'Transcript Saved',       description: 'Machine-readable knowledge preserved' },
+  'demo-recruiting-onboarding:ob7': { label: 'Slack: Call Complete',    description: 'Notify team about successful call' },
+  // ─── demo-recruiting-knowledge: Knowledge Processing ───
+  'demo-recruiting-knowledge:kp1': { label: 'Transcript Analysis',     description: 'AI analyzes and structures transcript' },
+  'demo-recruiting-knowledge:kp2': { label: 'Extract Data',            description: 'Extract pain points, benefits, language patterns' },
+  'demo-recruiting-knowledge:kp3': { label: 'Audience Avatar',         description: 'Detailed target audience profile' },
+  'demo-recruiting-knowledge:kp4': { label: 'Provider Avatar',         description: 'Brand and provider fact sheet' },
+  'demo-recruiting-knowledge:kp5': { label: 'Core Messaging',          description: 'Core messages and positioning' },
+  'demo-recruiting-knowledge:kp6': { label: 'Merge',                   description: 'All documents as single source of truth' },
+  'demo-recruiting-knowledge:kp7': { label: 'Quality Check',           description: 'Manual fact check (human review)' },
+  'demo-recruiting-knowledge:kp8': { label: 'Slack: Foundation Ready', description: 'Notify team about completed strategy base' },
+  // ─── demo-recruiting-content: Content & Asset Production ───
+  'demo-recruiting-content:cp1':  { label: 'AI: Website Copy',       description: 'Generate website & landing page copy' },
+  'demo-recruiting-content:cp2':  { label: 'AI: Ad Copy',            description: 'Meta, Google & other ad texts' },
+  'demo-recruiting-content:cp3':  { label: 'Select Template',        description: 'Choose matching website template' },
+  'demo-recruiting-content:cp4':  { label: 'Insert Copy',            description: 'Insert generated texts into template' },
+  'demo-recruiting-content:cp5':  { label: 'Prepare Images',         description: 'Client images or AI-generated images' },
+  'demo-recruiting-content:cp6':  { label: 'Adapt Design',           description: 'Finalize colors, style & layout' },
+  'demo-recruiting-content:cp7':  { label: 'Build Website',          description: 'Assemble all elements' },
+  'demo-recruiting-content:cp8':  { label: 'Connect Domain',         description: 'Configure domain & SSL' },
+  'demo-recruiting-content:cp9':  { label: 'Website Live',           description: 'Publish page' },
+  'demo-recruiting-content:cp10': { label: 'Copy Documents',         description: 'All generated texts saved' },
+  // ─── demo-recruiting-review: Review & Launch ───
+  'demo-recruiting-review:rl1':  { label: 'Campaign Structure',      description: 'Targeting, budgets & ad groups' },
+  'demo-recruiting-review:rl2':  { label: 'Ad Creatives',            description: 'Prepare ads with copy, media & URLs' },
+  'demo-recruiting-review:rl3':  { label: 'Internal Notification',   description: 'Team receives overview of completed assets' },
+  'demo-recruiting-review:rl4':  { label: 'Review Tasks',            description: 'Create checklist-based review tasks' },
+  'demo-recruiting-review:rl5':  { label: 'Copy Check',              description: 'Verify texts for accuracy & tone' },
+  'demo-recruiting-review:rl6':  { label: 'Page Check',              description: 'Verify website & landing pages' },
+  'demo-recruiting-review:rl7':  { label: 'Tracking Check',          description: 'Verify analytics & conversion tracking' },
+  'demo-recruiting-review:rl8':  { label: 'Final Approval',          description: 'Manual final sign-off (human review)' },
+  'demo-recruiting-review:rl9':  { label: 'AI: Summary',             description: 'Final PDF with audience, links & status' },
+  'demo-recruiting-review:rl10': { label: 'Project → Live',          description: 'Transition to ongoing operations' },
+  // ─── demo-recruiting-tracking: Performance Tracking ───
+  'demo-recruiting-tracking:pt1': { label: 'Schedule (Daily)',        description: 'Daily/periodic data refresh' },
+  'demo-recruiting-tracking:pt2': { label: 'Pull Ad Data',           description: 'Performance data from Meta, Google & more' },
+  'demo-recruiting-tracking:pt3': { label: 'AI: KPI Analysis',       description: 'Calculate KPIs, detect trends' },
+  'demo-recruiting-tracking:pt4': { label: 'Tracking Sheet',         description: 'Impressions, clicks, CTR, CPC, leads' },
+  'demo-recruiting-tracking:pt5': { label: 'Dashboard Update',       description: 'Live dashboard for team & client' },
+  'demo-recruiting-tracking:pt6': { label: 'Slack: Daily Report',    description: 'Post daily performance report' },
+  'demo-recruiting-tracking:pt7': { label: 'AI Optimization',        description: 'Automatic campaign adjustment suggestions' },
 };
 
 /** Composite key: "systemId:groupId" → English label */
@@ -303,14 +580,28 @@ const DEMO_GROUP_EN: Record<string, string> = {
   'demo-1:g1': 'Intake',              'demo-1:g2': 'AI Processing',
   'demo-1:g3': 'Content Production',  'demo-1:g4': 'Deployment & Results',
   // demo-2
-  'demo-2:gc1': 'Intake',             'demo-2:gc2': 'Research & Planning',
-  'demo-2:gc3': 'AI Creation',        'demo-2:gc4': 'Publishing & Analytics',
-  // demo-3
-  'demo-3:gl1': 'Lead Intake',        'demo-3:gl2': 'Enrichment',
-  'demo-3:gl3': 'Scoring & CRM',      'demo-3:gl4': 'Follow-up',
-  // demo-4
-  'demo-4:gr1': 'Data Sources',       'demo-4:gr2': 'Processing',
-  'demo-4:gr3': 'Report Creation',    'demo-4:gr4': 'Distribution',
+  'demo-2:gf1': 'Client Intake',              'demo-2:gf2': 'Project Setup',
+  'demo-2:gf3': 'AI Analysis',                'demo-2:gf4': 'Website · Concept → Live',
+  'demo-2:gf5': 'Social Media · Content → Posting', 'demo-2:gf6': 'Advertising · Creatives → Upload',
+  'demo-2:gf7': 'Email · Copy → Delivery',    'demo-2:gf8': 'Monitoring & Optimization',
+  'demo-2:gf9': 'Completion & Handover',
+  // demo-recruiting-kickoff
+  'demo-recruiting-kickoff:gks1': 'Intake',              'demo-recruiting-kickoff:gks2': 'Communication',
+  'demo-recruiting-kickoff:gks3': 'Project & Files',     'demo-recruiting-kickoff:gks4': 'Completion',
+  // demo-recruiting-onboarding
+  'demo-recruiting-onboarding:gob1': 'Material Collection', 'demo-recruiting-onboarding:gob2': 'Onboarding Call',
+  'demo-recruiting-onboarding:gob3': 'Result',
+  // demo-recruiting-knowledge
+  'demo-recruiting-knowledge:gkp1': 'AI Analysis',       'demo-recruiting-knowledge:gkp2': 'Strategic Documents',
+  'demo-recruiting-knowledge:gkp3': 'Quality Assurance',
+  // demo-recruiting-content
+  'demo-recruiting-content:gcp1': 'AI Generation',       'demo-recruiting-content:gcp2': 'Website Creation',
+  'demo-recruiting-content:gcp3': 'Result',
+  // demo-recruiting-review
+  'demo-recruiting-review:grl1': 'Campaign Preparation', 'demo-recruiting-review:grl2': 'Parallel Reviews',
+  'demo-recruiting-review:grl3': 'Approval & Launch',
+  // demo-recruiting-tracking
+  'demo-recruiting-tracking:gpt1': 'Data Collection',    'demo-recruiting-tracking:gpt2': 'Analysis & Reporting',
 };
 
 export function getLocalizedDemoSystem(sys: AutomationSystem, lang: 'de' | 'en'): AutomationSystem {

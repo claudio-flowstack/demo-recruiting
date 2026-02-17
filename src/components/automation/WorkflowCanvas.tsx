@@ -2685,7 +2685,9 @@ export default function WorkflowCanvas({ onSave, onExecute, onStop, initialSyste
         )}
 
         {/* Toolbar */}
-        {(!isPresentationMode || presEditEnabled) && <div className="flex items-center gap-2 px-3 py-2 border-b border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 z-10 shrink-0 overflow-x-auto" role="toolbar" aria-label="Canvas-Toolbar">
+        {(!isPresentationMode || presEditEnabled) && <div className="flex items-center border-b border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 z-10 shrink-0" role="toolbar" aria-label="Canvas-Toolbar">
+          {/* Scrollable tool section */}
+          <div className="flex items-center gap-1.5 px-3 py-2 flex-1 min-w-0 overflow-x-auto">
           {!readOnly && (
             <button onClick={() => setPaletteOpen(!paletteOpen)} className={`p-1.5 rounded-lg transition-colors ${paletteOpen ? 'bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800'}`} title={t('toolbar.palette')} aria-label={t('toolbar.paletteToggle')}>
               <Plus size={16} />
@@ -3177,10 +3179,12 @@ export default function WorkflowCanvas({ onSave, onExecute, onStop, initialSyste
               <Eye size={15} />
             </button>
           )}
+          </div>
+          {/* Fixed right section — always visible */}
+          <div className="flex items-center gap-1.5 px-3 py-2 shrink-0 border-l border-gray-100 dark:border-zinc-800">
 
           {initialSystem && (
             <>
-              <div className="h-4 w-px bg-gray-200 dark:bg-zinc-700" />
               <button
                 onClick={effectiveIsExecuting && !effectiveExecutionDone ? onStop : handleExecute}
                 disabled={effectiveExecutionDone}
@@ -3257,6 +3261,7 @@ export default function WorkflowCanvas({ onSave, onExecute, onStop, initialSyste
               </button>
             </>
           )}
+          </div>
         </div>}
 
         {/* #23 – Search Bar */}
