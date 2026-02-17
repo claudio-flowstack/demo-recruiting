@@ -42,25 +42,28 @@ const ADS_90: AdData[] = [
 ];
 
 const CHART_30 = [
-  { label: "KW 1", imp: 128, bew: 40, ein: 12 },
-  { label: "KW 2", imp: 160, bew: 56, ein: 16 },
-  { label: "KW 3", imp: 192, bew: 80, ein: 24 },
-  { label: "KW 4", imp: 144, bew: 48, ein: 20 },
+  { label: "KW 48", imp: 62, bew: 22, ein: 4 },
+  { label: "KW 49", imp: 74, bew: 30, ein: 6 },
+  { label: "KW 50", imp: 86, bew: 36, ein: 8 },
+  { label: "KW 51", imp: 98, bew: 48, ein: 12 },
+  { label: "KW 52", imp: 70, bew: 26, ein: 5 },
+  { label: "KW 1", imp: 110, bew: 52, ein: 14 },
+  { label: "KW 2", imp: 90, bew: 40, ein: 10 },
 ];
 
 const CHART_90 = [
-  { label: "Jan", imp: 140, bew: 44, ein: 14 },
-  { label: "Feb", imp: 168, bew: 60, ein: 18 },
-  { label: "Mär", imp: 155, bew: 52, ein: 16 },
-  { label: "Apr", imp: 190, bew: 76, ein: 22 },
-  { label: "Mai", imp: 210, bew: 88, ein: 28 },
-  { label: "Jun", imp: 178, bew: 64, ein: 20 },
-  { label: "Jul", imp: 195, bew: 72, ein: 24 },
-  { label: "Aug", imp: 220, bew: 96, ein: 32 },
-  { label: "Sep", imp: 185, bew: 68, ein: 22 },
-  { label: "Okt", imp: 200, bew: 84, ein: 26 },
-  { label: "Nov", imp: 175, bew: 60, ein: 20 },
-  { label: "Dez", imp: 160, bew: 52, ein: 18 },
+  { label: "Jan", imp: 70, bew: 22, ein: 7 },
+  { label: "Feb", imp: 84, bew: 30, ein: 9 },
+  { label: "Mär", imp: 78, bew: 26, ein: 8 },
+  { label: "Apr", imp: 95, bew: 38, ein: 11 },
+  { label: "Mai", imp: 105, bew: 44, ein: 14 },
+  { label: "Jun", imp: 89, bew: 32, ein: 10 },
+  { label: "Jul", imp: 98, bew: 36, ein: 12 },
+  { label: "Aug", imp: 110, bew: 48, ein: 16 },
+  { label: "Sep", imp: 92, bew: 34, ein: 11 },
+  { label: "Okt", imp: 100, bew: 42, ein: 13 },
+  { label: "Nov", imp: 88, bew: 30, ein: 10 },
+  { label: "Dez", imp: 80, bew: 26, ein: 9 },
 ];
 
 const NAV_ITEMS = [
@@ -297,7 +300,7 @@ const RecruitingDashboardPage = () => {
                 { label: "Qualifiziert", value: fmt(totalQual), icon: "verified", iconColor: "text-violet-500", bgColor: "bg-violet-50", change: "+9%", up: true, barColor: "bg-violet-500", pct: 55 },
                 { label: "Gespräche", value: fmt(totalGesp), icon: "videocam", iconColor: "text-orange-500", bgColor: "bg-orange-50", change: "+21%", up: true, barColor: "bg-orange-400", pct: 62 },
                 { label: "Einstellungen", value: fmt(totalEin), icon: "person_add", iconColor: "text-emerald-500", bgColor: "bg-emerald-50", change: "+33%", up: true, barColor: "bg-emerald-500", pct: 80 },
-                { label: "Kosten / Hire", value: fmtEuro(cph), icon: "savings", iconColor: "text-emerald-500", bgColor: "bg-emerald-50", change: "-8%", up: false, barColor: "bg-emerald-500", pct: 40, accent: true },
+                { label: "Kosten/Hire", value: fmtEuro(cph), icon: "savings", iconColor: "text-emerald-500", bgColor: "bg-emerald-50", change: "-8%", up: false, barColor: "bg-emerald-500", pct: 40, accent: true },
               ].map((kpi) => (
                 <div
                   key={kpi.label}
@@ -346,35 +349,57 @@ const RecruitingDashboardPage = () => {
                   </div>
                 </div>
 
-                <div className="relative h-72 w-full bg-slate-50 rounded-xl flex items-end px-4 gap-2 overflow-hidden border border-slate-100">
+                <div className="relative h-80 w-full bg-slate-50 rounded-xl overflow-hidden border border-slate-100">
                   {/* Y-Axis labels */}
-                  <div className="absolute left-0 inset-y-0 w-10 flex flex-col justify-between py-6 pointer-events-none">
+                  <div className="absolute left-0 inset-y-0 w-10 flex flex-col justify-between py-6 pointer-events-none z-10">
                     {["200", "150", "100", "50", "0"].map((v) => (
                       <span key={v} className="text-[10px] text-slate-400 text-right pr-2">{v}</span>
                     ))}
                   </div>
-                  {/* Grid */}
+                  {/* Grid lines */}
                   <div className="absolute inset-0 flex flex-col justify-between py-6 ml-10 pointer-events-none">
                     {[0, 1, 2, 3].map((i) => (
                       <div key={i} className="border-t border-dashed border-slate-200 w-full"></div>
                     ))}
                   </div>
-
-                  {chartData.map((w) => (
-                    <div key={w.label} className="flex-1 flex flex-col justify-end gap-1 group pb-8 ml-10 relative">
-                      <div className="w-full bg-slate-300 rounded-t-md group-hover:bg-slate-400 transition-colors cursor-pointer" style={{ height: w.imp }}></div>
-                      <div className="w-full bg-blue-400 rounded-t-md group-hover:bg-blue-500 transition-colors cursor-pointer" style={{ height: w.bew }}></div>
-                      <div className="w-full bg-[#136dec] rounded-t-md cursor-pointer" style={{ height: w.ein }}></div>
-                      <span className="text-xs text-slate-500 mt-3 text-center font-semibold">{w.label}</span>
-                      {/* Tooltip on hover */}
-                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-slate-800 text-white text-xs rounded-lg px-3 py-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10 shadow-lg">
-                        <div className="font-bold mb-1">{w.label}</div>
-                        <div>Impressionen: {w.imp}k</div>
-                        <div>Bewerbungen: {w.bew}</div>
-                        <div>Einstellungen: {w.ein}</div>
+                  {/* Bars container */}
+                  <div className="absolute inset-0 ml-12 mr-4 flex items-end gap-3 pb-2">
+                    {chartData.map((w) => (
+                      <div key={w.label} className="flex-1 flex flex-col justify-end gap-1 group relative pb-8">
+                        <div className="w-full bg-slate-300 rounded-t-md group-hover:bg-slate-400 transition-colors cursor-pointer" style={{ height: w.imp }}></div>
+                        <div className="w-full bg-blue-400 rounded-t-md group-hover:bg-blue-500 transition-colors cursor-pointer" style={{ height: w.bew }}></div>
+                        <div className="w-full bg-[#136dec] rounded-t-md group-hover:bg-[#1a7af7] transition-colors cursor-pointer" style={{ height: w.ein }}></div>
+                        <span className="text-xs text-slate-500 mt-3 text-center font-semibold">{w.label}</span>
+                        {/* Tooltip on hover */}
+                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-slate-800 text-white text-xs rounded-lg px-3 py-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10 shadow-lg">
+                          <div className="font-bold mb-1">{w.label}</div>
+                          <div>Impressionen: {w.imp}k</div>
+                          <div>Bewerbungen: {w.bew}</div>
+                          <div>Einstellungen: {w.ein}</div>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
+                </div>
+
+                {/* Chart summary stats */}
+                <div className="mt-5 pt-4 border-t border-slate-100 grid grid-cols-3 gap-4">
+                  <div className="text-center">
+                    <p className="text-xl font-bold text-slate-900">{fmt(chartData.reduce((s, w) => s + w.bew, 0))}</p>
+                    <p className="text-xs text-slate-500 font-medium mt-0.5">Bewerbungen gesamt</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-xl font-bold text-[#136dec]">{fmt(chartData.reduce((s, w) => s + w.ein, 0))}</p>
+                    <p className="text-xs text-slate-500 font-medium mt-0.5">Einstellungen gesamt</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-xl font-bold text-emerald-600">
+                      {chartData.reduce((s, w) => s + w.bew, 0) > 0
+                        ? ((chartData.reduce((s, w) => s + w.ein, 0) / chartData.reduce((s, w) => s + w.bew, 0)) * 100).toFixed(1)
+                        : "0"}%
+                    </p>
+                    <p className="text-xs text-slate-500 font-medium mt-0.5">Ø Einstellungsrate</p>
+                  </div>
                 </div>
               </div>
 
