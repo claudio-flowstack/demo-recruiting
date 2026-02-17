@@ -28,6 +28,8 @@ export interface UseWorkflowExecutionReturn {
   executionResult: WorkflowExecutionResult | null;
   /** Startet die Ausführung */
   execute: (systemId: string, nodeIds: string[], connections: { from: string; to: string }[], nodeTypes?: Record<string, string>) => void;
+  /** Bricht laufende Ausführung ab */
+  stop: () => void;
   /** Setzt alle States zurück */
   reset: () => void;
 }
@@ -88,6 +90,15 @@ export function useWorkflowExecution(eventSource: WorkflowEventSource): UseWorkf
     eventSourceRef.current.execute(systemId, nodeIds, connections);
   }, []);
 
+  const stop = useCallback(() => {
+    eventSourceRef.current.abort();
+    setNodeStates(new Map());
+    setArtifacts([]);
+    setIsRunning(false);
+    setIsComplete(false);
+    setExecutionResult(null);
+  }, []);
+
   const reset = useCallback(() => {
     setNodeStates(new Map());
     setArtifacts([]);
@@ -96,5 +107,5 @@ export function useWorkflowExecution(eventSource: WorkflowEventSource): UseWorkf
     setExecutionResult(null);
   }, []);
 
-  return { nodeStates, artifacts, isRunning, isComplete, executionResult, execute, reset };
+  return { nodeStates, artifacts, isRunning, isComplete, executionResult, execute, stop, reset };
 }

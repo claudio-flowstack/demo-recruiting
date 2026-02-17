@@ -1,4 +1,4 @@
-import type { SystemResource } from '../types/automation';
+import type { SystemResource, ResourceFolder } from '../types/automation';
 
 const RESOURCES_KEY = 'flowstack-system-resources';
 
@@ -40,4 +40,57 @@ export function updateResource(resourceId: string, updates: Partial<Omit<SystemR
 export function deleteResource(resourceId: string): boolean {
   const all = loadResources().filter(r => r.id !== resourceId);
   return saveResources(all);
+}
+
+// ── Resource Folders ────────────────────────────────────────────
+
+const FOLDERS_KEY = 'flowstack-resource-folders';
+
+export function loadFolders(): ResourceFolder[] {
+  try {
+    const stored = localStorage.getItem(FOLDERS_KEY);
+    return stored ? JSON.parse(stored) : [];
+  } catch { return []; }
+}
+
+export function saveFolders(folders: ResourceFolder[]): boolean {
+  try {
+    localStorage.setItem(FOLDERS_KEY, JSON.stringify(folders));
+    return true;
+  } catch (e) {
+    console.warn('localStorage error saving folders:', e);
+    return false;
+  }
+}
+
+export function getFoldersForSystem(systemId: string): ResourceFolder[] {
+  return loadFolders().filter(f => f.systemId === systemId);
+}
+
+export function addFolder(folder: ResourceFolder): boolean {
+  const all = loadFolders();
+  all.push(folder);
+  return saveFolders(all);
+}
+
+export function updateFolder(folderId: string, updates: Partial<Omit<ResourceFolder, 'id' | 'systemId'>>): boolean {
+  const all = loadFolders();
+  const idx = all.findIndex(f => f.id === folderId);
+  if (idx < 0) return false;
+  all[idx] = { ...all[idx], ...updates };
+  return saveFolders(all);
+}
+
+export function deleteFolder(folderId: string): boolean {
+  // Remove the folder
+  const allFolders = loadFolders().filter(f => f.id !== folderId);
+  saveFolders(allFolders);
+  // Move all resources in this folder back to root
+  const allResources = loadResources();
+  let changed = false;
+  for (const r of allResources) {
+    if (r.folderId === folderId) { r.folderId = undefined; changed = true; }
+  }
+  if (changed) saveResources(allResources);
+  return true;
 }

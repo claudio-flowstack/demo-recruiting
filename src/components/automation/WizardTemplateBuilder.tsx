@@ -21,7 +21,7 @@ import { useTheme } from '@/components/theme-provider';
 import { renderNodeIcon } from './ToolLogos';
 import { convertWizardToSystem, countNodes } from '@/utils/wizardConverter';
 import { PALETTE_ITEMS } from '@/data/paletteItems';
-import type { AutomationSystem } from '@/types/automation';
+import type { AutomationSystem, NodeType } from '@/types/automation';
 import type { WizardState, WizardStep, WizardNode, WizardBranch, WizardPhase } from '@/types/wizardTree';
 import WorkflowCanvas from './WorkflowCanvas';
 
@@ -359,7 +359,7 @@ export default function WizardTemplateBuilder({ onComplete, onCancel }: WizardTe
   const [editingNode, setEditingNode] = useState<{
     paletteIcon: string;
     paletteTKey: string;
-    paletteType: 'trigger' | 'process' | 'ai' | 'output';
+    paletteType: NodeType;
     label: string;
     description: string;
     phaseId: string | null;

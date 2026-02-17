@@ -77,6 +77,9 @@ export interface WorkflowEventSource {
   /** Callback wenn Ausführung abgeschlossen. Gibt unsubscribe-Funktion zurück. */
   onComplete(callback: (result: WorkflowExecutionResult) => void): () => void;
 
+  /** Bricht laufende Ausführung ab (Timeouts clearen, Listener behalten) */
+  abort(): void;
+
   /** Räumt laufende Timeouts/Connections auf */
   dispose(): void;
 }

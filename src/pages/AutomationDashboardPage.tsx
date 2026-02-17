@@ -8,15 +8,15 @@ import {
   Clipboard, Sun, Moon, Menu, ExternalLink, AlertCircle, Wrench, Trash2, ChevronLeft, ChevronRight, Copy,
   Edit3, ChevronDown, ChevronUp, Check, Settings, Bell, Shield, RefreshCw, X,
   LayoutGrid, List, ArrowUpDown, GitBranch, RotateCcw,
-  Cpu, BookTemplate, LayoutDashboard, Table, Braces, Maximize2, FileDown,
+  Cpu, BookTemplate, LayoutDashboard, Table, Braces, Maximize2, FileDown, Upload,
 } from 'lucide-react';
 import { useTheme } from '@/components/theme-provider';
 import WorkflowCanvas from '@/components/automation/WorkflowCanvas';
 import FunnelCanvas from '@/components/automation/FunnelCanvas';
 import WizardTemplateBuilder from '@/components/automation/WizardTemplateBuilder';
-import type { AutomationSystem, SystemOutput, OutputType, SystemResource, ResourceType, ExecutionLogEntry, WorkflowVersion, AdvancedSystemOutput } from '@/types/automation';
-import { DEMO_SYSTEMS, loadUserSystems, saveUserSystems, getVisibleDemoSystems, hideDemoSystem, getLocalizedDemoSystem } from '@/data/automationSystems';
-import { getResourcesForSystem, addResource, updateResource, deleteResource } from '@/data/resourceStorage';
+import type { AutomationSystem, SystemOutput, OutputType, SystemResource, ResourceType, ResourceFolder, ExecutionLogEntry, WorkflowVersion, AdvancedSystemOutput } from '@/types/automation';
+import { DEMO_SYSTEMS, loadUserSystems, saveUserSystems, getVisibleDemoSystems, hideDemoSystem, getLocalizedDemoSystem, getDemoResources } from '@/data/automationSystems';
+import { getResourcesForSystem, addResource, updateResource, deleteResource, getFoldersForSystem, addFolder as addFolderStorage, updateFolder as updateFolderStorage, deleteFolder as deleteFolderStorage } from '@/data/resourceStorage';
 import { WORKFLOW_TEMPLATES, loadUserTemplates, saveUserTemplates, deleteUserTemplate, getLocalizedTemplate } from '@/data/automationTemplates';
 import { createMockEventSource } from '@/services/mockEventSource';
 import { useWorkflowExecution } from '@/hooks/useWorkflowExecution';
@@ -610,7 +610,7 @@ function OutputTable({ outputs, onToast }: { outputs: (SystemOutput | AdvancedSy
 
 // ─── Dashboard Overview ───────────────────────────────────────────────────────
 
-function DashboardOverview({ systems, onSelect }: { systems: AutomationSystem[]; onSelect: (id: string) => void }) {
+function DashboardOverview({ systems, onSelect, allSystems }: { systems: AutomationSystem[]; onSelect: (id: string) => void; allSystems?: AutomationSystem[] }) {
   const { t, lang } = useLanguage();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'draft'>('all');
@@ -866,6 +866,12 @@ function DashboardOverview({ systems, onSelect }: { systems: AutomationSystem[];
               <div className="mb-1 text-xs text-gray-400 dark:text-zinc-500 uppercase tracking-wider font-medium">{system.category}</div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{system.name}</h3>
               <p className="text-sm text-gray-500 dark:text-zinc-400 leading-relaxed mb-5 line-clamp-2">{system.description}</p>
+              {(() => { const sc = allSystems?.filter(s => s.parentId === system.id).length ?? 0; return sc > 0 ? (
+                <div className="flex items-center gap-1.5 mb-3 text-[11px] text-purple-500 dark:text-purple-400">
+                  <Layers size={12} />
+                  <span>{sc} Sub-System{sc !== 1 ? (lang === 'de' ? 'e' : 's') : ''}</span>
+                </div>
+              ) : null; })()}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4 text-xs text-gray-400 dark:text-zinc-500">
                   <span className="flex items-center gap-1.5"><Zap size={13} />{system.executionCount} {t('dashboard.runs')}</span>
@@ -936,12 +942,12 @@ const RESOURCE_TYPE_CONFIG: Record<ResourceType, { icon: typeof FileText; color:
 
 const ALL_RESOURCE_TYPES: ResourceType[] = ['transcript', 'document', 'note', 'dataset', 'form', 'page'];
 
-function ResourcesPanel({ systemId, onToast }: { systemId: string; onToast?: (text: string, type?: ToastMessage['type']) => void }) {
+function ResourcesPanel({ systemId, systemNodes, onToast }: { systemId: string; systemNodes: { id: string; label: string; icon: string }[]; onToast?: (text: string, type?: ToastMessage['type']) => void }) {
   const { t, lang } = useLanguage();
   const [resources, setResources] = useState<SystemResource[]>([]);
   const [filterType, setFilterType] = useState<ResourceType | 'all'>('all');
   const [showAddModal, setShowAddModal] = useState(false);
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [previewResource, setPreviewResource] = useState<SystemResource | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'date' | 'name'>('date');
   const [pendingDeleteResourceId, setPendingDeleteResourceId] = useState<string | null>(null);
@@ -953,11 +959,44 @@ function ResourcesPanel({ systemId, onToast }: { systemId: string; onToast?: (te
   const [newContent, setNewContent] = useState('');
   const [newFileRef, setNewFileRef] = useState('');
 
+  // Folder state
+  const [folders, setFolders] = useState<ResourceFolder[]>([]);
+  const [showFolderModal, setShowFolderModal] = useState(false);
+  const [editingFolder, setEditingFolder] = useState<ResourceFolder | null>(null);
+  const [newFolderName, setNewFolderName] = useState('');
+  const [newFolderColor, setNewFolderColor] = useState('purple');
+  const [dragOverFolderId, setDragOverFolderId] = useState<string | null>(null);
+  const [pendingDeleteFolderId, setPendingDeleteFolderId] = useState<string | null>(null);
+  const [addToFolderId, setAddToFolderId] = useState<string | null>(null);
+
+  // Finder-style navigation
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [currentFolderId, setCurrentFolderId] = useState<string | null>(null); // null = root
+
   const dateLang = lang === 'de' ? 'de-DE' : 'en-US';
 
+  // Check if this is a demo system (for demo resources)
+  const isDemoSystem = DEMO_SYSTEMS.some(d => d.id === systemId);
+
   useEffect(() => {
-    setResources(getResourcesForSystem(systemId));
-  }, [systemId]);
+    const userResources = getResourcesForSystem(systemId);
+    if (isDemoSystem) {
+      // Merge demo resources with user-added resources (demo IDs start with 'dr-')
+      const demoResources = getDemoResources(systemId, lang);
+      const userOnly = userResources.filter(r => !r.id.startsWith('dr-'));
+      setResources([...demoResources, ...userOnly]);
+    } else {
+      setResources(userResources);
+    }
+    setFolders(getFoldersForSystem(systemId));
+  }, [systemId, isDemoSystem, lang]);
+
+  // Node lookup for linked resources
+  const nodeMap = useMemo(() => {
+    const map = new Map<string, { label: string; icon: string }>();
+    for (const n of systemNodes) map.set(n.id, { label: n.label, icon: n.icon });
+    return map;
+  }, [systemNodes]);
 
   const filtered = useMemo(() => {
     let result = resources;
@@ -971,8 +1010,26 @@ function ResourcesPanel({ systemId, onToast }: { systemId: string; onToast?: (te
     );
   }, [resources, filterType, searchQuery, sortBy]);
 
-  const openAddModal = () => {
+  const currentFolder = currentFolderId ? folders.find(f => f.id === currentFolderId) : null;
+
+  // Items visible at the current navigation level
+  const visibleItems = useMemo(() => {
+    if (currentFolderId) {
+      // Inside a folder: show only items in this folder
+      return filtered.filter(r => r.folderId === currentFolderId);
+    }
+    // Root level: show unfiled items only (folders shown separately)
+    return filtered.filter(r => !r.folderId || !folders.some(f => f.id === r.folderId));
+  }, [filtered, currentFolderId, folders]);
+
+  const navigateToFolder = (folderId: string | null) => {
+    setCurrentFolderId(folderId);
+    setPreviewResource(null);
+  };
+
+  const openAddModal = (folderId?: string) => {
     setEditingResource(null);
+    setAddToFolderId(folderId || null);
     setNewTitle(''); setNewType('document'); setNewContent(''); setNewFileRef('');
     setShowAddModal(true);
   };
@@ -1010,6 +1067,7 @@ function ResourcesPanel({ systemId, onToast }: { systemId: string; onToast?: (te
         fileReference: newFileRef.trim() || undefined,
         createdAt: new Date().toISOString(),
         source: 'manual',
+        folderId: addToFolderId || undefined,
       };
       addResource(res);
       setResources(prev => [...prev, res]);
@@ -1023,7 +1081,7 @@ function ResourcesPanel({ systemId, onToast }: { systemId: string; onToast?: (te
   const handleDelete = (id: string) => {
     deleteResource(id);
     setResources(prev => prev.filter(r => r.id !== id));
-    if (expandedId === id) setExpandedId(null);
+    if (previewResource?.id === id) setPreviewResource(null);
     onToast?.(t('resource.deleted'), 'success');
   };
 
@@ -1034,184 +1092,261 @@ function ResourcesPanel({ systemId, onToast }: { systemId: string; onToast?: (te
   };
 
   useModalEsc(showAddModal, () => setShowAddModal(false));
+  useModalEsc(showFolderModal, () => setShowFolderModal(false));
+
+  // Folder handlers
+  const FOLDER_COLORS = ['purple', 'blue', 'emerald', 'amber', 'pink', 'cyan', 'red'];
+
+  const openFolderModal = (folder?: ResourceFolder) => {
+    setEditingFolder(folder || null);
+    setNewFolderName(folder?.name || '');
+    setNewFolderColor(folder?.color || 'purple');
+    setShowFolderModal(true);
+  };
+
+  const handleSaveFolder = () => {
+    if (!newFolderName.trim()) return;
+    if (editingFolder) {
+      updateFolderStorage(editingFolder.id, { name: newFolderName.trim(), color: newFolderColor });
+      setFolders(prev => prev.map(f => f.id === editingFolder.id ? { ...f, name: newFolderName.trim(), color: newFolderColor } : f));
+      onToast?.(lang === 'en' ? 'Folder updated' : 'Ordner aktualisiert', 'success');
+    } else {
+      const folder: ResourceFolder = {
+        id: `folder-${Date.now()}-${Math.random().toString(36).slice(2, 5)}`,
+        systemId,
+        name: newFolderName.trim(),
+        createdAt: new Date().toISOString(),
+        color: newFolderColor,
+      };
+      addFolderStorage(folder);
+      setFolders(prev => [...prev, folder]);
+      onToast?.(lang === 'en' ? 'Folder created' : 'Ordner erstellt', 'success');
+    }
+    setShowFolderModal(false);
+  };
+
+  const handleDeleteFolder = (folderId: string) => {
+    deleteFolderStorage(folderId);
+    setFolders(prev => prev.filter(f => f.id !== folderId));
+    // Resources are moved to root by deleteFolderStorage, update local state
+    setResources(prev => prev.map(r => r.folderId === folderId ? { ...r, folderId: undefined } : r));
+    onToast?.(lang === 'en' ? 'Folder deleted' : 'Ordner gelöscht', 'success');
+  };
+
+  const handleDropOnFolder = (resourceId: string, folderId: string | null) => {
+    updateResource(resourceId, { folderId: folderId || undefined });
+    setResources(prev => prev.map(r => r.id === resourceId ? { ...r, folderId: folderId || undefined } : r));
+    setDragOverFolderId(null);
+  };
 
   const inputCls = 'w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/50 text-sm text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-zinc-500 focus:ring-2 focus:ring-purple-500/30 focus:border-purple-400 outline-none transition-colors';
 
+  // Grid item — Finder-style icon card (click opens preview modal)
+  const renderGridItem = (res: SystemResource) => {
+    const cfg = RESOURCE_TYPE_CONFIG[res.type];
+    const TypeIcon = cfg.icon;
+    const linkedNode = res.linkedNodeId ? nodeMap.get(res.linkedNodeId) : null;
+    return (
+      <div key={res.id} className="group/item" draggable onDragStart={e => { e.dataTransfer.setData('text/resource-id', res.id); e.dataTransfer.effectAllowed = 'move'; }}>
+        <div className="relative flex flex-col items-center p-4 rounded-xl cursor-pointer border border-gray-100 dark:border-zinc-800/40 bg-gray-50 dark:bg-zinc-800/30 hover:border-gray-200 dark:hover:border-zinc-700/60 transition-all duration-200" onClick={() => setPreviewResource(res)}>
+          <div className="absolute top-2 right-2 flex items-center gap-0.5 opacity-0 group-hover/item:opacity-100 transition-opacity" onClick={e => e.stopPropagation()}>
+            <button onClick={() => handleCopy(res.content)} className="p-1 rounded-md text-gray-400 hover:text-purple-500 hover:bg-purple-100 dark:hover:bg-purple-500/10 transition-colors" title={t('resource.copy')}><Copy size={11} /></button>
+            <button onClick={() => openEditModal(res)} className="p-1 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-200 dark:hover:bg-zinc-700 transition-colors" title={t('resource.edit')}><Edit3 size={11} /></button>
+            <button onClick={() => setPendingDeleteResourceId(res.id)} className="p-1 rounded-md text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors" title={t('resource.delete')}><Trash2 size={11} /></button>
+          </div>
+          <div className={`w-10 h-10 rounded-lg flex items-center justify-center mb-2.5 bg-${cfg.color}-50 dark:bg-${cfg.color}-500/10`}>
+            <TypeIcon size={18} className={`text-${cfg.color}-500 dark:text-${cfg.color}-400`} />
+          </div>
+          <span className="text-[12px] font-semibold text-gray-900 dark:text-white text-center truncate w-full leading-tight">{res.title}</span>
+          <span className="text-[10px] text-gray-400 dark:text-zinc-600 mt-1 font-medium uppercase tracking-wider">{t(`resource.type.${res.type}` as keyof typeof t)}</span>
+          {linkedNode && <span className="text-[9px] text-purple-500 dark:text-purple-400 mt-1 truncate w-full text-center">← {linkedNode.label}</span>}
+        </div>
+      </div>
+    );
+  };
+
+  // List item — compact row (click opens preview modal)
+  const renderListItem = (res: SystemResource) => {
+    const cfg = RESOURCE_TYPE_CONFIG[res.type];
+    const TypeIcon = cfg.icon;
+    const linkedNode = res.linkedNodeId ? nodeMap.get(res.linkedNodeId) : null;
+    return (
+      <div key={res.id} draggable onDragStart={e => { e.dataTransfer.setData('text/resource-id', res.id); e.dataTransfer.effectAllowed = 'move'; }}>
+        <div className="group/row flex items-center px-4 py-3 rounded-xl cursor-pointer border border-gray-100 dark:border-zinc-800/40 bg-gray-50 dark:bg-zinc-800/30 hover:border-gray-200 dark:hover:border-zinc-700/60 transition-all duration-150" onClick={() => setPreviewResource(res)}>
+          <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mr-3.5 bg-${cfg.color}-50 dark:bg-${cfg.color}-500/10`}>
+            <TypeIcon size={15} className={`text-${cfg.color}-500 dark:text-${cfg.color}-400`} />
+          </div>
+          <div className="flex-1 min-w-0 mr-3">
+            <span className="text-sm font-medium text-gray-900 dark:text-white truncate block">{res.title}</span>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-gray-400 dark:text-zinc-600 uppercase tracking-wider font-medium">{t(`resource.type.${res.type}` as keyof typeof t)}</span>
+              {linkedNode && <span className="text-[10px] text-purple-500 dark:text-purple-400 flex items-center gap-1"><Zap size={8} />{linkedNode.label}</span>}
+            </div>
+          </div>
+          <span className="text-[11px] text-gray-400 dark:text-zinc-600 shrink-0 mr-3 tabular-nums">{new Date(res.createdAt).toLocaleDateString(dateLang, { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
+          <div className="flex items-center gap-0.5 shrink-0 opacity-0 group-hover/row:opacity-100 transition-opacity" onClick={e => e.stopPropagation()}>
+            {currentFolderId && <button onClick={() => handleDropOnFolder(res.id, null)} className="p-1 rounded-md text-gray-400 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-500/10 transition-colors" title={lang === 'en' ? 'Remove from folder' : 'Aus Ordner entfernen'}><FolderOpen size={12} /></button>}
+            <button onClick={() => handleCopy(res.content)} className="p-1 rounded-md text-gray-400 hover:text-purple-500 hover:bg-purple-100 dark:hover:bg-purple-500/10 transition-colors" title={t('resource.copy')}><Copy size={12} /></button>
+            <button onClick={() => openEditModal(res)} className="p-1 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-200 dark:hover:bg-zinc-700 transition-colors" title={t('resource.edit')}><Edit3 size={12} /></button>
+            <button onClick={() => setPendingDeleteResourceId(res.id)} className="p-1 rounded-md text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors" title={t('resource.delete')}><Trash2 size={12} /></button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <>
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-purple-50 dark:bg-purple-500/10 flex items-center justify-center">
-            <FolderOpen size={16} className="text-purple-600 dark:text-purple-400" />
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('detail.resourcesTitle')}</h3>
-            <span className="text-xs text-gray-400 dark:text-zinc-600">{resources.length} {t('detail.entries')}</span>
-          </div>
+      {/* Toolbar: Breadcrumb + Search + View toggle + Actions */}
+      <div className="flex items-center gap-2.5 mb-5">
+        <div className="flex items-center gap-1.5 flex-1 min-w-0">
+          <button onClick={() => navigateToFolder(null)} className={`text-sm transition-colors ${currentFolderId ? 'text-gray-400 dark:text-zinc-500 hover:text-purple-600 dark:hover:text-purple-400' : 'text-gray-900 dark:text-white font-semibold'}`}>{t('detail.resourcesTitle')}</button>
+          {currentFolder && (<><ChevronRight size={14} className="text-gray-300 dark:text-zinc-600 shrink-0" /><span className="text-sm font-semibold text-gray-900 dark:text-white truncate">{currentFolder.name}</span></>)}
+          <span className="text-[10px] text-gray-400 dark:text-zinc-600 ml-1.5 tabular-nums">{visibleItems.length + (!currentFolderId ? folders.length : 0)}</span>
         </div>
-        <button
-          onClick={openAddModal}
-          className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium transition-colors"
-        >
-          <Plus size={14} /> {t('resource.add')}
-        </button>
+        <div className="relative w-44">
+          <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-zinc-500" />
+          <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder={lang === 'en' ? 'Search...' : 'Suchen...'} className="w-full pl-8 pr-7 py-1.5 rounded-lg border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/50 text-xs text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-zinc-500 focus:ring-2 focus:ring-purple-500/30 focus:border-purple-400 outline-none transition-colors" />
+          {searchQuery && <button onClick={() => setSearchQuery('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"><X size={12} /></button>}
+        </div>
+        <div className="flex items-center bg-gray-100 dark:bg-zinc-800 rounded-xl p-0.5">
+          <button onClick={() => setViewMode('grid')} className={`p-1.5 rounded-md transition-colors ${viewMode === 'grid' ? 'bg-white dark:bg-zinc-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-400 dark:text-zinc-500 hover:text-gray-600'}`}><LayoutGrid size={14} /></button>
+          <button onClick={() => setViewMode('list')} className={`p-1.5 rounded-md transition-colors ${viewMode === 'list' ? 'bg-white dark:bg-zinc-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-400 dark:text-zinc-500 hover:text-gray-600'}`}><List size={14} /></button>
+        </div>
+        <button onClick={() => setSortBy(sortBy === 'date' ? 'name' : 'date')} className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors" title={sortBy === 'date' ? 'A → Z' : lang === 'en' ? 'Newest first' : 'Neueste zuerst'}><ArrowUpDown size={14} /></button>
+        <button onClick={() => openFolderModal()} className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors" title={lang === 'en' ? 'New Folder' : 'Neuer Ordner'}><FolderOpen size={14} /></button>
+        <button onClick={() => openAddModal(currentFolderId || undefined)} className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-700 text-white text-xs font-medium transition-colors"><Plus size={13} /> {t('resource.add')}</button>
       </div>
-
-      {/* Search + Sort */}
-      {resources.length > 0 && (
-        <div className="flex items-center gap-3 mb-4">
-          <div className="relative flex-1 max-w-sm">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-zinc-500" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              placeholder={t('resource.search')}
-              className="w-full pl-9 pr-8 py-2 rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/50 text-sm text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-zinc-500 focus:ring-2 focus:ring-purple-500/30 focus:border-purple-400 outline-none transition-colors"
-            />
-            {searchQuery && (
-              <button onClick={() => setSearchQuery('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-zinc-300">
-                <X size={13} />
-              </button>
-            )}
-          </div>
-          <div className="flex items-center gap-1 bg-gray-100 dark:bg-zinc-800 rounded-xl p-0.5">
-            <button
-              onClick={() => setSortBy('date')}
-              className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors ${sortBy === 'date' ? 'bg-white dark:bg-zinc-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-zinc-400 hover:text-gray-700'}`}
-            >
-              <Clock size={11} /> {t('resource.sortDate')}
-            </button>
-            <button
-              onClick={() => setSortBy('name')}
-              className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors ${sortBy === 'name' ? 'bg-white dark:bg-zinc-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-zinc-400 hover:text-gray-700'}`}
-            >
-              <FileText size={11} /> {t('resource.sortName')}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Filter */}
+      {/* Type filter pills */}
       {resources.length > 0 && (
         <div className="flex items-center gap-1.5 mb-5 flex-wrap">
-          <button
-            onClick={() => setFilterType('all')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-colors ${filterType === 'all' ? 'bg-purple-100 dark:bg-purple-500/15 text-purple-700 dark:text-purple-300' : 'text-gray-500 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-zinc-800'}`}
-          >
-            {t('resource.type.all')} <span className="text-[10px] opacity-60 ml-1">{resources.length}</span>
-          </button>
-          {ALL_RESOURCE_TYPES.map(rt => {
-            const cfg = RESOURCE_TYPE_CONFIG[rt];
-            const count = resources.filter(r => r.type === rt).length;
-            if (count === 0) return null;
-            return (
-              <button
-                key={rt}
-                onClick={() => setFilterType(rt)}
-                className={`flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-medium transition-colors ${filterType === rt ? 'bg-purple-100 dark:bg-purple-500/15 text-purple-700 dark:text-purple-300' : 'text-gray-500 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-zinc-800'}`}
-              >
-                <cfg.icon size={12} /> {t(`resource.type.${rt}` as keyof typeof t)}
-                <span className="text-[10px] opacity-60">{count}</span>
-              </button>
-            );
-          })}
+          <button onClick={() => setFilterType('all')} className={`px-2.5 py-1 rounded-lg text-[11px] font-medium transition-colors ${filterType === 'all' ? 'bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400' : 'text-gray-500 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-zinc-800'}`}>{t('resource.type.all')}</button>
+          {ALL_RESOURCE_TYPES.map(rt => { const cfg = RESOURCE_TYPE_CONFIG[rt]; const count = resources.filter(r => r.type === rt).length; if (count === 0) return null; return (<button key={rt} onClick={() => setFilterType(rt)} className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-medium transition-colors ${filterType === rt ? 'bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400' : 'text-gray-500 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-zinc-800'}`}><cfg.icon size={11} /> {t(`resource.type.${rt}` as keyof typeof t)}</button>); })}
         </div>
       )}
 
-      {/* List */}
-      {filtered.length === 0 ? (
-        <div className="text-center py-16">
-          <div className="w-14 h-14 rounded-2xl bg-gray-100 dark:bg-zinc-800/40 flex items-center justify-center mx-auto mb-4">
-            <FolderOpen size={28} className="text-gray-400 dark:text-zinc-600" />
-          </div>
-          <p className="text-sm text-gray-500 dark:text-zinc-500 font-medium">{searchQuery ? (lang === 'de' ? 'Keine Ergebnisse' : 'No results') : t('resource.empty')}</p>
-          <p className="text-xs text-gray-400 dark:text-zinc-600 mt-1">{searchQuery ? (lang === 'de' ? 'Versuche einen anderen Suchbegriff' : 'Try a different search term') : t('resource.emptyHint')}</p>
+      {/* Content */}
+      {resources.length === 0 && folders.length === 0 ? (
+        <div className="text-center py-16 rounded-xl border border-gray-100 dark:border-zinc-800/40 bg-gray-50 dark:bg-zinc-800/30">
+          <div className="w-12 h-12 rounded-lg bg-gray-100 dark:bg-zinc-800 flex items-center justify-center mx-auto mb-4"><FolderOpen size={22} className="text-gray-400 dark:text-zinc-600" /></div>
+          <p className="text-sm text-gray-500 dark:text-zinc-500 font-medium">{t('resource.empty')}</p>
+          <p className="text-xs text-gray-400 dark:text-zinc-600 mt-1">{t('resource.emptyHint')}</p>
         </div>
-      ) : (
-        <div className="space-y-3">
-          {filtered.map(res => {
-            const cfg = RESOURCE_TYPE_CONFIG[res.type];
-            const TypeIcon = cfg.icon;
-            const isExpanded = expandedId === res.id;
+      ) : viewMode === 'grid' ? (
+        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
+          {currentFolderId && (
+            <div className="flex flex-col items-center p-4 rounded-xl cursor-pointer border border-gray-100 dark:border-zinc-800/40 bg-gray-50 dark:bg-zinc-800/30 hover:border-gray-200 dark:hover:border-zinc-700/60 transition-colors" onClick={() => navigateToFolder(null)}>
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center mb-2.5 bg-gray-100 dark:bg-zinc-800"><ChevronLeft size={18} className="text-gray-400 dark:text-zinc-500" /></div>
+              <span className="text-[12px] font-medium text-gray-500 dark:text-zinc-400">{lang === 'en' ? 'Back' : 'Zurück'}</span>
+            </div>
+          )}
+          {!currentFolderId && folders.map(folder => {
+            const fc = folder.color || 'purple'; const count = resources.filter(r => r.folderId === folder.id).length;
             return (
-              <div key={res.id} className="bg-white dark:bg-zinc-900/30 border border-gray-200 dark:border-zinc-800/40 rounded-2xl p-4 transition-colors">
-                <div className="flex items-start gap-3">
-                  <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 bg-${cfg.color}-50 dark:bg-${cfg.color}-500/10`}>
-                    <TypeIcon size={16} className={`text-${cfg.color}-600 dark:text-${cfg.color}-400`} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-0.5">
-                      <span className="font-medium text-sm text-gray-900 dark:text-white truncate">{res.title}</span>
-                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium bg-${cfg.color}-50 dark:bg-${cfg.color}-500/10 text-${cfg.color}-600 dark:text-${cfg.color}-400`}>
-                        {t(`resource.type.${res.type}` as keyof typeof t)}
-                      </span>
-                      {res.source === 'onboarding-form' && (
-                        <span className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400">
-                          {t('resource.source.onboarding')}
-                        </span>
-                      )}
-                    </div>
-                    <span className="text-[11px] text-gray-400 dark:text-zinc-600">
-                      {new Date(res.createdAt).toLocaleDateString(dateLang, { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1 shrink-0">
-                    <button
-                      onClick={() => handleCopy(res.content)}
-                      className="p-1.5 rounded-lg text-gray-400 hover:text-purple-500 dark:text-zinc-500 dark:hover:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-500/10 transition-colors"
-                      title={t('resource.copy')}
-                    >
-                      <Copy size={13} />
-                    </button>
-                    <button
-                      onClick={() => openEditModal(res)}
-                      className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:text-zinc-500 dark:hover:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
-                      title={t('resource.edit')}
-                    >
-                      <Edit3 size={13} />
-                    </button>
-                    <button
-                      onClick={() => setExpandedId(isExpanded ? null : res.id)}
-                      className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:text-zinc-500 dark:hover:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
-                      title={isExpanded ? t('resource.collapseContent') : t('resource.expandContent')}
-                    >
-                      {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-                    </button>
-                    <button
-                      onClick={() => setPendingDeleteResourceId(res.id)}
-                      className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 dark:text-zinc-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
-                      title={t('resource.delete')}
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
+              <div key={folder.id} className={`group/folder relative flex flex-col items-center p-4 rounded-xl cursor-pointer border transition-all duration-200 ${dragOverFolderId === folder.id ? `border-${fc}-300 dark:border-${fc}-500/40 bg-${fc}-50/40 dark:bg-${fc}-500/10` : 'border-gray-100 dark:border-zinc-800/40 bg-gray-50 dark:bg-zinc-800/30 hover:border-gray-200 dark:hover:border-zinc-700/60'}`}
+                onClick={() => navigateToFolder(folder.id)} onDragOver={e => { e.preventDefault(); setDragOverFolderId(folder.id); }} onDragLeave={() => setDragOverFolderId(null)} onDrop={e => { e.preventDefault(); const rid = e.dataTransfer.getData('text/resource-id'); if (rid) handleDropOnFolder(rid, folder.id); }}>
+                <div className="absolute top-2 right-2 flex items-center gap-0.5 opacity-0 group-hover/folder:opacity-100 transition-opacity" onClick={e => e.stopPropagation()}>
+                  <button onClick={() => openFolderModal(folder)} className="p-0.5 rounded text-gray-400 hover:text-gray-600 dark:hover:text-zinc-300 transition-colors"><Edit3 size={10} /></button>
+                  <button onClick={() => setPendingDeleteFolderId(folder.id)} className="p-0.5 rounded text-gray-400 hover:text-red-500 transition-colors"><Trash2 size={10} /></button>
                 </div>
-                {isExpanded && (
-                  <div className="mt-3 pt-3 border-t border-gray-100 dark:border-zinc-800/40">
-                    <pre className="text-xs text-gray-600 dark:text-zinc-400 whitespace-pre-wrap font-sans leading-relaxed max-h-64 overflow-y-auto">{res.content}</pre>
-                    {res.fileReference && (
-                      <div className="mt-2 flex items-center gap-1.5 text-xs text-purple-600 dark:text-purple-400">
-                        <ExternalLink size={11} /> {res.fileReference}
-                      </div>
-                    )}
-                  </div>
-                )}
+                <div className={`w-10 h-10 rounded-lg flex items-center justify-center mb-2.5 bg-${fc}-50 dark:bg-${fc}-500/10`}>
+                  <FolderOpen size={20} className={`text-${fc}-500 dark:text-${fc}-400`} />
+                </div>
+                <span className="text-[12px] font-semibold text-gray-900 dark:text-white text-center truncate w-full leading-tight">{folder.name}</span>
+                <span className="text-[10px] text-gray-400 dark:text-zinc-600 mt-1 font-medium uppercase tracking-wider tabular-nums">{count} {count === 1 ? (lang === 'en' ? 'item' : 'Datei') : (lang === 'en' ? 'items' : 'Dateien')}</span>
               </div>
             );
           })}
+          {visibleItems.map(res => renderGridItem(res))}
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {currentFolderId && (
+            <div className="flex items-center px-4 py-3 rounded-xl cursor-pointer border border-gray-100 dark:border-zinc-800/40 bg-gray-50 dark:bg-zinc-800/30 hover:border-gray-200 dark:hover:border-zinc-700/60 transition-colors mb-1" onClick={() => navigateToFolder(null)}>
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mr-3.5 bg-gray-100 dark:bg-zinc-800"><ChevronLeft size={15} className="text-gray-400 dark:text-zinc-500" /></div>
+              <span className="text-sm font-medium text-gray-500 dark:text-zinc-400">{lang === 'en' ? 'Back' : 'Zurück'}</span>
+            </div>
+          )}
+          {!currentFolderId && folders.map(folder => {
+            const fc = folder.color || 'purple'; const count = resources.filter(r => r.folderId === folder.id).length;
+            return (
+              <div key={folder.id} className={`group/folder flex items-center px-4 py-3 rounded-xl cursor-pointer border transition-all duration-150 ${dragOverFolderId === folder.id ? `border-${fc}-300 dark:border-${fc}-500/30 bg-${fc}-50/40 dark:bg-${fc}-500/10` : 'border-gray-100 dark:border-zinc-800/40 bg-gray-50 dark:bg-zinc-800/30 hover:border-gray-200 dark:hover:border-zinc-700/60'}`}
+                onClick={() => navigateToFolder(folder.id)} onDragOver={e => { e.preventDefault(); setDragOverFolderId(folder.id); }} onDragLeave={() => setDragOverFolderId(null)} onDrop={e => { e.preventDefault(); const rid = e.dataTransfer.getData('text/resource-id'); if (rid) handleDropOnFolder(rid, folder.id); }}>
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mr-3.5 bg-${fc}-50 dark:bg-${fc}-500/10`}>
+                  <FolderOpen size={15} className={`text-${fc}-500 dark:text-${fc}-400`} />
+                </div>
+                <div className="flex-1 min-w-0 mr-3">
+                  <span className="text-sm font-medium text-gray-900 dark:text-white truncate block">{folder.name}</span>
+                  <span className="text-[10px] text-gray-400 dark:text-zinc-600 uppercase tracking-wider font-medium">{count} {count === 1 ? (lang === 'en' ? 'item' : 'Datei') : (lang === 'en' ? 'items' : 'Dateien')}</span>
+                </div>
+                <div className="flex items-center gap-0.5 shrink-0 opacity-0 group-hover/folder:opacity-100 transition-opacity" onClick={e => e.stopPropagation()}>
+                  <button onClick={() => openFolderModal(folder)} className="p-1 rounded text-gray-400 hover:text-gray-600 hover:bg-gray-200 dark:hover:bg-zinc-700 transition-colors"><Edit3 size={12} /></button>
+                  <button onClick={() => setPendingDeleteFolderId(folder.id)} className="p-1 rounded text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"><Trash2 size={12} /></button>
+                </div>
+                <ChevronRight size={14} className="text-gray-300 dark:text-zinc-700 shrink-0 ml-1" />
+              </div>
+            );
+          })}
+          {visibleItems.map(res => renderListItem(res))}
         </div>
       )}
-
       {/* Add/Edit Resource Modal */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowAddModal(false)} />
           <div className="relative bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-zinc-800 w-full max-w-lg p-6">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-5">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
               {editingResource ? t('resource.editTitle') : t('resource.addTitle')}
             </h3>
+            {/* Folder context badge */}
+            {addToFolderId && !editingResource && (() => {
+              const f = folders.find(fo => fo.id === addToFolderId);
+              return f ? (
+                <div className="flex items-center gap-1.5 mb-4 px-3 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 w-fit">
+                  <FolderOpen size={12} className="text-emerald-600 dark:text-emerald-400" />
+                  <span className="text-xs font-medium text-emerald-700 dark:text-emerald-300">{lang === 'en' ? 'Adding to:' : 'Hinzufügen in:'} {f.name}</span>
+                  <button onClick={() => setAddToFolderId(null)} className="ml-1 text-emerald-400 hover:text-red-500"><X size={11} /></button>
+                </div>
+              ) : null;
+            })()}
+            {!addToFolderId && !editingResource && <div className="mb-3" />}
+
+            {/* File Upload Area */}
+            {!editingResource && (
+              <div className="mb-4">
+                <label className="block text-xs font-medium text-gray-500 dark:text-zinc-400 mb-1.5">{lang === 'en' ? 'Upload File (optional)' : 'Datei hochladen (optional)'}</label>
+                <label className="flex flex-col items-center justify-center w-full h-20 rounded-xl border-2 border-dashed border-gray-300 dark:border-zinc-600 hover:border-purple-400 dark:hover:border-purple-500 bg-gray-50 dark:bg-zinc-800/50 cursor-pointer transition-colors">
+                  <div className="flex items-center gap-2 text-gray-400 dark:text-zinc-500">
+                    <Upload size={16} />
+                    <span className="text-xs font-medium">{lang === 'en' ? 'Click to upload or drag file here' : 'Klicken zum Hochladen oder Datei hierher ziehen'}</span>
+                  </div>
+                  <input
+                    type="file"
+                    className="hidden"
+                    onChange={e => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        if (!newTitle.trim()) setNewTitle(file.name);
+                        setNewFileRef(file.name);
+                        // Read file content as text if it's a text-based file
+                        if (file.type.startsWith('text/') || file.name.endsWith('.md') || file.name.endsWith('.json') || file.name.endsWith('.csv')) {
+                          const reader = new FileReader();
+                          reader.onload = () => { if (typeof reader.result === 'string') setNewContent(reader.result); };
+                          reader.readAsText(file);
+                        } else {
+                          if (!newContent.trim()) setNewContent(`${lang === 'en' ? 'File' : 'Datei'}: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`);
+                        }
+                      }
+                    }}
+                  />
+                </label>
+                {newFileRef && !newFileRef.startsWith('http') && (
+                  <div className="flex items-center gap-1.5 mt-1.5 text-xs text-purple-600 dark:text-purple-400">
+                    <FileText size={11} /> {newFileRef}
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Title */}
             <label className="block text-xs font-medium text-gray-500 dark:text-zinc-400 mb-1.5">{t('resource.titleLabel')}</label>
@@ -1255,6 +1390,104 @@ function ResourcesPanel({ systemId, onToast }: { systemId: string; onToast?: (te
           </div>
         </div>
       )}
+      {/* Folder Modal */}
+      {showFolderModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowFolderModal(false)} />
+          <div className="relative bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-zinc-800 w-full max-w-sm p-6">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-5">
+              {editingFolder ? (lang === 'en' ? 'Edit Folder' : 'Ordner bearbeiten') : (lang === 'en' ? 'New Folder' : 'Neuer Ordner')}
+            </h3>
+            <label className="block text-xs font-medium text-gray-500 dark:text-zinc-400 mb-1.5">{lang === 'en' ? 'Folder Name' : 'Ordnername'}</label>
+            <input
+              value={newFolderName}
+              onChange={e => setNewFolderName(e.target.value)}
+              className={inputCls + ' mb-4'}
+              placeholder={lang === 'en' ? 'e.g. Customer Creatives' : 'z.B. Kunden-Creatives'}
+              autoFocus
+              onKeyDown={e => { if (e.key === 'Enter') handleSaveFolder(); }}
+            />
+            <label className="block text-xs font-medium text-gray-500 dark:text-zinc-400 mb-1.5">{lang === 'en' ? 'Color' : 'Farbe'}</label>
+            <div className="flex items-center gap-2 mb-6">
+              {FOLDER_COLORS.map(c => (
+                <button
+                  key={c}
+                  onClick={() => setNewFolderColor(c)}
+                  className={`w-7 h-7 rounded-full transition-all ${newFolderColor === c ? 'ring-2 ring-offset-2 ring-purple-500 dark:ring-offset-zinc-900' : 'hover:scale-110'}`}
+                  style={{ background: c === 'purple' ? '#9333ea' : c === 'blue' ? '#3b82f6' : c === 'emerald' ? '#10b981' : c === 'amber' ? '#f59e0b' : c === 'pink' ? '#ec4899' : c === 'cyan' ? '#06b6d4' : '#ef4444' }}
+                />
+              ))}
+            </div>
+            <div className="flex items-center justify-end gap-3">
+              <button onClick={() => setShowFolderModal(false)} className="px-4 py-2 rounded-xl text-sm font-medium text-gray-500 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors">
+                {lang === 'en' ? 'Cancel' : 'Abbrechen'}
+              </button>
+              <button
+                onClick={handleSaveFolder}
+                disabled={!newFolderName.trim()}
+                className="px-5 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-medium transition-colors"
+              >
+                {lang === 'en' ? 'Save' : 'Speichern'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Resource Preview Modal */}
+      {previewResource && (() => {
+        const cfg = RESOURCE_TYPE_CONFIG[previewResource.type];
+        const TypeIcon = cfg.icon;
+        const linkedNode = previewResource.linkedNodeId ? nodeMap.get(previewResource.linkedNodeId) : null;
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setPreviewResource(null)} />
+            <div className="relative bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-zinc-800 w-full max-w-2xl max-h-[80vh] flex flex-col">
+              {/* Header */}
+              <div className="flex items-start gap-4 p-6 pb-4 border-b border-gray-100 dark:border-zinc-800/60 shrink-0">
+                <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 bg-${cfg.color}-50 dark:bg-${cfg.color}-500/10`}>
+                  <TypeIcon size={20} className={`text-${cfg.color}-500 dark:text-${cfg.color}-400`} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white leading-tight truncate">{previewResource.title}</h3>
+                  <div className="flex items-center gap-2.5 mt-1.5 flex-wrap">
+                    <span className={`text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded-md bg-${cfg.color}-50 dark:bg-${cfg.color}-500/10 text-${cfg.color}-600 dark:text-${cfg.color}-400`}>{t(`resource.type.${previewResource.type}` as keyof typeof t)}</span>
+                    <span className="text-[11px] text-gray-400 dark:text-zinc-500 tabular-nums">{new Date(previewResource.createdAt).toLocaleDateString(dateLang, { day: '2-digit', month: 'long', year: 'numeric' })}</span>
+                    {linkedNode && (
+                      <span className="flex items-center gap-1 text-[11px] text-purple-500 dark:text-purple-400 font-medium">
+                        <Zap size={10} /> {linkedNode.label}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <button onClick={() => setPreviewResource(null)} className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors shrink-0"><X size={16} /></button>
+              </div>
+              {/* Content */}
+              <div className="flex-1 overflow-y-auto p-6">
+                {previewResource.fileReference && (
+                  <div className="flex items-center gap-2 mb-4 px-3 py-2 rounded-lg bg-gray-50 dark:bg-zinc-800/50 border border-gray-100 dark:border-zinc-800/40">
+                    <FileText size={13} className="text-gray-400 dark:text-zinc-500 shrink-0" />
+                    <span className="text-xs text-gray-500 dark:text-zinc-400 truncate">{previewResource.fileReference}</span>
+                    {previewResource.fileReference.startsWith('http') && (
+                      <a href={previewResource.fileReference} target="_blank" rel="noopener noreferrer" className="ml-auto shrink-0 text-purple-500 hover:text-purple-600"><ExternalLink size={12} /></a>
+                    )}
+                  </div>
+                )}
+                <div className="text-sm text-gray-700 dark:text-zinc-300 leading-relaxed whitespace-pre-wrap">{previewResource.content}</div>
+              </div>
+              {/* Footer actions */}
+              <div className="flex items-center justify-between p-4 pt-3 border-t border-gray-100 dark:border-zinc-800/60 shrink-0">
+                <div className="flex items-center gap-1.5">
+                  <button onClick={() => { handleCopy(previewResource.content); }} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-gray-500 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"><Copy size={12} /> {t('resource.copy')}</button>
+                  <button onClick={() => { setPreviewResource(null); openEditModal(previewResource); }} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-gray-500 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"><Edit3 size={12} /> {t('resource.edit')}</button>
+                </div>
+                <button onClick={() => { setPreviewResource(null); setPendingDeleteResourceId(previewResource.id); }} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"><Trash2 size={12} /> {t('resource.delete')}</button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
       {/* Resource delete confirmation */}
       <ConfirmDialog
         open={!!pendingDeleteResourceId}
@@ -1266,13 +1499,25 @@ function ResourcesPanel({ systemId, onToast }: { systemId: string; onToast?: (te
         onConfirm={() => { if (pendingDeleteResourceId) handleDelete(pendingDeleteResourceId); setPendingDeleteResourceId(null); }}
         onCancel={() => setPendingDeleteResourceId(null)}
       />
+
+      {/* Folder delete confirmation */}
+      <ConfirmDialog
+        open={!!pendingDeleteFolderId}
+        title={lang === 'en' ? 'Delete Folder' : 'Ordner löschen'}
+        message={lang === 'en' ? 'The folder will be deleted. All resources inside will be moved back to the root level.' : 'Der Ordner wird gelöscht. Alle enthaltenen Ressourcen werden auf die Hauptebene verschoben.'}
+        confirmLabel={lang === 'en' ? 'Delete' : 'Löschen'}
+        cancelLabel={lang === 'en' ? 'Cancel' : 'Abbrechen'}
+        variant="danger"
+        onConfirm={() => { if (pendingDeleteFolderId) handleDeleteFolder(pendingDeleteFolderId); setPendingDeleteFolderId(null); }}
+        onCancel={() => setPendingDeleteFolderId(null)}
+      />
     </>
   );
 }
 
 // ─── System Detail View (Redesigned) ─────────────────────────────────────────
 
-function SystemDetailView({ system, onSave, onExecute, onDelete, onToggleStatus, isUserSystem, isDemoSystem, onToast }: {
+function SystemDetailView({ system, onSave, onExecute, onDelete, onToggleStatus, isUserSystem, isDemoSystem, onToast, onDrillDown, onDrillUp, parentSystem, subSystemInfo, presNavigationSystems, startInPresentationMode, onPresNavigate }: {
   system: AutomationSystem;
   onSave?: (system: AutomationSystem) => void;
   onExecute?: () => void;
@@ -1281,6 +1526,13 @@ function SystemDetailView({ system, onSave, onExecute, onDelete, onToggleStatus,
   isUserSystem?: boolean;
   isDemoSystem?: boolean;
   onToast?: (text: string, type?: ToastMessage['type']) => void;
+  onDrillDown?: (subSystemId: string) => void;
+  onDrillUp?: () => void;
+  parentSystem?: AutomationSystem;
+  subSystemInfo?: Map<string, { nodeCount: number; status: string }>;
+  presNavigationSystems?: { id: string; name: string; isCurrent: boolean }[];
+  startInPresentationMode?: boolean;
+  onPresNavigate?: (systemId: string) => void;
 }) {
   const { t, lang } = useLanguage();
   const SystemIcon = getIcon(system.icon);
@@ -1289,7 +1541,7 @@ function SystemDetailView({ system, onSave, onExecute, onDelete, onToggleStatus,
 
   // Event-system integration (mock today, real backend later)
   const eventSource = useMemo(() => createMockEventSource(), []);
-  const { nodeStates, execute, reset } = useWorkflowExecution(eventSource);
+  const { nodeStates, execute, stop, reset } = useWorkflowExecution(eventSource);
 
   // Execution timer cleanup
   const execTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
@@ -1486,8 +1738,22 @@ function SystemDetailView({ system, onSave, onExecute, onDelete, onToggleStatus,
     { label: t('detail.stats.connections'), value: system.connections.length, icon: ArrowRight, color: '#10b981' },
   ];
 
+
   return (
     <>
+      {/* Breadcrumb bar when inside a sub-system */}
+      {parentSystem && onDrillUp && (
+        <div className="flex items-center gap-2 px-4 py-2.5 mb-4 bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200/60 dark:border-indigo-500/20 rounded-xl text-sm">
+          <button onClick={onDrillUp} className="flex items-center gap-1.5 text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors font-medium">
+            <ChevronLeft size={14} />
+            {parentSystem.name}
+          </button>
+          <ChevronRight size={14} className="text-indigo-300 dark:text-indigo-600" />
+          <span className="font-medium text-gray-900 dark:text-white">{system.name}</span>
+          <span className="ml-1 text-[10px] text-indigo-500 bg-indigo-100 dark:bg-indigo-500/15 px-1.5 py-0.5 rounded-full">{t('subsystem.badge')}</span>
+        </div>
+      )}
+
       {/* Premium Header Card */}
       <div className="relative overflow-hidden rounded-2xl bg-white dark:bg-zinc-900/70 border border-gray-200 dark:border-zinc-800/60 mb-8">
         {/* Decorative glow */}
@@ -1618,7 +1884,7 @@ function SystemDetailView({ system, onSave, onExecute, onDelete, onToggleStatus,
         </div>
         <div className="rounded-2xl border border-gray-200 dark:border-zinc-800/40 overflow-hidden mr-3">
           <CanvasErrorBoundary>
-            <WorkflowCanvas initialSystem={system} onSave={handleSaveWithVersion} onExecute={handleExecuteWithEvents} nodeStates={nodeStates} style={{ height: canvasHeight }} />
+            <WorkflowCanvas initialSystem={system} onSave={handleSaveWithVersion} onExecute={handleExecuteWithEvents} onStop={() => { stop(); execTimersRef.current.forEach(t => clearTimeout(t)); execTimersRef.current = []; }} onDrillDown={onDrillDown} nodeStates={nodeStates} subSystemInfo={subSystemInfo} presNavigationSystems={presNavigationSystems} startInPresentationMode={startInPresentationMode} onPresNavigate={onPresNavigate} style={{ height: canvasHeight }} />
           </CanvasErrorBoundary>
         </div>
         {/* Resize handle */}
@@ -1635,6 +1901,7 @@ function SystemDetailView({ system, onSave, onExecute, onDelete, onToggleStatus,
           <div className="w-12 h-1 rounded-full bg-gray-300 dark:bg-zinc-700 group-hover:bg-purple-400 dark:group-hover:bg-purple-500 transition-colors" />
         </div>
       </section>
+
 
       {/* Documents / Files */}
       <section>
@@ -1657,7 +1924,7 @@ function SystemDetailView({ system, onSave, onExecute, onDelete, onToggleStatus,
 
       {/* ── Resources Tab ── */}
       {detailTab === 'resources' && (
-        <ResourcesPanel systemId={system.id} onToast={onToast} />
+        <ResourcesPanel systemId={system.id} systemNodes={system.nodes} onToast={onToast} />
       )}
 
       {/* ── Execution Log Tab ── */}
@@ -2263,8 +2530,22 @@ function AutomationDashboardContent() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [userSystems, setUserSystems] = useState<AutomationSystem[]>([]);
+  const [renamingSubId, setRenamingSubId] = useState<string | null>(null);
+  const [renamingSubName, setRenamingSubName] = useState('');
+  const [startInPresentation, setStartInPresentation] = useState(false);
+  const [presSessionActive, setPresSessionActive] = useState(false); // stays true for entire pres session
   const [demoVersion, setDemoVersion] = useState(0); // Incremented when demo hidden list changes
   const { toasts, addToast, dismissToast } = useToast();
+
+  // Exit presentation session on ESC key
+  useEffect(() => {
+    if (!presSessionActive) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setPresSessionActive(false);
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [presSessionActive]);
 
   // Confirm dialog state for system deletion
   const [confirmDeleteSystemId, setConfirmDeleteSystemId] = useState<string | null>(null);
@@ -2283,7 +2564,63 @@ function AutomationDashboardContent() {
     ...getVisibleDemoSystems().map(s => getLocalizedDemoSystem(s, lang)),
     ...userSystems,
   ], [userSystems, demoVersion, lang]);
-  const selectedSystem = allSystems.find(s => s.id === section);
+  const topLevelSystems = useMemo(() => allSystems.filter(s => !s.parentId), [allSystems]);
+  const rawSelectedSystem = allSystems.find(s => s.id === section);
+
+  // Auto-sync subsystem nodes on master canvas
+  const selectedSystem = useMemo(() => {
+    if (!rawSelectedSystem) return undefined;
+    const subs = allSystems.filter(s => s.parentId === rawSelectedSystem.id);
+    if (subs.length === 0) return rawSelectedSystem; // not a master
+    const existing = rawSelectedSystem.nodes.filter(n => n.type === 'subsystem');
+    const existingMap = new Map(existing.map(n => [n.linkedSubSystemId, n]));
+    const validIds = new Set(subs.map(s => s.id));
+    // Remove nodes for deleted sub-systems
+    let nodes = rawSelectedSystem.nodes.filter(n => n.type !== 'subsystem' || validIds.has(n.linkedSubSystemId!));
+    // Remove orphan connections
+    const validNodeIds = new Set(nodes.map(n => n.id));
+    let connections = rawSelectedSystem.connections.filter(c => validNodeIds.has(c.from) && validNodeIds.has(c.to));
+    // Add nodes for new sub-systems + sync labels
+    let nextX = nodes.length > 0 ? Math.max(...nodes.map(n => n.x)) + 340 : 40;
+    for (const sub of subs) {
+      if (!existingMap.has(sub.id)) {
+        nodes.push({
+          id: `sub-${sub.id}`, label: sub.name, description: sub.description,
+          icon: sub.icon || 'layers', type: 'subsystem' as const, x: nextX, y: 58,
+          linkedSubSystemId: sub.id,
+        });
+        nextX += 340;
+      } else {
+        const node = nodes.find(n => n.linkedSubSystemId === sub.id);
+        if (node && node.label !== sub.name) { node.label = sub.name; node.description = sub.description; }
+      }
+    }
+    return { ...rawSelectedSystem, nodes, connections };
+  }, [rawSelectedSystem, allSystems]);
+
+  // ─── Sub-System Navigation Stack ────────────────────────────
+  const [systemStack, setSystemStack] = useState<string[]>([]);
+  const drillDown = useCallback((subSystemId: string) => {
+    setSystemStack(prev => [...prev, section]);
+    setSection(subSystemId);
+  }, [section, setSection]);
+  const drillUp = useCallback(() => {
+    const prev = systemStack[systemStack.length - 1];
+    setSystemStack(s => s.slice(0, -1));
+    if (prev) setSection(prev);
+  }, [systemStack, setSection]);
+
+  // Sub-system info map for canvas badge rendering
+  const subSystemInfoMap = useMemo(() => {
+    const m = new Map<string, { nodeCount: number; status: string }>();
+    for (const s of allSystems) {
+      if (s.parentId) {
+        m.set(s.id, { nodeCount: s.nodes.length, status: s.status });
+      }
+    }
+    return m;
+  }, [allSystems]);
+  const parentOfSelected = selectedSystem?.parentId ? allSystems.find(s => s.id === selectedSystem.parentId) : undefined;
 
   const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches);
 
@@ -2299,6 +2636,54 @@ function AutomationDashboardContent() {
   }, [theme]);
 
   const saveFail = () => addToast(lang === 'de' ? 'Fehler beim Speichern — Speicher voll?' : 'Save failed — storage full?', 'error');
+
+  // ─── Sidebar Sub-System Handlers ─────────────────────────────────────────
+  const handleAddSubSystem = (masterId: string) => {
+    const existingCount = allSystems.filter(s => s.parentId === masterId).length;
+    const master = allSystems.find(s => s.id === masterId);
+    const newSub: AutomationSystem = {
+      id: `user-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      name: `Sub-System ${existingCount + 1}`,
+      description: '',
+      category: master?.category || 'general',
+      icon: 'layers',
+      status: 'draft',
+      webhookUrl: '',
+      nodes: [],
+      connections: [],
+      outputs: [],
+      executionCount: 0,
+      parentId: masterId,
+      subSystemOrder: existingCount,
+    };
+    const updated = [...userSystems, newSub];
+    setUserSystems(updated);
+    if (!saveUserSystems(updated)) { saveFail(); return; }
+    addToast(t('toast.subSystemCreated'), 'success');
+    setRenamingSubId(newSub.id);
+    setRenamingSubName(newSub.name);
+  };
+
+  const handleRenameSubSystem = (subId: string, newName: string) => {
+    const trimmed = newName.trim();
+    if (!trimmed) { setRenamingSubId(null); return; }
+    const updated = userSystems.map(s => s.id === subId ? { ...s, name: trimmed } : s);
+    setUserSystems(updated);
+    saveUserSystems(updated);
+    setRenamingSubId(null);
+  };
+
+  const handleUnlinkSubSystem = (subId: string) => {
+    const sub = userSystems.find(s => s.id === subId);
+    if (!sub) return; // Can't unlink demo systems
+    const masterId = sub.parentId;
+    const updated = userSystems.map(s => s.id === subId ? { ...s, parentId: undefined } : s);
+    setUserSystems(updated);
+    if (!saveUserSystems(updated)) { saveFail(); return; }
+    // Stay on master system instead of jumping to dashboard
+    if (masterId && section === subId) setSection(masterId);
+    addToast(t('toast.subSystemUnlinked'), 'info');
+  };
 
   const handleCreated = (system: AutomationSystem) => {
     const updated = [...userSystems, system];
@@ -2341,12 +2726,15 @@ function AutomationDashboardContent() {
       setDemoVersion(n => n + 1);
       addToast(t('toast.demoHidden'), 'info');
     } else {
-      const updated = userSystems.filter(s => s.id !== confirmDeleteSystemId);
+      // Cascade: also remove all sub-systems
+      const childIds = new Set(userSystems.filter(s => s.parentId === confirmDeleteSystemId).map(s => s.id));
+      const updated = userSystems.filter(s => s.id !== confirmDeleteSystemId && !childIds.has(s.id));
       setUserSystems(updated);
       if (!saveUserSystems(updated)) { saveFail(); }
       addToast(t('toast.systemDeleted'), 'success');
     }
     setConfirmDeleteSystemId(null);
+    setSystemStack([]);
     setSection('dashboard');
   };
 
@@ -2433,11 +2821,13 @@ function AutomationDashboardContent() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-[#0a0a0e] text-gray-900 dark:text-white">
+      {/* Presentation session: persistent dark background behind canvas during entire pres session */}
+      {presSessionActive && <div className="fixed inset-0 bg-[#0a0a0e] z-[39]" />}
       {/* Mobile Overlay */}
       {sidebarOpen && <div className="fixed inset-0 bg-black/50 z-30 lg:hidden" onClick={() => setSidebarOpen(false)} />}
 
       {/* ─── Sidebar ─── */}
-      <aside className={`fixed left-0 top-0 bottom-0 w-64 bg-white dark:bg-zinc-900 border-r border-gray-200 dark:border-zinc-800 z-40 flex flex-col transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} ${sidebarCollapsed ? 'lg:-translate-x-full' : 'lg:translate-x-0'}`}>
+      <aside className={`fixed left-0 top-0 bottom-0 w-64 bg-white dark:bg-zinc-900 border-r border-gray-200 dark:border-zinc-800 z-40 flex flex-col transition-transform duration-300 ${presSessionActive || startInPresentation ? 'hidden' : ''} ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} ${sidebarCollapsed ? 'lg:-translate-x-full' : 'lg:translate-x-0'}`}>
         {/* Logo + Theme Toggle */}
         <div className="p-6 flex items-center justify-between">
           <h1 className="text-xl font-bold flex items-center gap-2.5">
@@ -2479,23 +2869,105 @@ function AutomationDashboardContent() {
           </button>
 
           <p className="text-xs text-gray-400 dark:text-zinc-500 uppercase font-medium px-4 mt-6 mb-2">{t('sidebar.systems')}</p>
-          {allSystems.map(sys => {
+          {topLevelSystems.map(sys => {
             const SysIcon = getIcon(sys.icon);
             const isActive = sys.status === 'active';
+            const subs = allSystems.filter(s => s.parentId === sys.id);
+            const isMaster = subs.length > 0;
+            const isExpanded = section === sys.id || subs.some(s => s.id === section);
+            const isUserSys = userSystems.some(u => u.id === sys.id);
             return (
-              <button
-                key={sys.id}
-                onClick={() => navigate(sys.id)}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm ${
-                  section === sys.id
-                    ? 'bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 font-medium'
-                    : 'text-gray-500 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-zinc-800'
-                }`}
-              >
-                <SysIcon className="w-5 h-5 shrink-0" />
-                <span className="truncate flex-1 text-left">{sys.name}</span>
-                <span className={`w-2 h-2 rounded-full shrink-0 ${isActive ? 'bg-emerald-500' : 'bg-gray-300 dark:bg-zinc-600'}`} />
-              </button>
+              <div key={sys.id} className="group/master">
+                <div className="flex items-center">
+                  <button
+                    onClick={() => navigate(sys.id)}
+                    className={`flex-1 flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm min-w-0 ${
+                      section === sys.id
+                        ? 'bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 font-medium'
+                        : 'text-gray-500 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-zinc-800'
+                    }`}
+                  >
+                    <SysIcon className="w-5 h-5 shrink-0" />
+                    <span className="truncate flex-1 text-left">{sys.name}</span>
+                    {isMaster && (
+                      <span className="text-[10px] text-purple-500 dark:text-purple-400 bg-purple-50 dark:bg-purple-500/10 px-1.5 py-0.5 rounded-full shrink-0">
+                        {subs.length}
+                      </span>
+                    )}
+                    <span className={`w-2 h-2 rounded-full shrink-0 ${isActive ? 'bg-emerald-500' : 'bg-gray-300 dark:bg-zinc-600'}`} />
+                  </button>
+                  {isUserSys && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleAddSubSystem(sys.id); }}
+                      className="p-1 mr-1 rounded-md text-gray-300 dark:text-zinc-600 hover:text-purple-500 dark:hover:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-500/10 transition-colors opacity-0 group-hover/master:opacity-100"
+                      title={t('subsystem.add')}
+                    >
+                      <Plus size={14} />
+                    </button>
+                  )}
+                </div>
+                {isMaster && isExpanded && (
+                  <div className="ml-6 pl-3 border-l-2 border-purple-200 dark:border-purple-500/20 space-y-0.5 mt-1 mb-2">
+                    {subs.map(sub => {
+                      const SubIcon = getIcon(sub.icon);
+                      const isSubUser = userSystems.some(u => u.id === sub.id);
+                      const isSubActive = sub.status === 'active';
+                      return (
+                        <div key={sub.id} className="group/sub flex items-center">
+                          {renamingSubId === sub.id ? (
+                            <div className="flex-1 flex items-center gap-1.5 px-2 py-1.5">
+                              <input
+                                autoFocus
+                                value={renamingSubName}
+                                onChange={(e) => setRenamingSubName(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') handleRenameSubSystem(sub.id, renamingSubName);
+                                  if (e.key === 'Escape') setRenamingSubId(null);
+                                }}
+                                onBlur={() => handleRenameSubSystem(sub.id, renamingSubName)}
+                                className="flex-1 text-xs bg-white dark:bg-zinc-800 border border-purple-300 dark:border-purple-500/30 rounded-lg px-2.5 py-1.5 text-gray-900 dark:text-white outline-none focus:ring-1 focus:ring-purple-400 min-w-0"
+                              />
+                            </div>
+                          ) : (
+                            <>
+                              <button
+                                onClick={() => navigate(sub.id)}
+                                className={`flex-1 flex items-center gap-2.5 px-2.5 py-2 rounded-xl transition-all text-xs min-w-0 ${
+                                  section === sub.id
+                                    ? 'bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 font-medium'
+                                    : 'text-gray-500 dark:text-zinc-400 hover:text-gray-700 dark:hover:text-zinc-300 hover:bg-gray-50 dark:hover:bg-zinc-800/50'
+                                }`}
+                              >
+                                <SubIcon className="w-4 h-4 shrink-0" />
+                                <span className="truncate flex-1 text-left">{sub.name}</span>
+                                <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${isSubActive ? 'bg-emerald-500' : 'bg-gray-300 dark:bg-zinc-600'}`} />
+                              </button>
+                              {isSubUser && (
+                                <div className="flex items-center gap-0.5 opacity-0 group-hover/sub:opacity-100 transition-opacity shrink-0 mr-1">
+                                  <button
+                                    onClick={(e) => { e.stopPropagation(); setRenamingSubId(sub.id); setRenamingSubName(sub.name); }}
+                                    className="p-1 rounded-md text-gray-300 dark:text-zinc-600 hover:text-purple-500 dark:hover:text-purple-400 transition-colors"
+                                    title={lang === 'de' ? 'Umbenennen' : 'Rename'}
+                                  >
+                                    <Edit3 size={12} />
+                                  </button>
+                                  <button
+                                    onClick={(e) => { e.stopPropagation(); handleUnlinkSubSystem(sub.id); }}
+                                    className="p-1 rounded-md text-gray-300 dark:text-zinc-600 hover:text-red-400 dark:hover:text-red-400 transition-colors"
+                                    title={t('subsystem.unlink')}
+                                  >
+                                    <X size={12} />
+                                  </button>
+                                </div>
+                              )}
+                            </>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             );
           })}
 
@@ -2567,9 +3039,9 @@ function AutomationDashboardContent() {
       </aside>
 
       {/* ─── Main Content ─── */}
-      <main className={`transition-all duration-300 ${sidebarCollapsed ? '' : 'lg:ml-64'}`}>
+      <main className={`transition-all duration-300 ${presSessionActive || startInPresentation ? '' : sidebarCollapsed ? '' : 'lg:ml-64'}`}>
         {/* Header */}
-        <header className="sticky top-0 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border-b border-gray-200 dark:border-zinc-800 z-30">
+        <header className={`sticky top-0 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border-b border-gray-200 dark:border-zinc-800 z-30 ${presSessionActive || startInPresentation ? 'hidden' : ''}`}>
           <div className="flex items-center justify-between px-4 sm:px-6 py-4">
             <div className="flex items-center gap-3 sm:gap-4">
               <button onClick={() => setSidebarOpen(true)} className="lg:hidden p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-xl transition-colors" title={t('sidebar.openMenu')}>
@@ -2616,7 +3088,7 @@ function AutomationDashboardContent() {
 
         {/* Content */}
         <div className={`p-4 sm:p-6 space-y-6 pb-20 md:pb-6 transition-opacity duration-200 ${tabVisible ? 'opacity-100' : 'opacity-0'}`}>
-          {section === 'dashboard' && <DashboardOverview systems={allSystems} onSelect={s => setSection(s)} />}
+          {section === 'dashboard' && <DashboardOverview systems={topLevelSystems} allSystems={allSystems} onSelect={s => setSection(s)} />}
           {section === 'create' && <TemplatePickerView onCreated={handleCreated} />}
           {section === 'builder' && (
             <CanvasErrorBoundary>
@@ -2743,6 +3215,34 @@ function AutomationDashboardContent() {
               onDelete={() => handleDeleteSystem(selectedSystem.id)}
               onToggleStatus={() => handleToggleStatus(selectedSystem.id)}
               onToast={addToast}
+              onDrillDown={drillDown}
+              onDrillUp={parentOfSelected ? drillUp : undefined}
+              parentSystem={parentOfSelected}
+              subSystemInfo={subSystemInfoMap}
+              presNavigationSystems={(() => {
+                const masterId = selectedSystem.parentId || selectedSystem.id;
+                const master = allSystems.find(s => s.id === masterId);
+                const subs = allSystems.filter(s => s.parentId === masterId).sort((a, b) => (a.subSystemOrder ?? 0) - (b.subSystemOrder ?? 0));
+                if (!master || subs.length === 0) return undefined;
+                return [
+                  { id: master.id, name: master.name, isCurrent: selectedSystem.id === master.id },
+                  ...subs.map(s => ({ id: s.id, name: s.name, isCurrent: selectedSystem.id === s.id })),
+                ];
+              })()}
+              startInPresentationMode={startInPresentation}
+              onPresNavigate={(systemId) => {
+                // Seamless switch: presSessionActive keeps sidebar/header hidden permanently
+                // Direct setSectionRaw bypasses the 150ms tabVisible fade for instant swap
+                setPresSessionActive(true);
+                setStartInPresentation(true);
+                setSectionRaw(systemId);
+                // Clear startInPresentation after React commits the new canvas
+                requestAnimationFrame(() => {
+                  requestAnimationFrame(() => {
+                    setStartInPresentation(false);
+                  });
+                });
+              }}
             />
           )}
         </div>

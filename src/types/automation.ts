@@ -1,8 +1,8 @@
-export type NodeType = 'trigger' | 'process' | 'ai' | 'output';
+export type NodeType = 'trigger' | 'process' | 'ai' | 'output' | 'subsystem';
 
 export type OutputType = 'document' | 'folder' | 'website' | 'spreadsheet' | 'email' | 'image' | 'other';
 
-export type SubNodeType = 'tool' | 'memory' | 'knowledge' | 'outputFormat';
+export type SubNodeType = 'tool' | 'memory' | 'knowledge' | 'outputFormat' | 'resourceFile' | 'resourceFolder' | 'aiGenerated';
 
 export interface SubNode {
   id: string;
@@ -11,6 +11,8 @@ export interface SubNode {
   icon: string;
   x: number;    // absolute canvas x
   y: number;    // absolute canvas y
+  linkedResourceIds?: string[];  // For resourceFile: selected resource IDs (multi-select)
+  linkedFolderId?: string;       // For resourceFolder: selected folder ID
 }
 
 export interface SystemNode {
@@ -26,6 +28,7 @@ export interface SystemNode {
   linkedResourceId?: string;          // Specific resource item ID within the type
   linkedPage?: string;    // Internal page path (e.g. '/onboarding') – clickable from canvas
   subNodes?: SubNode[];   // Small attachable modules (e.g., Tool, Memory for AI agents)
+  linkedSubSystemId?: string;  // For subsystem nodes: the linked sub-system ID
 }
 
 export type PortDirection = 'top' | 'right' | 'bottom' | 'left';
@@ -89,6 +92,16 @@ export interface SystemResource {
   fileReference?: string;
   createdAt: string;
   source?: string;
+  folderId?: string;  // Resource folder membership (undefined = root level)
+  linkedNodeId?: string;  // Which workflow node created/uses this resource
+}
+
+export interface ResourceFolder {
+  id: string;
+  systemId: string;
+  name: string;
+  createdAt: string;
+  color?: string;  // Optional accent color
 }
 
 export interface OnboardingFormData {
@@ -162,6 +175,8 @@ export interface AutomationSystem {
   canvasPan?: { x: number; y: number };
   executionLog?: ExecutionLogEntry[];
   versions?: WorkflowVersion[];
+  parentId?: string;         // If set, this system is a sub-system of the given master
+  subSystemOrder?: number;   // Sort order in master overview
 }
 
 // ── Advanced Output Viewer Types ──────────────────────────────

@@ -1731,7 +1731,7 @@ const LinkedInDashboardContent = () => {
       {mobileSidebarOpen && <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-30 lg:hidden" onClick={() => setMobileSidebarOpen(false)} />}
 
       {/* Sidebar */}
-      <aside className={`fixed left-0 top-0 bottom-0 w-64 bg-white dark:bg-gray-900 border-r border-gray-100 dark:border-gray-800 z-40 flex flex-col transition-transform duration-300 ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'} ${sidebarCollapsed ? 'lg:-translate-x-full' : 'lg:translate-x-0'}`}>
+      <aside className={`fixed left-0 top-0 bottom-0 w-64 bg-white dark:bg-zinc-900 border-r border-gray-200 dark:border-zinc-800 z-40 flex flex-col transition-transform duration-300 ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'} ${sidebarCollapsed ? 'lg:-translate-x-full' : 'lg:translate-x-0'}`}>
         <div className="p-6 flex items-center justify-between">
           <h1 className="text-xl font-bold flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-sky-500 to-blue-600 flex items-center justify-center">
@@ -1740,44 +1740,44 @@ const LinkedInDashboardContent = () => {
             LinkedIn
           </h1>
           <div className="flex items-center gap-1">
-            <button onClick={() => setDarkMode(!darkMode)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors" title={darkMode ? tx("Heller Modus", "Light mode") : tx("Dunkler Modus", "Dark mode")}>
+            <button onClick={() => setDarkMode(!darkMode)} className="p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-xl transition-colors" title={darkMode ? tx("Heller Modus", "Light mode") : tx("Dunkler Modus", "Dark mode")}>
               {darkMode ? <Sun className="w-5 h-5 text-yellow-500" /> : <Moon className="w-5 h-5 text-gray-500" />}
             </button>
-            <button onClick={() => { setSidebarCollapsed(true); setMobileSidebarOpen(false); }} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors" title={tx("Sidebar einklappen", "Collapse sidebar")}>
+            <button onClick={() => { setSidebarCollapsed(true); setMobileSidebarOpen(false); }} className="p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-xl transition-colors" title={tx("Sidebar einklappen", "Collapse sidebar")}>
               <ChevronLeft className="w-4 h-4 text-gray-400" />
             </button>
           </div>
         </div>
         <nav className="px-4 space-y-1 flex-1 overflow-y-auto">
-          <p className="text-xs text-gray-400 uppercase font-medium px-4 mb-2">{tx("Übersicht", "Overview")}</p>
+          <p className="text-xs text-gray-400 dark:text-zinc-500 uppercase font-medium px-4 mb-2">{tx("Übersicht", "Overview")}</p>
           {([
             { icon: <BarChart3 className="w-5 h-5" />, label: "Dashboard", key: "dashboard" },
             { icon: <UserPlus className="w-5 h-5" />, label: tx("Kampagnen", "Campaigns"), key: "outreach" },
             { icon: <MessageSquare className="w-5 h-5" />, label: tx("Nachrichten", "Messages"), key: "messages" },
             { icon: <FileText className="w-5 h-5" />, label: "Posts", key: "posts" },
           ] as const).map(i => (
-            <button key={i.key} onClick={() => { setSection(i.key); setMobileSidebarOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${section === i.key ? "bg-sky-50 dark:bg-sky-500/10 text-sky-600 font-medium" : "text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"}`}>{i.icon}{i.label}</button>
+            <button key={i.key} onClick={() => { setSection(i.key); setMobileSidebarOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${section === i.key ? "bg-sky-50 dark:bg-sky-500/10 text-sky-600 font-medium" : "text-gray-500 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-zinc-800"}`}>{i.icon}{i.label}</button>
           ))}
-          <p className="text-xs text-gray-400 uppercase font-medium px-4 mt-6 mb-2">{tx("Automation", "Automation")}</p>
+          <p className="text-xs text-gray-400 dark:text-zinc-500 uppercase font-medium px-4 mt-6 mb-2">{tx("Automation", "Automation")}</p>
           {([
             { icon: <GitBranch className="w-5 h-5" />, label: tx("Sequenzen", "Sequences"), key: "sequences" },
             { icon: <Upload className="w-5 h-5" />, label: "Import", key: "import" },
           ] as const).map(i => (
-            <button key={i.key} onClick={() => { setSection(i.key); setMobileSidebarOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${section === i.key ? "bg-sky-50 dark:bg-sky-500/10 text-sky-600 font-medium" : "text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"}`}>{i.icon}{i.label}</button>
+            <button key={i.key} onClick={() => { setSection(i.key); setMobileSidebarOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${section === i.key ? "bg-sky-50 dark:bg-sky-500/10 text-sky-600 font-medium" : "text-gray-500 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-zinc-800"}`}>{i.icon}{i.label}</button>
           ))}
-          <p className="text-xs text-gray-400 uppercase font-medium px-4 mt-6 mb-2">{tx("Pipeline", "Pipeline")}</p>
+          <p className="text-xs text-gray-400 dark:text-zinc-500 uppercase font-medium px-4 mt-6 mb-2">{tx("Pipeline", "Pipeline")}</p>
           {([
             { icon: <Users className="w-5 h-5" />, label: "Leads", key: "leads" },
             { icon: <Activity className="w-5 h-5" />, label: "Analytics", key: "analytics" },
           ] as const).map(i => (
-            <button key={i.key} onClick={() => { setSection(i.key); setMobileSidebarOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${section === i.key ? "bg-sky-50 dark:bg-sky-500/10 text-sky-600 font-medium" : "text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"}`}>{i.icon}{i.label}</button>
+            <button key={i.key} onClick={() => { setSection(i.key); setMobileSidebarOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${section === i.key ? "bg-sky-50 dark:bg-sky-500/10 text-sky-600 font-medium" : "text-gray-500 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-zinc-800"}`}>{i.icon}{i.label}</button>
           ))}
-          <p className="text-xs text-gray-400 uppercase font-medium px-4 mt-6 mb-2">{tx("Tools", "Tools")}</p>
+          <p className="text-xs text-gray-400 dark:text-zinc-500 uppercase font-medium px-4 mt-6 mb-2">{tx("Tools", "Tools")}</p>
           {([
             { icon: <Calendar className="w-5 h-5" />, label: "Scheduler", key: "scheduler" },
             { icon: <Settings className="w-5 h-5" />, label: tx("Einstellungen", "Settings"), key: "settings" },
           ] as const).map(i => (
-            <button key={i.key} onClick={() => { setSection(i.key); setMobileSidebarOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${section === i.key ? "bg-sky-50 dark:bg-sky-500/10 text-sky-600 font-medium" : "text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"}`}>{i.icon}{i.label}</button>
+            <button key={i.key} onClick={() => { setSection(i.key); setMobileSidebarOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${section === i.key ? "bg-sky-50 dark:bg-sky-500/10 text-sky-600 font-medium" : "text-gray-500 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-zinc-800"}`}>{i.icon}{i.label}</button>
           ))}
         </nav>
         <div className="p-4">

@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import type { AutomationSystem, SystemNode, NodeConnection, NodeType, SystemOutput, OutputType } from '@/types/automation';
 import { findSystem } from '@/data/automationSystems';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 // ─── Icon Map ─────────────────────────────────────────────────────────────────
 
@@ -26,23 +27,34 @@ const getIcon = (name: string): IconComponent => ICONS[name] || Zap;
 
 // ─── Node Type Styles ─────────────────────────────────────────────────────────
 
-const NODE_STYLES: Record<NodeType, { bg: string; border: string; accent: string; label: string }> = {
-  trigger: { bg: 'rgba(59,130,246,0.06)', border: 'rgba(59,130,246,0.15)', accent: '#3b82f6', label: 'Trigger' },
-  process: { bg: 'rgba(139,92,246,0.06)', border: 'rgba(139,92,246,0.15)', accent: '#8b5cf6', label: 'Prozess' },
-  ai: { bg: 'rgba(217,70,239,0.06)', border: 'rgba(217,70,239,0.15)', accent: '#d946ef', label: 'KI' },
-  output: { bg: 'rgba(16,185,129,0.06)', border: 'rgba(16,185,129,0.15)', accent: '#10b981', label: 'Output' },
+const NODE_STYLES: Record<NodeType, { bg: string; border: string; accent: string; label: { de: string; en: string } }> = {
+  trigger:   { bg: 'rgba(59,130,246,0.06)',  border: 'rgba(59,130,246,0.15)',  accent: '#3b82f6', label: { de: 'Trigger', en: 'Trigger' } },
+  process:   { bg: 'rgba(139,92,246,0.06)',  border: 'rgba(139,92,246,0.15)',  accent: '#8b5cf6', label: { de: 'Prozess', en: 'Process' } },
+  ai:        { bg: 'rgba(217,70,239,0.06)',  border: 'rgba(217,70,239,0.15)',  accent: '#d946ef', label: { de: 'KI', en: 'AI' } },
+  output:    { bg: 'rgba(16,185,129,0.06)',  border: 'rgba(16,185,129,0.15)',  accent: '#10b981', label: { de: 'Output', en: 'Output' } },
+  subsystem: { bg: 'rgba(99,102,241,0.06)',  border: 'rgba(99,102,241,0.15)',  accent: '#6366f1', label: { de: 'Sub-System', en: 'Sub-System' } },
 };
 
 // ─── Output Type Styles ───────────────────────────────────────────────────────
 
-const OUTPUT_ICONS: Record<OutputType, { icon: IconComponent; label: string }> = {
-  document: { icon: FileText, label: 'Dokument' },
-  folder: { icon: FolderOpen, label: 'Ordner' },
-  website: { icon: Globe, label: 'Website' },
-  spreadsheet: { icon: BarChart3, label: 'Tabelle' },
-  email: { icon: Mail, label: 'E-Mail' },
-  image: { icon: Image, label: 'Bild' },
-  other: { icon: Zap, label: 'Sonstiges' },
+const OUTPUT_LABELS: Record<OutputType, { de: string; en: string }> = {
+  document:    { de: 'Dokument', en: 'Document' },
+  folder:      { de: 'Ordner', en: 'Folder' },
+  website:     { de: 'Website', en: 'Website' },
+  spreadsheet: { de: 'Tabelle', en: 'Spreadsheet' },
+  email:       { de: 'E-Mail', en: 'Email' },
+  image:       { de: 'Bild', en: 'Image' },
+  other:       { de: 'Sonstiges', en: 'Other' },
+};
+
+const OUTPUT_ICONS: Record<OutputType, IconComponent> = {
+  document: FileText,
+  folder: FolderOpen,
+  website: Globe,
+  spreadsheet: BarChart3,
+  email: Mail,
+  image: Image,
+  other: Zap,
 };
 
 // ─── Node Graph ───────────────────────────────────────────────────────────────
@@ -52,7 +64,7 @@ const NODE_H = 84;
 const PAD_X = 40;
 const PAD_Y = 40;
 
-function NodeGraph({ nodes, connections }: { nodes: SystemNode[]; connections: NodeConnection[] }) {
+function NodeGraph({ nodes, connections, lang }: { nodes: SystemNode[]; connections: NodeConnection[]; lang: string }) {
   if (nodes.length === 0) return null;
 
   const width = Math.max(...nodes.map(n => n.x + NODE_W)) + PAD_X * 2;
@@ -146,7 +158,7 @@ function NodeGraph({ nodes, connections }: { nodes: SystemNode[]; connections: N
                   color: style.accent,
                 }}
               >
-                {style.label}
+                {style.label[lang === 'en' ? 'en' : 'de']}
               </div>
             </div>
           );
@@ -158,7 +170,7 @@ function NodeGraph({ nodes, connections }: { nodes: SystemNode[]; connections: N
 
 // ─── Execute Section ──────────────────────────────────────────────────────────
 
-function ExecuteSection({ system }: { system: AutomationSystem }) {
+function ExecuteSection({ system, lang }: { system: AutomationSystem; lang: string }) {
   const [state, setState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
 
   const handleExecute = async () => {
@@ -202,33 +214,37 @@ function ExecuteSection({ system }: { system: AutomationSystem }) {
         {state === 'loading' && (
           <>
             <Loader2 size={20} className="animate-spin" />
-            System wird ausgeführt…
+            {lang === 'en' ? 'Executing system…' : 'System wird ausgeführt…'}
           </>
         )}
         {state === 'idle' && (
           <>
             <Play size={20} />
-            System ausführen
+            {lang === 'en' ? 'Execute System' : 'System ausführen'}
           </>
         )}
         {state === 'success' && (
           <>
             <Check size={20} />
-            Erfolgreich ausgeführt
+            {lang === 'en' ? 'Successfully executed' : 'Erfolgreich ausgeführt'}
           </>
         )}
         {state === 'error' && (
           <>
             <AlertCircle size={20} />
-            Fehler – erneut versuchen
+            {lang === 'en' ? 'Error – try again' : 'Fehler – erneut versuchen'}
           </>
         )}
       </button>
       {!system.webhookUrl && state === 'idle' && (
-        <p className="text-xs text-zinc-600 mt-3">Demo-Modus · Kein Webhook konfiguriert</p>
+        <p className="text-xs text-zinc-600 mt-3">
+          {lang === 'en' ? 'Demo mode · No webhook configured' : 'Demo-Modus · Kein Webhook konfiguriert'}
+        </p>
       )}
       {state === 'success' && (
-        <p className="text-xs text-emerald-400/70 mt-3">Das System wurde erfolgreich gestartet.</p>
+        <p className="text-xs text-emerald-400/70 mt-3">
+          {lang === 'en' ? 'The system was started successfully.' : 'Das System wurde erfolgreich gestartet.'}
+        </p>
       )}
     </div>
   );
@@ -236,15 +252,21 @@ function ExecuteSection({ system }: { system: AutomationSystem }) {
 
 // ─── Output Table ─────────────────────────────────────────────────────────────
 
-function OutputTable({ outputs }: { outputs: SystemOutput[] }) {
+function OutputTable({ outputs, lang }: { outputs: SystemOutput[]; lang: string }) {
+  const locale = lang === 'en' ? 'en-US' : 'de-DE';
+
   if (outputs.length === 0) {
     return (
       <div className="text-center py-12">
         <div className="w-12 h-12 rounded-xl bg-zinc-800/40 flex items-center justify-center mx-auto mb-4">
           <FolderOpen size={24} className="text-zinc-600" />
         </div>
-        <p className="text-sm text-zinc-500">Noch keine Ergebnisse vorhanden.</p>
-        <p className="text-xs text-zinc-600 mt-1">Führe das System aus, um Ergebnisse zu generieren.</p>
+        <p className="text-sm text-zinc-500">
+          {lang === 'en' ? 'No results available yet.' : 'Noch keine Ergebnisse vorhanden.'}
+        </p>
+        <p className="text-xs text-zinc-600 mt-1">
+          {lang === 'en' ? 'Execute the system to generate results.' : 'Führe das System aus, um Ergebnisse zu generieren.'}
+        </p>
       </div>
     );
   }
@@ -252,8 +274,8 @@ function OutputTable({ outputs }: { outputs: SystemOutput[] }) {
   return (
     <div className="divide-y divide-zinc-800/50">
       {outputs.map(output => {
-        const typeInfo = OUTPUT_ICONS[output.type] || OUTPUT_ICONS.other;
-        const TypeIcon = typeInfo.icon;
+        const TypeIcon = OUTPUT_ICONS[output.type] || OUTPUT_ICONS.other;
+        const typeLabel = OUTPUT_LABELS[output.type] || OUTPUT_LABELS.other;
 
         return (
           <div
@@ -266,15 +288,15 @@ function OutputTable({ outputs }: { outputs: SystemOutput[] }) {
             <div className="min-w-0 flex-1">
               <div className="text-sm text-white font-medium truncate">{output.name}</div>
               <div className="flex items-center gap-3 mt-0.5">
-                <span className="text-[11px] text-zinc-500">{typeInfo.label}</span>
+                <span className="text-[11px] text-zinc-500">{typeLabel[lang === 'en' ? 'en' : 'de']}</span>
                 <span className="text-[11px] text-zinc-600 flex items-center gap-1">
                   <Clock size={10} />
-                  {new Date(output.createdAt).toLocaleDateString('de-DE', {
+                  {new Date(output.createdAt).toLocaleDateString(locale, {
                     day: '2-digit',
                     month: '2-digit',
                     year: 'numeric',
                   })}{' '}
-                  {new Date(output.createdAt).toLocaleTimeString('de-DE', {
+                  {new Date(output.createdAt).toLocaleTimeString(locale, {
                     hour: '2-digit',
                     minute: '2-digit',
                   })}
@@ -289,7 +311,7 @@ function OutputTable({ outputs }: { outputs: SystemOutput[] }) {
                          opacity-0 group-hover:opacity-100 transition-all px-3 py-1.5 rounded-lg
                          hover:bg-purple-500/10"
             >
-              Öffnen <ExternalLink size={12} />
+              {lang === 'en' ? 'Open' : 'Öffnen'} <ExternalLink size={12} />
             </a>
           </div>
         );
@@ -303,6 +325,8 @@ function OutputTable({ outputs }: { outputs: SystemOutput[] }) {
 export default function SystemDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { lang } = useLanguage();
+  const locale = lang === 'en' ? 'en-US' : 'de-DE';
 
   const system = useMemo(() => (id ? findSystem(id) : undefined), [id]);
 
@@ -314,9 +338,13 @@ export default function SystemDetailPage() {
           <div className="w-16 h-16 rounded-2xl bg-zinc-800/40 flex items-center justify-center mx-auto mb-5">
             <X size={32} className="text-zinc-600" />
           </div>
-          <h2 className="text-xl font-semibold mb-2">System nicht gefunden</h2>
+          <h2 className="text-xl font-semibold mb-2">
+            {lang === 'en' ? 'System not found' : 'System nicht gefunden'}
+          </h2>
           <p className="text-zinc-500 text-sm mb-6">
-            Das System mit der ID „{id}" existiert nicht.
+            {lang === 'en'
+              ? `The system with ID "${id}" does not exist.`
+              : `Das System mit der ID „${id}" existiert nicht.`}
           </p>
           <button
             onClick={() => navigate('/systems')}
@@ -324,7 +352,7 @@ export default function SystemDetailPage() {
                        text-white transition-colors flex items-center gap-2 mx-auto"
           >
             <ArrowLeft size={16} />
-            Zurück zur Übersicht
+            {lang === 'en' ? 'Back to overview' : 'Zurück zur Übersicht'}
           </button>
         </div>
       </div>
@@ -348,7 +376,7 @@ export default function SystemDetailPage() {
           </button>
           <div className="flex items-center gap-2 text-xs text-zinc-500">
             <button onClick={() => navigate('/systems')} className="hover:text-zinc-300 transition-colors">
-              Systeme
+              {lang === 'en' ? 'Systems' : 'Systeme'}
             </button>
             <ChevronRight size={12} />
             <span className="text-zinc-300">{system.name}</span>
@@ -377,19 +405,21 @@ export default function SystemDetailPage() {
                       : 'bg-zinc-700/30 text-zinc-500 border border-zinc-700/30'
                   }`}
                 >
-                  {isActive ? 'Aktiv' : 'Entwurf'}
+                  {isActive
+                    ? (lang === 'en' ? 'Active' : 'Aktiv')
+                    : (lang === 'en' ? 'Draft' : 'Entwurf')}
                 </span>
               </div>
               <p className="text-sm text-zinc-400 leading-relaxed max-w-2xl">{system.description}</p>
               <div className="flex items-center gap-5 mt-3 text-xs text-zinc-500">
                 <span className="flex items-center gap-1.5">
                   <Zap size={13} className="text-purple-400" />
-                  {system.executionCount} Ausführungen
+                  {system.executionCount} {lang === 'en' ? 'Executions' : 'Ausführungen'}
                 </span>
                 {system.lastExecuted && (
                   <span className="flex items-center gap-1.5">
                     <Clock size={13} />
-                    Zuletzt: {new Date(system.lastExecuted).toLocaleDateString('de-DE', {
+                    {lang === 'en' ? 'Last:' : 'Zuletzt:'} {new Date(system.lastExecuted).toLocaleDateString(locale, {
                       day: '2-digit',
                       month: '2-digit',
                       year: 'numeric',
@@ -407,29 +437,29 @@ export default function SystemDetailPage() {
         {/* Section: System Flow */}
         <section className="mb-6">
           <div className="flex items-center gap-2 mb-5">
-            <h2 className="text-lg font-semibold text-white">System-Ablauf</h2>
+            <h2 className="text-lg font-semibold text-white">{lang === 'en' ? 'System Flow' : 'System-Ablauf'}</h2>
             <span className="text-xs text-zinc-600">
-              {system.nodes.length} Schritte · {system.connections.length} Verbindungen
+              {system.nodes.length} {lang === 'en' ? 'Steps' : 'Schritte'} · {system.connections.length} {lang === 'en' ? 'Connections' : 'Verbindungen'}
             </span>
           </div>
-          <NodeGraph nodes={system.nodes} connections={system.connections} />
+          <NodeGraph nodes={system.nodes} connections={system.connections} lang={lang} />
         </section>
 
         {/* Section: Execute */}
         <section className="mb-6 border-t border-b border-zinc-800/40 -mx-6 px-6">
-          <ExecuteSection system={system} />
+          <ExecuteSection system={system} lang={lang} />
         </section>
 
         {/* Section: Outputs */}
         <section>
           <div className="flex items-center justify-between mb-5">
             <div className="flex items-center gap-2">
-              <h2 className="text-lg font-semibold text-white">Ergebnisse</h2>
-              <span className="text-xs text-zinc-600">{system.outputs.length} Einträge</span>
+              <h2 className="text-lg font-semibold text-white">{lang === 'en' ? 'Results' : 'Ergebnisse'}</h2>
+              <span className="text-xs text-zinc-600">{system.outputs.length} {lang === 'en' ? 'Entries' : 'Einträge'}</span>
             </div>
           </div>
           <div className="bg-zinc-900/30 border border-zinc-800/40 rounded-2xl p-4">
-            <OutputTable outputs={system.outputs} />
+            <OutputTable outputs={system.outputs} lang={lang} />
           </div>
         </section>
       </main>

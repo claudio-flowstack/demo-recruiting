@@ -15,6 +15,7 @@ import {
   SlidersHorizontal, Check, Grid3X3, History, Map as MapIcon,
 } from 'lucide-react';
 import { useTheme } from '@/components/theme-provider';
+import { useLanguage } from '@/i18n/LanguageContext';
 import type { PortDirection } from '@/types/automation';
 import type {
   FunnelElement, FunnelConnection, FunnelPhase, FunnelBoard,
@@ -716,7 +717,9 @@ const MediaBlock = memo(({ el, isDark }: { el: FunnelElement; isDark: boolean })
 export default function FunnelCanvas() {
   const viewportRef = useRef<HTMLDivElement>(null);
   const { theme } = useTheme();
+  const { lang } = useLanguage();
   const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  const locale = lang === 'en' ? 'en-US' : 'de-DE';
 
   // ─── Board Management ────────────────────────────────────────────────────
   const [boards, setBoards] = useState<FunnelBoard[]>(() => getAllFunnelBoards());
@@ -941,7 +944,7 @@ export default function FunnelCanvas() {
     const now = new Date().toISOString();
     const board: FunnelBoard = {
       id: `funnel-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-      name: 'Neues Board', description: '', elements: [], connections: [], phases: [],
+      name: lang === 'en' ? 'New Board' : 'Neues Board', description: '', elements: [], connections: [], phases: [],
       createdAt: now, updatedAt: now,
     };
     const updated = [...boards, board];
@@ -955,7 +958,7 @@ export default function FunnelCanvas() {
     setSaveState('saving');
     try {
       const board: FunnelBoard = {
-        id: activeBoardId, name: boardName || 'Unbenannt', description: boardDesc,
+        id: activeBoardId, name: boardName || (lang === 'en' ? 'Untitled' : 'Unbenannt'), description: boardDesc,
         elements, connections, phases,
         createdAt: boards.find(b => b.id === activeBoardId)?.createdAt || new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -1694,18 +1697,24 @@ export default function FunnelCanvas() {
   const getDefaultMetricLabel = useCallback((el: FunnelElement): string => {
     if (el.metricLabel) return el.metricLabel;
     if (el.type === 'platform') {
-      const map: Partial<Record<PlatformKind, string>> = {
+      const map: Partial<Record<PlatformKind, string>> = lang === 'en' ? {
+        'facebook-ads': 'Clicks', 'instagram-ads': 'Clicks', 'google-ads': 'Clicks',
+        'linkedin-ads': 'Clicks', 'tiktok-ads': 'Clicks', 'youtube': 'Views',
+        'landingpage': 'Visitors', 'website': 'Visitors', 'formular': 'Submissions',
+        'kalender': 'Bookings', 'crm': 'Contacts', 'email': 'Opens',
+        'whatsapp-sms': 'Messages', 'webinar': 'Participants', 'checkout': 'Purchases', 'seo': 'Visitors',
+      } : {
         'facebook-ads': 'Klicks', 'instagram-ads': 'Klicks', 'google-ads': 'Klicks',
         'linkedin-ads': 'Klicks', 'tiktok-ads': 'Klicks', 'youtube': 'Views',
         'landingpage': 'Besucher', 'website': 'Besucher', 'formular': 'Eintragungen',
         'kalender': 'Buchungen', 'crm': 'Kontakte', 'email': 'Öffnungen',
         'whatsapp-sms': 'Nachrichten', 'webinar': 'Teilnehmer', 'checkout': 'Käufe', 'seo': 'Besucher',
       };
-      return el.platformKind ? (map[el.platformKind] || 'Wert') : 'Wert';
+      return el.platformKind ? (map[el.platformKind] || (lang === 'en' ? 'Value' : 'Wert')) : (lang === 'en' ? 'Value' : 'Wert');
     }
-    if (el.type === 'mockup') return 'Aufrufe';
-    return 'Wert';
-  }, []);
+    if (el.type === 'mockup') return lang === 'en' ? 'Views' : 'Aufrufe';
+    return lang === 'en' ? 'Value' : 'Wert';
+  }, [lang]);
 
   const funnelSteps = useMemo(() => {
     // Only include elements that are part of connected chains
@@ -1777,7 +1786,7 @@ export default function FunnelCanvas() {
             <p className="text-sm text-gray-500 dark:text-zinc-400 mt-1">Visuelle Boards für Marketing-Funnels & Sales-Demos</p>
           </div>
           <button onClick={createNewBoard} className="flex items-center gap-2 px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-sm font-medium transition-colors">
-            <Plus size={16} /> Neues Board
+            <Plus size={16} /> {lang === 'en' ? 'New Board' : 'Neues Board'}
           </button>
         </div>
 
@@ -1789,19 +1798,19 @@ export default function FunnelCanvas() {
                   <Eye size={22} className="text-purple-600 dark:text-purple-400" />
                 </div>
                 <div className="flex items-center gap-1">
-                  <button onClick={() => handleDuplicateBoard(board.id)} className="p-1.5 rounded-lg text-gray-400 hover:text-purple-500 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors opacity-0 group-hover:opacity-100" title="Duplizieren"><Copy size={14} /></button>
-                  <button onClick={() => handleDeleteBoard(board.id)} className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors opacity-0 group-hover:opacity-100" title="Löschen"><Trash2 size={14} /></button>
+                  <button onClick={() => handleDuplicateBoard(board.id)} className="p-1.5 rounded-lg text-gray-400 hover:text-purple-500 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors opacity-0 group-hover:opacity-100" title={lang === 'en' ? 'Duplicate' : 'Duplizieren'}><Copy size={14} /></button>
+                  <button onClick={() => handleDeleteBoard(board.id)} className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors opacity-0 group-hover:opacity-100" title={lang === 'en' ? 'Delete' : 'Löschen'}><Trash2 size={14} /></button>
                 </div>
               </div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{board.name}</h3>
-              <p className="text-sm text-gray-500 dark:text-zinc-400 leading-relaxed mb-5 line-clamp-2">{board.description || 'Keine Beschreibung'}</p>
+              <p className="text-sm text-gray-500 dark:text-zinc-400 leading-relaxed mb-5 line-clamp-2">{board.description || (lang === 'en' ? 'No description' : 'Keine Beschreibung')}</p>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4 text-xs text-gray-400 dark:text-zinc-500">
-                  <span>{board.elements.length} Elemente</span>
-                  <span>{new Date(board.updatedAt).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: '2-digit' })}</span>
+                  <span>{board.elements.length} {lang === 'en' ? 'Elements' : 'Elemente'}</span>
+                  <span>{new Date(board.updatedAt).toLocaleDateString(locale, { day: '2-digit', month: '2-digit', year: '2-digit' })}</span>
                 </div>
                 <button onClick={() => loadBoard(board)} className="flex items-center gap-1 text-sm text-purple-600 dark:text-purple-400 opacity-0 group-hover:opacity-100 transition-opacity hover:underline">
-                  Öffnen
+                  {lang === 'en' ? 'Open' : 'Öffnen'}
                 </button>
               </div>
             </div>
@@ -1822,22 +1831,22 @@ export default function FunnelCanvas() {
         <button onClick={() => setPaletteOpen(!paletteOpen)} className={`p-1.5 rounded-lg transition-colors ${paletteOpen ? 'bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800'}`} title="Palette"><Plus size={16} /></button>
 
         <div className="h-4 w-px bg-gray-200 dark:bg-zinc-700" />
-        <input type="text" value={boardName} onChange={e => setBoardName(e.target.value.slice(0, MAX_LABEL))} placeholder="Board-Name…" className="bg-transparent text-sm font-medium text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-zinc-600 focus:outline-none w-40" />
+        <input type="text" value={boardName} onChange={e => setBoardName(e.target.value.slice(0, MAX_LABEL))} placeholder={lang === 'en' ? 'Board name…' : 'Board-Name…'} className="bg-transparent text-sm font-medium text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-zinc-600 focus:outline-none w-40" />
 
         <div className="flex-1" />
 
-        <button onClick={historyUndo} disabled={!canUndo} className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors disabled:opacity-30" title="Rückgängig (Ctrl+Z)"><Undo2 size={15} /></button>
-        <button onClick={historyRedo} disabled={!canRedo} className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors disabled:opacity-30" title="Wiederholen (Ctrl+Y)"><Redo2 size={15} /></button>
-        <button onClick={() => setShowHistoryPanel(!showHistoryPanel)} disabled={!canUndo && !canRedo} className={`p-1.5 rounded-lg transition-colors disabled:opacity-30 ${showHistoryPanel ? 'bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800'}`} title="Verlauf"><History size={15} /></button>
+        <button onClick={historyUndo} disabled={!canUndo} className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors disabled:opacity-30" title={lang === 'en' ? 'Undo (Ctrl+Z)' : 'Rückgängig (Ctrl+Z)'}><Undo2 size={15} /></button>
+        <button onClick={historyRedo} disabled={!canRedo} className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors disabled:opacity-30" title={lang === 'en' ? 'Redo (Ctrl+Y)' : 'Wiederholen (Ctrl+Y)'}><Redo2 size={15} /></button>
+        <button onClick={() => setShowHistoryPanel(!showHistoryPanel)} disabled={!canUndo && !canRedo} className={`p-1.5 rounded-lg transition-colors disabled:opacity-30 ${showHistoryPanel ? 'bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800'}`} title={lang === 'en' ? 'History' : 'Verlauf'}><History size={15} /></button>
         <div className="h-4 w-px bg-gray-200 dark:bg-zinc-700" />
 
         <button onClick={() => setSnapEnabled(!snapEnabled)} className={`p-1.5 rounded-lg transition-colors ${snapEnabled ? 'bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400' : 'text-gray-400 hover:bg-gray-100 dark:hover:bg-zinc-800'}`} title="Snap"><Magnet size={15} /></button>
-        <button onClick={() => setShowGrid(!showGrid)} className={`p-1.5 rounded-lg transition-colors ${showGrid ? 'bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400' : 'text-gray-400 hover:bg-gray-100 dark:hover:bg-zinc-800'}`} title="Raster"><Grid3X3 size={15} /></button>
-        <button onClick={() => { setSearchOpen(!searchOpen); setSearchQuery(''); }} className={`p-1.5 rounded-lg transition-colors ${searchOpen ? 'bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800'}`} title="Suche (Ctrl+F)"><Search size={15} /></button>
+        <button onClick={() => setShowGrid(!showGrid)} className={`p-1.5 rounded-lg transition-colors ${showGrid ? 'bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400' : 'text-gray-400 hover:bg-gray-100 dark:hover:bg-zinc-800'}`} title={lang === 'en' ? 'Grid' : 'Raster'}><Grid3X3 size={15} /></button>
+        <button onClick={() => { setSearchOpen(!searchOpen); setSearchQuery(''); }} className={`p-1.5 rounded-lg transition-colors ${searchOpen ? 'bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800'}`} title={lang === 'en' ? 'Search (Ctrl+F)' : 'Suche (Ctrl+F)'}><Search size={15} /></button>
         <button onClick={handleAutoLayout} disabled={elements.length === 0} className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors disabled:opacity-30" title="Auto-Layout"><GitBranch size={15} /></button>
         <button onClick={handleExportPNG} disabled={elements.length === 0} className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors disabled:opacity-30" title="PNG Export"><Download size={15} /></button>
-        <button onClick={() => setShowMetrics(!showMetrics)} className={`p-1.5 rounded-lg transition-colors ${showMetrics ? 'bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800'}`} title="Funnel-Metriken"><BarChart3 size={15} /></button>
-        <button onClick={() => setShowGlobalStyles(!showGlobalStyles)} className={`p-1.5 rounded-lg transition-colors ${showGlobalStyles ? 'bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800'}`} title="Globale Stile"><SlidersHorizontal size={15} /></button>
+        <button onClick={() => setShowMetrics(!showMetrics)} className={`p-1.5 rounded-lg transition-colors ${showMetrics ? 'bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800'}`} title={lang === 'en' ? 'Funnel Metrics' : 'Funnel-Metriken'}><BarChart3 size={15} /></button>
+        <button onClick={() => setShowGlobalStyles(!showGlobalStyles)} className={`p-1.5 rounded-lg transition-colors ${showGlobalStyles ? 'bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800'}`} title={lang === 'en' ? 'Global Styles' : 'Globale Stile'}><SlidersHorizontal size={15} /></button>
 
         <div className="h-4 w-px bg-gray-200 dark:bg-zinc-700" />
 
@@ -1852,15 +1861,15 @@ export default function FunnelCanvas() {
         <div className="h-4 w-px bg-gray-200 dark:bg-zinc-700" />
 
         <button onClick={() => setShowShortcuts(!showShortcuts)} className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"><HelpCircle size={15} /></button>
-        <button onClick={() => { setIsPresentationMode(true); setIsFullscreen(true); setPaletteOpen(false); setShowMetrics(false); setShowGlobalStyles(false); setTimeout(() => fitToScreen(), 100); }} className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors" title="Präsentationsmodus"><Eye size={15} /></button>
+        <button onClick={() => { setIsPresentationMode(true); setIsFullscreen(true); setPaletteOpen(false); setShowMetrics(false); setShowGlobalStyles(false); setTimeout(() => fitToScreen(), 100); }} className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors" title={lang === 'en' ? 'Presentation Mode' : 'Präsentationsmodus'}><Eye size={15} /></button>
         <button onClick={() => setIsFullscreen(!isFullscreen)} className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors">{isFullscreen ? <Minimize2 size={15} /> : <Maximize2 size={15} />}</button>
 
         <div className="h-4 w-px bg-gray-200 dark:bg-zinc-700" />
 
         <button onClick={saveCurrentBoard} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-medium transition-colors ${saveState === 'saved' ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 hover:bg-purple-100 dark:hover:bg-purple-500/20'}`}>
-          <Save size={14} />{saveState === 'saving' ? 'Speichert...' : saveState === 'saved' ? 'Gespeichert' : 'Speichern'}
+          <Save size={14} />{saveState === 'saving' ? (lang === 'en' ? 'Saving...' : 'Speichert...') : saveState === 'saved' ? (lang === 'en' ? 'Saved' : 'Gespeichert') : (lang === 'en' ? 'Save' : 'Speichern')}
         </button>
-        <button onClick={() => { setShowBoardList(true); setPaletteOpen(false); }} className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors" title="Zur Board-Übersicht"><LayoutGrid size={15} /></button>
+        <button onClick={() => { setShowBoardList(true); setPaletteOpen(false); }} className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors" title={lang === 'en' ? 'Board overview' : 'Zur Board-Übersicht'}><LayoutGrid size={15} /></button>
       </div>}
 
       {/* ── History Panel ──────────────────────────────────────────────── */}
@@ -1868,15 +1877,15 @@ export default function FunnelCanvas() {
         <div className="border-b border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shrink-0" style={{ maxHeight: '25vh', overflowY: 'auto' }}>
           <div className="p-3">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-xs font-semibold text-gray-900 dark:text-white flex items-center gap-1.5"><History size={12} /> Verlauf</h3>
+              <h3 className="text-xs font-semibold text-gray-900 dark:text-white flex items-center gap-1.5"><History size={12} /> {lang === 'en' ? 'History' : 'Verlauf'}</h3>
               <button onClick={() => setShowHistoryPanel(false)} className="p-0.5 rounded text-gray-400 hover:text-gray-600 dark:hover:text-zinc-300"><X size={12} /></button>
             </div>
             <div className="space-y-0.5">
               {/* Current state */}
               <div className="flex items-center gap-2 px-2 py-1.5 rounded-xl bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400">
                 <div className="w-1.5 h-1.5 rounded-full bg-purple-500" />
-                <span className="text-[11px] font-medium">Aktueller Stand</span>
-                <span className="text-[10px] ml-auto opacity-60">{elements.length} Elemente · {connections.length} Verbindungen</span>
+                <span className="text-[11px] font-medium">{lang === 'en' ? 'Current state' : 'Aktueller Stand'}</span>
+                <span className="text-[10px] ml-auto opacity-60">{elements.length} {lang === 'en' ? 'Elements' : 'Elemente'} · {connections.length} {lang === 'en' ? 'Connections' : 'Verbindungen'}</span>
               </div>
               {/* Undo stack (most recent first) */}
               {[...undoStackRef.current].reverse().map((snap, reverseIdx) => {
@@ -1885,8 +1894,8 @@ export default function FunnelCanvas() {
                   <button key={reverseIdx} onClick={() => { jumpToHistory(realIdx); setShowHistoryPanel(false); }}
                     className="w-full flex items-center gap-2 px-2 py-1.5 rounded-xl text-left hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors group">
                     <div className="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-zinc-600 group-hover:bg-purple-400" />
-                    <span className="text-[11px] text-gray-500 dark:text-zinc-400">Schritt {realIdx + 1}</span>
-                    <span className="text-[10px] text-gray-400 dark:text-zinc-500 ml-auto">{snap.elements.length} El. · {snap.connections.length} Verb.</span>
+                    <span className="text-[11px] text-gray-500 dark:text-zinc-400">{lang === 'en' ? 'Step' : 'Schritt'} {realIdx + 1}</span>
+                    <span className="text-[10px] text-gray-400 dark:text-zinc-500 ml-auto">{snap.elements.length} {lang === 'en' ? 'El.' : 'El.'} · {snap.connections.length} {lang === 'en' ? 'Conn.' : 'Verb.'}</span>
                   </button>
                 );
               })}
@@ -1903,7 +1912,7 @@ export default function FunnelCanvas() {
             autoFocus
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            placeholder="Element suchen…"
+            placeholder={lang === 'en' ? 'Search elements…' : 'Element suchen…'}
             className="flex-1 bg-transparent text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-zinc-600 focus:outline-none"
             onKeyDown={e => {
               if (e.key === 'Escape') { setSearchOpen(false); setSearchQuery(''); }
@@ -1923,7 +1932,7 @@ export default function FunnelCanvas() {
           />
           {searchQuery && (
             <span className="text-[11px] text-gray-400 dark:text-zinc-500">
-              {elements.filter(el => el.label?.toLowerCase().includes(searchQuery.toLowerCase()) || el.textContent?.toLowerCase().includes(searchQuery.toLowerCase()) || el.platformKind?.toLowerCase().includes(searchQuery.toLowerCase())).length} Treffer
+              {elements.filter(el => el.label?.toLowerCase().includes(searchQuery.toLowerCase()) || el.textContent?.toLowerCase().includes(searchQuery.toLowerCase()) || el.platformKind?.toLowerCase().includes(searchQuery.toLowerCase())).length} {lang === 'en' ? 'results' : 'Treffer'}
             </span>
           )}
           <button onClick={() => { setSearchOpen(false); setSearchQuery(''); }} className="p-1 rounded text-gray-400 hover:text-gray-600 dark:hover:text-zinc-300"><X size={14} /></button>
@@ -1936,18 +1945,18 @@ export default function FunnelCanvas() {
           <div className="w-56 border-r border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex flex-col overflow-hidden shrink-0">
             {/* Header + Tabs */}
             <div className="p-3 border-b border-gray-200 dark:border-zinc-800">
-              <div className="text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wider mb-2">Elemente</div>
+              <div className="text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wider mb-2">{lang === 'en' ? 'Elements' : 'Elemente'}</div>
               <div className="flex gap-1 mb-1">
                 {(['platforms', 'mockups', 'text'] as const).map(tab => (
                   <button key={tab} onClick={() => setPaletteTab(tab)} className={`flex-1 text-xs py-1.5 rounded-xl font-medium transition-colors ${paletteTab === tab ? 'bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800'}`}>
-                    {tab === 'platforms' ? 'Plattformen' : tab === 'mockups' ? 'Mockups' : 'Text'}
+                    {tab === 'platforms' ? (lang === 'en' ? 'Platforms' : 'Plattformen') : tab === 'mockups' ? 'Mockups' : 'Text'}
                   </button>
                 ))}
               </div>
               <div className="flex gap-1">
                 {(['media', 'phases', 'templates'] as const).map(tab => (
                   <button key={tab} onClick={() => setPaletteTab(tab)} className={`flex-1 text-xs py-1.5 rounded-xl font-medium transition-colors ${paletteTab === tab ? 'bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800'}`}>
-                    {tab === 'media' ? 'Medien' : tab === 'phases' ? 'Phasen' : 'Vorlagen'}
+                    {tab === 'media' ? (lang === 'en' ? 'Media' : 'Medien') : tab === 'phases' ? (lang === 'en' ? 'Phases' : 'Phasen') : (lang === 'en' ? 'Templates' : 'Vorlagen')}
                   </button>
                 ))}
               </div>
@@ -1961,7 +1970,7 @@ export default function FunnelCanvas() {
                   type="text"
                   value={paletteSearch}
                   onChange={e => setPaletteSearch(e.target.value)}
-                  placeholder="Suchen…"
+                  placeholder={lang === 'en' ? 'Search…' : 'Suchen…'}
                   className="w-full pl-7 pr-7 py-1.5 text-xs rounded-lg bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-white border border-gray-200 dark:border-zinc-700 focus:outline-none focus:ring-1 focus:ring-purple-500"
                 />
                 {paletteSearch && (
@@ -1975,13 +1984,14 @@ export default function FunnelCanvas() {
             <div className="flex-1 overflow-y-auto p-2 space-y-1">
               {paletteTab === 'platforms' && (() => {
                 const search = paletteSearch.toLowerCase();
+                const catLabels: Record<string, string> = lang === 'en' ? { 'Werbung': 'Advertising', 'Touchpoints': 'Touchpoints', 'Backend': 'Backend' } : { 'Werbung': 'Werbung', 'Touchpoints': 'Touchpoints', 'Backend': 'Backend' };
                 const categories = ['Werbung', 'Touchpoints', 'Backend'];
                 return categories.map(cat => {
                   const filtered = PLATFORMS.filter(p => p.category === cat && (!search || p.label.toLowerCase().includes(search) || p.kind.toLowerCase().includes(search)));
                   if (filtered.length === 0) return null;
                   return (
                     <div key={cat}>
-                      <p className="text-[10px] uppercase font-semibold text-gray-400 dark:text-zinc-500 px-2 pt-2 pb-1">{cat}</p>
+                      <p className="text-[10px] uppercase font-semibold text-gray-400 dark:text-zinc-500 px-2 pt-2 pb-1">{catLabels[cat] || cat}</p>
                       {filtered.map(p => {
                         const item: FunnelPaletteItem = { type: 'platform', label: p.label, icon: p.icon, platformKind: p.kind };
                         const LucideIcon = LUCIDE_ICONS[p.icon];
@@ -2089,45 +2099,45 @@ export default function FunnelCanvas() {
         {showGlobalStyles && (!isPresentationMode || presEditEnabled) && (
           <div className="w-64 border-r border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-y-auto shrink-0">
             <div className="p-3 border-b border-gray-200 dark:border-zinc-800">
-              <h3 className="text-xs font-semibold text-gray-900 dark:text-white flex items-center gap-1.5"><SlidersHorizontal size={12} /> Globale Stile</h3>
+              <h3 className="text-xs font-semibold text-gray-900 dark:text-white flex items-center gap-1.5"><SlidersHorizontal size={12} /> {lang === 'en' ? 'Global Styles' : 'Globale Stile'}</h3>
             </div>
             <div className="p-3 space-y-5">
 
               {/* ── Connection Styles ── */}
               <div>
-                <p className="text-[10px] uppercase font-semibold text-gray-400 dark:text-zinc-500 mb-2">Verbindungen</p>
+                <p className="text-[10px] uppercase font-semibold text-gray-400 dark:text-zinc-500 mb-2">{lang === 'en' ? 'Connections' : 'Verbindungen'}</p>
 
                 {/* Line Style */}
-                <label className="text-[11px] text-gray-500 dark:text-zinc-400 mb-1 block">Linienstil</label>
+                <label className="text-[11px] text-gray-500 dark:text-zinc-400 mb-1 block">{lang === 'en' ? 'Line Style' : 'Linienstil'}</label>
                 <div className="flex gap-1.5 mb-3">
                   {([
-                    { key: 'solid' as ConnLineStyle, label: '━━━', desc: 'Durchgehend' },
-                    { key: 'dashed' as ConnLineStyle, label: '╌╌╌', desc: 'Gestrichelt' },
-                    { key: 'dotted' as ConnLineStyle, label: '···', desc: 'Gepunktet' },
+                    { key: 'solid' as ConnLineStyle, label: '━━━', desc: lang === 'en' ? 'Solid' : 'Durchgehend' },
+                    { key: 'dashed' as ConnLineStyle, label: '╌╌╌', desc: lang === 'en' ? 'Dashed' : 'Gestrichelt' },
+                    { key: 'dotted' as ConnLineStyle, label: '···', desc: lang === 'en' ? 'Dotted' : 'Gepunktet' },
                   ]).map(s => (
                     <button key={s.key} onClick={() => setGlobalConnLineStyle(s.key)} className={`flex-1 py-1.5 rounded-xl text-xs font-medium border transition-colors ${globalConnLineStyle === s.key ? 'border-purple-500 bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400' : 'border-gray-200 dark:border-zinc-700 text-gray-500 hover:border-gray-300'}`} title={s.desc}>{s.label}</button>
                   ))}
                 </div>
 
                 {/* Thickness */}
-                <label className="text-[11px] text-gray-500 dark:text-zinc-400 mb-1 block">Stärke</label>
+                <label className="text-[11px] text-gray-500 dark:text-zinc-400 mb-1 block">{lang === 'en' ? 'Thickness' : 'Stärke'}</label>
                 <div className="flex gap-1.5 mb-3">
                   {([
-                    { key: 'thin' as ConnThickness, label: 'Dünn' },
+                    { key: 'thin' as ConnThickness, label: lang === 'en' ? 'Thin' : 'Dünn' },
                     { key: 'normal' as ConnThickness, label: 'Normal' },
-                    { key: 'thick' as ConnThickness, label: 'Dick' },
+                    { key: 'thick' as ConnThickness, label: lang === 'en' ? 'Thick' : 'Dick' },
                   ]).map(s => (
                     <button key={s.key} onClick={() => setGlobalConnThickness(s.key)} className={`flex-1 py-1.5 rounded-xl text-[10px] font-medium border transition-colors ${globalConnThickness === s.key ? 'border-purple-500 bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400' : 'border-gray-200 dark:border-zinc-700 text-gray-500 hover:border-gray-300'}`}>{s.label}</button>
                   ))}
                 </div>
 
                 {/* Curve Style */}
-                <label className="text-[11px] text-gray-500 dark:text-zinc-400 mb-1 block">Kurvenform</label>
+                <label className="text-[11px] text-gray-500 dark:text-zinc-400 mb-1 block">{lang === 'en' ? 'Curve Shape' : 'Kurvenform'}</label>
                 <div className="flex gap-1.5 mb-3">
                   {([
-                    { key: 'bezier' as ConnCurve, label: 'Kurve', icon: '⌒' },
-                    { key: 'straight' as ConnCurve, label: 'Gerade', icon: '╲' },
-                    { key: 'step' as ConnCurve, label: 'Stufen', icon: '⌐' },
+                    { key: 'bezier' as ConnCurve, label: lang === 'en' ? 'Curve' : 'Kurve', icon: '⌒' },
+                    { key: 'straight' as ConnCurve, label: lang === 'en' ? 'Straight' : 'Gerade', icon: '╲' },
+                    { key: 'step' as ConnCurve, label: lang === 'en' ? 'Steps' : 'Stufen', icon: '⌐' },
                   ]).map(s => (
                     <button key={s.key} onClick={() => setGlobalConnCurve(s.key)} className={`flex-1 py-1.5 rounded-xl text-[10px] font-medium border transition-colors ${globalConnCurve === s.key ? 'border-purple-500 bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400' : 'border-gray-200 dark:border-zinc-700 text-gray-500 hover:border-gray-300'}`}>{s.icon} {s.label}</button>
                   ))}
@@ -2147,21 +2157,21 @@ export default function FunnelCanvas() {
                 <label className="text-[11px] text-gray-500 dark:text-zinc-400 mb-1 block">Animation</label>
                 <div className="flex gap-1.5 mb-3">
                   {([
-                    { key: 'dot' as ConnAnimation, label: 'Punkt' },
-                    { key: 'pulse' as ConnAnimation, label: 'Puls' },
-                    { key: 'none' as ConnAnimation, label: 'Keine' },
+                    { key: 'dot' as ConnAnimation, label: lang === 'en' ? 'Dot' : 'Punkt' },
+                    { key: 'pulse' as ConnAnimation, label: lang === 'en' ? 'Pulse' : 'Puls' },
+                    { key: 'none' as ConnAnimation, label: lang === 'en' ? 'None' : 'Keine' },
                   ]).map(s => (
                     <button key={s.key} onClick={() => setGlobalConnAnimation(s.key)} className={`flex-1 py-1.5 rounded-xl text-[10px] font-medium border transition-colors ${globalConnAnimation === s.key ? 'border-purple-500 bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400' : 'border-gray-200 dark:border-zinc-700 text-gray-500 hover:border-gray-300'}`}>{s.label}</button>
                   ))}
                 </div>
 
                 {/* Arrowhead */}
-                <label className="text-[11px] text-gray-500 dark:text-zinc-400 mb-1 block">Pfeilspitze</label>
+                <label className="text-[11px] text-gray-500 dark:text-zinc-400 mb-1 block">{lang === 'en' ? 'Arrowhead' : 'Pfeilspitze'}</label>
                 <div className="flex gap-1.5">
                   {([
-                    { key: 'filled' as ConnArrowhead, label: '▶ Gefüllt' },
-                    { key: 'open' as ConnArrowhead, label: '▷ Offen' },
-                    { key: 'none' as ConnArrowhead, label: '— Keine' },
+                    { key: 'filled' as ConnArrowhead, label: lang === 'en' ? '▶ Filled' : '▶ Gefüllt' },
+                    { key: 'open' as ConnArrowhead, label: lang === 'en' ? '▷ Open' : '▷ Offen' },
+                    { key: 'none' as ConnArrowhead, label: lang === 'en' ? '— None' : '— Keine' },
                   ]).map(s => (
                     <button key={s.key} onClick={() => setGlobalConnArrowhead(s.key)} className={`flex-1 py-1.5 rounded-xl text-[10px] font-medium border transition-colors ${globalConnArrowhead === s.key ? 'border-purple-500 bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400' : 'border-gray-200 dark:border-zinc-700 text-gray-500 hover:border-gray-300'}`}>{s.label}</button>
                   ))}
@@ -2172,17 +2182,17 @@ export default function FunnelCanvas() {
 
               {/* ── Node Styles ── */}
               <div>
-                <p className="text-[10px] uppercase font-semibold text-gray-400 dark:text-zinc-500 mb-2">Nodes / Elemente</p>
+                <p className="text-[10px] uppercase font-semibold text-gray-400 dark:text-zinc-500 mb-2">{lang === 'en' ? 'Nodes / Elements' : 'Nodes / Elemente'}</p>
 
                 {/* Node Shape */}
-                <label className="text-[11px] text-gray-500 dark:text-zinc-400 mb-1 block">Form</label>
+                <label className="text-[11px] text-gray-500 dark:text-zinc-400 mb-1 block">{lang === 'en' ? 'Shape' : 'Form'}</label>
                 <div className="grid grid-cols-3 gap-1.5 mb-3">
                   {([
-                    { key: 'default' as NodeStyle, label: 'Standard', preview: 'rounded-xl border' },
-                    { key: 'rounded' as NodeStyle, label: 'Rund', preview: 'rounded-[20px] border-2' },
-                    { key: 'sharp' as NodeStyle, label: 'Eckig', preview: 'rounded-none border' },
+                    { key: 'default' as NodeStyle, label: lang === 'en' ? 'Default' : 'Standard', preview: 'rounded-xl border' },
+                    { key: 'rounded' as NodeStyle, label: lang === 'en' ? 'Rounded' : 'Rund', preview: 'rounded-[20px] border-2' },
+                    { key: 'sharp' as NodeStyle, label: lang === 'en' ? 'Sharp' : 'Eckig', preview: 'rounded-none border' },
                     { key: 'pill' as NodeStyle, label: 'Pill', preview: 'rounded-full border-2' },
-                    { key: 'card' as NodeStyle, label: 'Karte', preview: 'rounded-xl border-2 border-b-4' },
+                    { key: 'card' as NodeStyle, label: lang === 'en' ? 'Card' : 'Karte', preview: 'rounded-xl border-2 border-b-4' },
                   ]).map(s => (
                     <button key={s.key} onClick={() => setGlobalNodeStyle(s.key)} className={`py-1.5 rounded-xl text-[10px] font-medium border transition-colors ${globalNodeStyle === s.key ? 'border-purple-500 bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400' : 'border-gray-200 dark:border-zinc-700 text-gray-500 hover:border-gray-300'}`}>
                       <div className={`w-8 h-4 mx-auto mb-0.5 border-current bg-purple-200/40 ${s.preview}`} />
@@ -2192,12 +2202,12 @@ export default function FunnelCanvas() {
                 </div>
 
                 {/* Node Shadow */}
-                <label className="text-[11px] text-gray-500 dark:text-zinc-400 mb-1 block">Schatten</label>
+                <label className="text-[11px] text-gray-500 dark:text-zinc-400 mb-1 block">{lang === 'en' ? 'Shadow' : 'Schatten'}</label>
                 <div className="flex gap-1.5">
                   {([
-                    { key: 'none' as NodeShadow, label: 'Keiner' },
-                    { key: 'sm' as NodeShadow, label: 'Klein' },
-                    { key: 'md' as NodeShadow, label: 'Mittel' },
+                    { key: 'none' as NodeShadow, label: lang === 'en' ? 'None' : 'Keiner' },
+                    { key: 'sm' as NodeShadow, label: lang === 'en' ? 'Small' : 'Klein' },
+                    { key: 'md' as NodeShadow, label: lang === 'en' ? 'Medium' : 'Mittel' },
                     { key: 'lg' as NodeShadow, label: 'Groß' },
                   ]).map(s => (
                     <button key={s.key} onClick={() => setGlobalNodeShadow(s.key)} className={`flex-1 py-1.5 rounded-xl text-[10px] font-medium border transition-colors ${globalNodeShadow === s.key ? 'border-purple-500 bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400' : 'border-gray-200 dark:border-zinc-700 text-gray-500 hover:border-gray-300'}`}>{s.label}</button>
@@ -2542,7 +2552,7 @@ export default function FunnelCanvas() {
       {showMetrics && funnelSteps.length > 0 && (
         <div className="border-t border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shrink-0 overflow-y-auto" style={{ maxHeight: '25vh' }}>
           <div className="p-4">
-            <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2"><BarChart3 size={14} /> Funnel-Metriken eingeben</h3>
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2"><BarChart3 size={14} /> {lang === 'en' ? 'Enter Funnel Metrics' : 'Funnel-Metriken eingeben'}</h3>
             <div className="flex flex-wrap gap-3">
               {funnelSteps.map((step, i) => {
                 const platform = step.type === 'platform' ? PLATFORMS.find(p => p.kind === step.platformKind) : null;
@@ -2559,7 +2569,7 @@ export default function FunnelCanvas() {
                       {step.metricTarget && step.metricTarget > 0 && step.metricValue ? (() => {
                         const pct = (step.metricValue / step.metricTarget) * 100;
                         const color = pct >= 90 ? '#10b981' : pct >= 60 ? '#f59e0b' : '#ef4444';
-                        return <div className="w-2.5 h-2.5 rounded-full ml-auto shrink-0" style={{ backgroundColor: color }} title={`${pct.toFixed(0)}% vom Ziel`} />;
+                        return <div className="w-2.5 h-2.5 rounded-full ml-auto shrink-0" style={{ backgroundColor: color }} title={`${pct.toFixed(0)}% ${lang === 'en' ? 'of target' : 'vom Ziel'}`} />;
                       })() : null}
                     </div>
                     <div className="flex items-center gap-2 mb-1">
@@ -2567,7 +2577,7 @@ export default function FunnelCanvas() {
                         type="number"
                         value={step.metricValue ?? ''}
                         onChange={e => handleMetricChange(step.id, Number(e.target.value) || 0)}
-                        placeholder="Ist"
+                        placeholder={lang === 'en' ? 'Current' : 'Ist'}
                         className="w-20 px-2 py-1.5 text-sm rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-gray-900 dark:text-white focus:outline-none focus:border-purple-400 text-right"
                       />
                       <span className="text-[11px] text-gray-400 dark:text-zinc-500 whitespace-nowrap">{metricLabel}</span>
@@ -2577,10 +2587,10 @@ export default function FunnelCanvas() {
                         type="number"
                         value={step.metricTarget ?? ''}
                         onChange={e => { pushHistory(); setElements(prev => prev.map(el => el.id === step.id ? { ...el, metricTarget: Number(e.target.value) || 0 } : el)); }}
-                        placeholder="Ziel"
+                        placeholder={lang === 'en' ? 'Target' : 'Ziel'}
                         className="w-20 px-2 py-1.5 text-[11px] rounded-lg border border-dashed border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-gray-500 dark:text-zinc-400 focus:outline-none focus:border-purple-400 text-right"
                       />
-                      <span className="text-[10px] text-gray-300 dark:text-zinc-600 whitespace-nowrap">Ziel</span>
+                      <span className="text-[10px] text-gray-300 dark:text-zinc-600 whitespace-nowrap">{lang === 'en' ? 'Target' : 'Ziel'}</span>
                     </div>
                   </div>
                 );
@@ -2597,52 +2607,52 @@ export default function FunnelCanvas() {
         return (
           <div className="absolute inset-0 bg-black/30 z-40 flex items-center justify-center" onClick={() => setEditElementId(null)}>
             <div className={`bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl p-6 space-y-4 ${el.type === 'mockup' ? 'w-[440px]' : 'w-96'}`} onClick={e => e.stopPropagation()}>
-              <h3 className="font-semibold text-gray-900 dark:text-white">{el.type === 'mockup' ? 'Mockup bearbeiten' : 'Element bearbeiten'}</h3>
+              <h3 className="font-semibold text-gray-900 dark:text-white">{el.type === 'mockup' ? (lang === 'en' ? 'Edit Mockup' : 'Mockup bearbeiten') : (lang === 'en' ? 'Edit Element' : 'Element bearbeiten')}</h3>
               {(el.type === 'platform') && (
                 <>
                   <input value={editLabel} onChange={e => setEditLabel(e.target.value)} placeholder="Label" className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-purple-400" />
-                  <input value={editDesc} onChange={e => setEditDesc(e.target.value)} placeholder="Beschreibung" className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-purple-400" />
+                  <input value={editDesc} onChange={e => setEditDesc(e.target.value)} placeholder={lang === 'en' ? 'Description' : 'Beschreibung'} className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-purple-400" />
                 </>
               )}
               {el.type === 'text' && (
-                <textarea value={editTextContent} onChange={e => setEditTextContent(e.target.value)} rows={4} placeholder="Text eingeben..." className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-purple-400 resize-none" />
+                <textarea value={editTextContent} onChange={e => setEditTextContent(e.target.value)} rows={4} placeholder={lang === 'en' ? 'Enter text...' : 'Text eingeben...'} className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-purple-400 resize-none" />
               )}
               {el.type === 'media' && (
-                <input value={editMediaUrl} onChange={e => setEditMediaUrl(e.target.value)} placeholder="Bild-URL" className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-purple-400" />
+                <input value={editMediaUrl} onChange={e => setEditMediaUrl(e.target.value)} placeholder={lang === 'en' ? 'Image URL' : 'Bild-URL'} className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-purple-400" />
               )}
               {el.type === 'mockup' && (
                 <div className="space-y-3 max-h-[60vh] overflow-y-auto">
                   {(el.mockupKind === 'social-post' || el.mockupKind === 'ad-mockup') && (
                     <>
                       <p className="text-[10px] uppercase font-semibold text-gray-400 dark:text-zinc-500">Profil</p>
-                      <input value={editProfileImage} onChange={e => setEditProfileImage(e.target.value)} placeholder="Profilbild-URL" className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-purple-400" />
-                      <input value={editProfileName} onChange={e => setEditProfileName(e.target.value)} placeholder="Name / Marke" className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-purple-400" />
+                      <input value={editProfileImage} onChange={e => setEditProfileImage(e.target.value)} placeholder={lang === 'en' ? 'Profile image URL' : 'Profilbild-URL'} className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-purple-400" />
+                      <input value={editProfileName} onChange={e => setEditProfileName(e.target.value)} placeholder={lang === 'en' ? 'Name / Brand' : 'Name / Marke'} className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-purple-400" />
                     </>
                   )}
                   <p className="text-[10px] uppercase font-semibold text-gray-400 dark:text-zinc-500">Inhalt</p>
-                  <textarea value={editBodyText} onChange={e => setEditBodyText(e.target.value)} rows={3} placeholder="Text / Beschreibung" className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-purple-400 resize-none" />
-                  <input value={editMediaUrl} onChange={e => setEditMediaUrl(e.target.value)} placeholder="Bild-URL (Hauptbild)" className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-purple-400" />
+                  <textarea value={editBodyText} onChange={e => setEditBodyText(e.target.value)} rows={3} placeholder={lang === 'en' ? 'Text / Description' : 'Text / Beschreibung'} className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-purple-400 resize-none" />
+                  <input value={editMediaUrl} onChange={e => setEditMediaUrl(e.target.value)} placeholder={lang === 'en' ? 'Image URL (main image)' : 'Bild-URL (Hauptbild)'} className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-purple-400" />
                   <input value={editHeadline} onChange={e => setEditHeadline(e.target.value)} placeholder="Headline" className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-purple-400" />
                   {el.mockupKind === 'ad-mockup' && (
-                    <input value={editMockupDesc} onChange={e => setEditMockupDesc(e.target.value)} placeholder="Untertitel / Beschreibung" className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-purple-400" />
+                    <input value={editMockupDesc} onChange={e => setEditMockupDesc(e.target.value)} placeholder={lang === 'en' ? 'Subtitle / Description' : 'Untertitel / Beschreibung'} className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-purple-400" />
                   )}
                   {(el.mockupKind === 'ad-mockup' || el.mockupKind === 'mobile' || el.mockupKind === 'desktop') && (
-                    <input value={editCtaText} onChange={e => setEditCtaText(e.target.value)} placeholder="CTA-Button Text (z.B. 'Jetzt kaufen')" className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-purple-400" />
+                    <input value={editCtaText} onChange={e => setEditCtaText(e.target.value)} placeholder={lang === 'en' ? "CTA Button Text (e.g. 'Buy Now')" : "CTA-Button Text (z.B. 'Jetzt kaufen')"} className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-purple-400" />
                   )}
                   {(el.mockupKind === 'desktop' || el.mockupKind === 'mobile' || el.mockupKind === 'ad-mockup') && (
-                    <input value={editBrowserUrl} onChange={e => setEditBrowserUrl(e.target.value)} placeholder="URL (z.B. 'www.example.com')" className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-purple-400" />
+                    <input value={editBrowserUrl} onChange={e => setEditBrowserUrl(e.target.value)} placeholder={lang === 'en' ? "URL (e.g. 'www.example.com')" : "URL (z.B. 'www.example.com')"} className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-purple-400" />
                   )}
-                  <input value={editTextContent} onChange={e => setEditTextContent(e.target.value)} placeholder="Platzhalter-Text (Fallback)" className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-purple-400" />
+                  <input value={editTextContent} onChange={e => setEditTextContent(e.target.value)} placeholder={lang === 'en' ? 'Placeholder Text (Fallback)' : 'Platzhalter-Text (Fallback)'} className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-purple-400" />
                 </div>
               )}
               {/* Notes */}
               <div>
-                <p className="text-[10px] uppercase font-semibold text-gray-400 dark:text-zinc-500 mb-1">Notizen</p>
-                <textarea value={editNotes} onChange={e => setEditNotes(e.target.value)} rows={2} placeholder="Interne Notiz hinzufügen…" className="w-full px-3 py-2 rounded-xl border border-dashed border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-yellow-400 resize-none" />
+                <p className="text-[10px] uppercase font-semibold text-gray-400 dark:text-zinc-500 mb-1">{lang === 'en' ? 'Notes' : 'Notizen'}</p>
+                <textarea value={editNotes} onChange={e => setEditNotes(e.target.value)} rows={2} placeholder={lang === 'en' ? 'Add internal note…' : 'Interne Notiz hinzufügen…'} className="w-full px-3 py-2 rounded-xl border border-dashed border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-yellow-400 resize-none" />
               </div>
               <div className="flex justify-end gap-2">
-                <button onClick={() => setEditElementId(null)} className="px-3 py-1.5 rounded-xl text-sm text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800">Abbrechen</button>
-                <button onClick={saveElementEdit} className="px-3 py-1.5 rounded-xl text-sm bg-purple-600 text-white hover:bg-purple-700">Speichern</button>
+                <button onClick={() => setEditElementId(null)} className="px-3 py-1.5 rounded-xl text-sm text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800">{lang === 'en' ? 'Cancel' : 'Abbrechen'}</button>
+                <button onClick={saveElementEdit} className="px-3 py-1.5 rounded-xl text-sm bg-purple-600 text-white hover:bg-purple-700">{lang === 'en' ? 'Save' : 'Speichern'}</button>
               </div>
             </div>
           </div>
@@ -2652,8 +2662,8 @@ export default function FunnelCanvas() {
       {editConnId && (
         <div className="absolute inset-0 bg-black/30 z-40 flex items-center justify-center" onClick={() => setEditConnId(null)}>
           <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl p-6 w-80 space-y-4" onClick={e => e.stopPropagation()}>
-            <h3 className="font-semibold text-gray-900 dark:text-white">Verbindung bearbeiten</h3>
-            <input value={editConnLabel} onChange={e => setEditConnLabel(e.target.value)} placeholder="Label (z.B. 'Klick', '32% CTR')" className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-purple-400" />
+            <h3 className="font-semibold text-gray-900 dark:text-white">{lang === 'en' ? 'Edit Connection' : 'Verbindung bearbeiten'}</h3>
+            <input value={editConnLabel} onChange={e => setEditConnLabel(e.target.value)} placeholder={lang === 'en' ? "Label (e.g. 'Click', '32% CTR')" : "Label (z.B. 'Klick', '32% CTR')"} className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-purple-400" />
             <div className="flex gap-2">
               {(['solid', 'dashed', 'dotted'] as FunnelLineStyle[]).map(s => (
                 <button key={s} onClick={() => setEditConnStyle(s)} className={`flex-1 py-2 rounded-xl text-xs font-medium border transition-colors ${editConnStyle === s ? 'border-purple-500 bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400' : 'border-gray-200 dark:border-zinc-700 text-gray-500'}`}>
@@ -2662,8 +2672,8 @@ export default function FunnelCanvas() {
               ))}
             </div>
             <div className="flex justify-end gap-2">
-              <button onClick={() => setEditConnId(null)} className="px-3 py-1.5 rounded-xl text-sm text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800">Abbrechen</button>
-              <button onClick={saveConnEdit} className="px-3 py-1.5 rounded-xl text-sm bg-purple-600 text-white hover:bg-purple-700">Speichern</button>
+              <button onClick={() => setEditConnId(null)} className="px-3 py-1.5 rounded-xl text-sm text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800">{lang === 'en' ? 'Cancel' : 'Abbrechen'}</button>
+              <button onClick={saveConnEdit} className="px-3 py-1.5 rounded-xl text-sm bg-purple-600 text-white hover:bg-purple-700">{lang === 'en' ? 'Save' : 'Speichern'}</button>
             </div>
           </div>
         </div>
@@ -2672,11 +2682,11 @@ export default function FunnelCanvas() {
       {editPhaseId && (
         <div className="absolute inset-0 bg-black/30 z-40 flex items-center justify-center" onClick={() => setEditPhaseId(null)}>
           <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl p-6 w-80 space-y-4" onClick={e => e.stopPropagation()}>
-            <h3 className="font-semibold text-gray-900 dark:text-white">Phase bearbeiten</h3>
-            <input value={editPhaseLabel} onChange={e => setEditPhaseLabel(e.target.value)} placeholder="Phase-Name" className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-purple-400" />
+            <h3 className="font-semibold text-gray-900 dark:text-white">{lang === 'en' ? 'Edit Phase' : 'Phase bearbeiten'}</h3>
+            <input value={editPhaseLabel} onChange={e => setEditPhaseLabel(e.target.value)} placeholder={lang === 'en' ? 'Phase name' : 'Phase-Name'} className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-purple-400" />
             <div className="flex justify-end gap-2">
-              <button onClick={() => setEditPhaseId(null)} className="px-3 py-1.5 rounded-xl text-sm text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800">Abbrechen</button>
-              <button onClick={savePhaseEdit} className="px-3 py-1.5 rounded-xl text-sm bg-purple-600 text-white hover:bg-purple-700">Speichern</button>
+              <button onClick={() => setEditPhaseId(null)} className="px-3 py-1.5 rounded-xl text-sm text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800">{lang === 'en' ? 'Cancel' : 'Abbrechen'}</button>
+              <button onClick={savePhaseEdit} className="px-3 py-1.5 rounded-xl text-sm bg-purple-600 text-white hover:bg-purple-700">{lang === 'en' ? 'Save' : 'Speichern'}</button>
             </div>
           </div>
         </div>
@@ -2687,11 +2697,11 @@ export default function FunnelCanvas() {
         <div className="absolute inset-0 bg-black/30 z-40 flex items-center justify-center" onClick={() => setShowShortcuts(false)}>
           <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl p-6 w-80" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-gray-900 dark:text-white">Tastenkürzel</h3>
+              <h3 className="font-semibold text-gray-900 dark:text-white">{lang === 'en' ? 'Keyboard Shortcuts' : 'Tastenkürzel'}</h3>
               <button onClick={() => setShowShortcuts(false)} className="text-gray-400 hover:text-gray-600"><X size={16} /></button>
             </div>
             <div className="space-y-2 text-sm">
-              {[['Space + Drag', 'Canvas verschieben'], ['Scroll', 'Zoom'], ['Ctrl+Z', 'Rückgängig'], ['Ctrl+Y', 'Wiederholen'], ['Delete', 'Element löschen'], ['Escape', 'Auswahl aufheben'], ['Doppelklick', 'Element bearbeiten'], ['Shift+Klick', 'Multi-Auswahl'], ['Shift+Drag', 'Lasso-Auswahl'], ['Ctrl+A', 'Alles auswählen'], ['Ctrl+C / V', 'Kopieren / Einfügen'], ['Ctrl+D', 'Duplizieren'], ['Pfeiltasten', 'Verschieben (1px)'], ['Shift+Pfeiltasten', 'Verschieben (10px)'], ['Tab', 'Nächstes Element'], ['?', 'Tastenkürzel']].map(([key, desc]) => (
+              {(lang === 'en' ? [['Space + Drag', 'Pan canvas'], ['Scroll', 'Zoom'], ['Ctrl+Z', 'Undo'], ['Ctrl+Y', 'Redo'], ['Delete', 'Delete element'], ['Escape', 'Deselect'], ['Double-click', 'Edit element'], ['Shift+Click', 'Multi-select'], ['Shift+Drag', 'Lasso select'], ['Ctrl+A', 'Select all'], ['Ctrl+C / V', 'Copy / Paste'], ['Ctrl+D', 'Duplicate'], ['Arrow keys', 'Move (1px)'], ['Shift+Arrows', 'Move (10px)'], ['Tab', 'Next element'], ['?', 'Shortcuts']] : [['Space + Drag', 'Canvas verschieben'], ['Scroll', 'Zoom'], ['Ctrl+Z', 'Rückgängig'], ['Ctrl+Y', 'Wiederholen'], ['Delete', 'Element löschen'], ['Escape', 'Auswahl aufheben'], ['Doppelklick', 'Element bearbeiten'], ['Shift+Klick', 'Multi-Auswahl'], ['Shift+Drag', 'Lasso-Auswahl'], ['Ctrl+A', 'Alles auswählen'], ['Ctrl+C / V', 'Kopieren / Einfügen'], ['Ctrl+D', 'Duplizieren'], ['Pfeiltasten', 'Verschieben (1px)'], ['Shift+Pfeiltasten', 'Verschieben (10px)'], ['Tab', 'Nächstes Element'], ['?', 'Tastenkürzel']]).map(([key, desc]) => (
                 <div key={key} className="flex justify-between">
                   <span className="text-gray-500 dark:text-zinc-400">{desc}</span>
                   <kbd className="px-1.5 py-0.5 text-[11px] rounded bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-300 font-mono">{key}</kbd>
@@ -2712,7 +2722,7 @@ export default function FunnelCanvas() {
           >
             {rightClickMenu.targetType === 'canvas' && (
               <>
-                <p className="px-3 py-1.5 text-[10px] uppercase font-semibold text-gray-400 dark:text-zinc-500">Plattform hinzufügen</p>
+                <p className="px-3 py-1.5 text-[10px] uppercase font-semibold text-gray-400 dark:text-zinc-500">{lang === 'en' ? 'Add Platform' : 'Plattform hinzufügen'}</p>
                 {PLATFORMS.slice(0, 6).map(p => (
                   <button key={p.kind} onClick={() => rcmAddElement('platform', p.kind)} className="w-full flex items-center gap-2 px-3 py-1.5 text-left hover:bg-gray-100 dark:hover:bg-zinc-800 text-xs text-gray-700 dark:text-zinc-300">
                     <div className="w-4 h-4 rounded flex items-center justify-center" style={{ background: p.color + '18' }}>
@@ -2722,7 +2732,7 @@ export default function FunnelCanvas() {
                   </button>
                 ))}
                 <div className="h-px bg-gray-100 dark:bg-zinc-800 my-1" />
-                <p className="px-3 py-1.5 text-[10px] uppercase font-semibold text-gray-400 dark:text-zinc-500">Weitere</p>
+                <p className="px-3 py-1.5 text-[10px] uppercase font-semibold text-gray-400 dark:text-zinc-500">{lang === 'en' ? 'More' : 'Weitere'}</p>
                 <button onClick={() => rcmAddElement('mockup', 'mobile')} className="w-full flex items-center gap-2 px-3 py-1.5 text-left hover:bg-gray-100 dark:hover:bg-zinc-800 text-xs text-gray-700 dark:text-zinc-300">
                   <Smartphone size={12} className="text-gray-400" /> Mobile Mockup
                 </button>
@@ -2733,33 +2743,33 @@ export default function FunnelCanvas() {
                   <Type size={12} className="text-gray-400" /> Text
                 </button>
                 <button onClick={() => rcmAddElement('media')} className="w-full flex items-center gap-2 px-3 py-1.5 text-left hover:bg-gray-100 dark:hover:bg-zinc-800 text-xs text-gray-700 dark:text-zinc-300">
-                  <ImageIcon size={12} className="text-gray-400" /> Bild / Medien
+                  <ImageIcon size={12} className="text-gray-400" /> {lang === 'en' ? 'Image / Media' : 'Bild / Medien'}
                 </button>
                 <div className="h-px bg-gray-100 dark:bg-zinc-800 my-1" />
                 <button onClick={() => { rcmSelectAll(); setPaletteOpen(true); }} className="w-full flex items-center gap-2 px-3 py-1.5 text-left hover:bg-gray-100 dark:hover:bg-zinc-800 text-xs text-gray-700 dark:text-zinc-300">
-                  <LayoutGrid size={12} className="text-gray-400" /> Alle Elemente anzeigen
+                  <LayoutGrid size={12} className="text-gray-400" /> {lang === 'en' ? 'Show all elements' : 'Alle Elemente anzeigen'}
                 </button>
                 <button onClick={() => { setRightClickMenu(null); handleAutoLayout(); }} className="w-full flex items-center gap-2 px-3 py-1.5 text-left hover:bg-gray-100 dark:hover:bg-zinc-800 text-xs text-gray-700 dark:text-zinc-300">
                   <GitBranch size={12} className="text-gray-400" /> Auto-Layout
                 </button>
                 <button onClick={() => { setRightClickMenu(null); fitToScreen(); }} className="w-full flex items-center gap-2 px-3 py-1.5 text-left hover:bg-gray-100 dark:hover:bg-zinc-800 text-xs text-gray-700 dark:text-zinc-300">
-                  <Maximize2 size={12} className="text-gray-400" /> An Bildschirm anpassen
+                  <Maximize2 size={12} className="text-gray-400" /> {lang === 'en' ? 'Fit to screen' : 'An Bildschirm anpassen'}
                 </button>
                 <button onClick={() => { setRightClickMenu(null); handleExportPNG(); }} className="w-full flex items-center gap-2 px-3 py-1.5 text-left hover:bg-gray-100 dark:hover:bg-zinc-800 text-xs text-gray-700 dark:text-zinc-300">
-                  <Download size={12} className="text-gray-400" /> Als PNG exportieren
+                  <Download size={12} className="text-gray-400" /> {lang === 'en' ? 'Export as PNG' : 'Als PNG exportieren'}
                 </button>
               </>
             )}
             {rightClickMenu.targetType === 'element' && (
               <>
                 <button onClick={() => { setRightClickMenu(null); if (rightClickMenu.targetId) { setSelectedElementId(rightClickMenu.targetId); handleElementDoubleClick(rightClickMenu.targetId); } }} className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-gray-100 dark:hover:bg-zinc-800 text-xs text-gray-700 dark:text-zinc-300">
-                  <FileText size={12} className="text-gray-400" /> Bearbeiten
+                  <FileText size={12} className="text-gray-400" /> {lang === 'en' ? 'Edit' : 'Bearbeiten'}
                 </button>
                 <button onClick={rcmDuplicateElement} className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-gray-100 dark:hover:bg-zinc-800 text-xs text-gray-700 dark:text-zinc-300">
-                  <Copy size={12} className="text-gray-400" /> Duplizieren
+                  <Copy size={12} className="text-gray-400" /> {lang === 'en' ? 'Duplicate' : 'Duplizieren'}
                 </button>
                 <div className="h-px bg-gray-100 dark:bg-zinc-800 my-1" />
-                <p className="px-3 py-1 text-[10px] uppercase font-semibold text-gray-400 dark:text-zinc-500">Farbe</p>
+                <p className="px-3 py-1 text-[10px] uppercase font-semibold text-gray-400 dark:text-zinc-500">{lang === 'en' ? 'Color' : 'Farbe'}</p>
                 <div className="flex gap-1 px-3 py-1">
                   {['#a855f7', '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#ec4899', '#6366f1', '#64748b'].map(c => (
                     <button key={c} onClick={() => {
@@ -2772,18 +2782,18 @@ export default function FunnelCanvas() {
                 </div>
                 <div className="h-px bg-gray-100 dark:bg-zinc-800 my-1" />
                 <button onClick={rcmDeleteElement} className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-red-50 dark:hover:bg-red-500/10 text-xs text-red-600 dark:text-red-400">
-                  <Trash2 size={12} /> Löschen
+                  <Trash2 size={12} /> {lang === 'en' ? 'Delete' : 'Löschen'}
                 </button>
               </>
             )}
             {rightClickMenu.targetType === 'connection' && (
               <>
                 <button onClick={() => { setRightClickMenu(null); if (rightClickMenu.targetId) handleConnDoubleClick(rightClickMenu.targetId); }} className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-gray-100 dark:hover:bg-zinc-800 text-xs text-gray-700 dark:text-zinc-300">
-                  <FileText size={12} className="text-gray-400" /> Bearbeiten
+                  <FileText size={12} className="text-gray-400" /> {lang === 'en' ? 'Edit' : 'Bearbeiten'}
                 </button>
                 <div className="h-px bg-gray-100 dark:bg-zinc-800 my-1" />
                 <button onClick={rcmDeleteConnection} className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-red-50 dark:hover:bg-red-500/10 text-xs text-red-600 dark:text-red-400">
-                  <Trash2 size={12} /> Löschen
+                  <Trash2 size={12} /> {lang === 'en' ? 'Delete' : 'Löschen'}
                 </button>
               </>
             )}
@@ -2799,7 +2809,7 @@ export default function FunnelCanvas() {
             style={{ left: contextMenu.screenX, top: contextMenu.screenY, transform: 'translate(-50%, 8px)' }}
             onClick={ee => ee.stopPropagation()}
           >
-            <p className="px-3 py-1.5 text-[10px] uppercase font-semibold text-gray-400 dark:text-zinc-500">Plattformen</p>
+            <p className="px-3 py-1.5 text-[10px] uppercase font-semibold text-gray-400 dark:text-zinc-500">{lang === 'en' ? 'Platforms' : 'Plattformen'}</p>
             {PLATFORMS.slice(0, 8).map(p => {
               const item: FunnelPaletteItem = { type: 'platform', label: p.label, icon: p.icon, platformKind: p.kind };
               return (
@@ -2823,7 +2833,7 @@ export default function FunnelCanvas() {
               );
             })}
             <div className="h-px bg-gray-100 dark:bg-zinc-800 my-1" />
-            <p className="px-3 py-1.5 text-[10px] uppercase font-semibold text-gray-400 dark:text-zinc-500">Text & Medien</p>
+            <p className="px-3 py-1.5 text-[10px] uppercase font-semibold text-gray-400 dark:text-zinc-500">{lang === 'en' ? 'Text & Media' : 'Text & Medien'}</p>
             {[...TEXT_ITEMS, ...MEDIA_ITEMS].map(item => (
               <button key={item.label} onClick={() => handleContextMenuSelect(item)} className="w-full flex items-center gap-2 px-3 py-1.5 text-left hover:bg-gray-100 dark:hover:bg-zinc-800 text-xs text-gray-700 dark:text-zinc-300">
                 <Type size={12} className="text-gray-400" />
@@ -2844,18 +2854,18 @@ export default function FunnelCanvas() {
         <div className="px-6 py-4 border-b border-gray-100 dark:border-zinc-800 flex items-center justify-between">
           <div>
             <h3 className="text-base font-semibold text-gray-900 dark:text-white">Conversion Rates</h3>
-            <p className="text-xs text-gray-400 dark:text-zinc-500 mt-0.5">{funnelSteps.length} Steps · Step-to-Step & Gesamt</p>
+            <p className="text-xs text-gray-400 dark:text-zinc-500 mt-0.5">{funnelSteps.length} Steps · Step-to-Step & {lang === 'en' ? 'Overall' : 'Gesamt'}</p>
           </div>
           {funnelSteps[0].metricValue && funnelSteps[funnelSteps.length - 1].metricValue ? (
             <div className="text-right">
               <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
                 {((funnelSteps[funnelSteps.length - 1].metricValue! / funnelSteps[0].metricValue!) * 100).toFixed(2)}%
               </p>
-              <p className="text-[10px] text-gray-400 dark:text-zinc-500">Gesamt-Conversion</p>
+              <p className="text-[10px] text-gray-400 dark:text-zinc-500">{lang === 'en' ? 'Overall Conversion' : 'Gesamt-Conversion'}</p>
             </div>
           ) : (
             <div className="px-3 py-1.5 rounded-xl bg-gray-100 dark:bg-zinc-800">
-              <p className="text-[11px] text-gray-400 dark:text-zinc-500">Metriken eingeben ↑</p>
+              <p className="text-[11px] text-gray-400 dark:text-zinc-500">{lang === 'en' ? 'Enter metrics ↑' : 'Metriken eingeben ↑'}</p>
             </div>
           )}
         </div>
@@ -2903,20 +2913,20 @@ export default function FunnelCanvas() {
                     {/* Info */}
                     <div className="text-center w-full px-1">
                       <p className="text-xs font-semibold text-gray-800 dark:text-zinc-200 truncate">{name}</p>
-                      <p className="text-lg font-bold text-gray-900 dark:text-white mt-0.5">{val > 0 ? val.toLocaleString('de-DE') : '–'}</p>
+                      <p className="text-lg font-bold text-gray-900 dark:text-white mt-0.5">{val > 0 ? val.toLocaleString(locale) : '–'}</p>
                       <p className="text-[10px] text-gray-400 dark:text-zinc-500">{metricLabel}</p>
                       {/* Target traffic light */}
                       {step.metricTarget && step.metricTarget > 0 && val > 0 && (() => {
                         const pct = (val / step.metricTarget) * 100;
                         const color = pct >= 90 ? 'text-emerald-500' : pct >= 60 ? 'text-yellow-500' : 'text-red-500';
                         const bg = pct >= 90 ? 'bg-emerald-50 dark:bg-emerald-500/10' : pct >= 60 ? 'bg-yellow-50 dark:bg-yellow-500/10' : 'bg-red-50 dark:bg-red-500/10';
-                        return <span className={`inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-semibold ${bg} ${color}`}>{pct.toFixed(0)}% Ziel</span>;
+                        return <span className={`inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-semibold ${bg} ${color}`}>{pct.toFixed(0)}% {lang === 'en' ? 'target' : 'Ziel'}</span>;
                       })()}
                       {overallRate && (
                         <span className={`inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-semibold ${
                           parseFloat(overallRate) >= 20 ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : parseFloat(overallRate) >= 5 ? 'bg-yellow-50 dark:bg-yellow-500/10 text-yellow-600 dark:text-yellow-400' : 'bg-red-50 dark:bg-red-500/10 text-red-500'
                         }`}>
-                          {overallRate}% gesamt
+                          {overallRate}% {lang === 'en' ? 'overall' : 'gesamt'}
                         </span>
                       )}
                     </div>
@@ -2937,7 +2947,7 @@ export default function FunnelCanvas() {
             </div>
             <div className="h-3 w-px bg-gray-200 dark:bg-zinc-700" />
             <span className="text-xs text-gray-400 dark:text-zinc-500">
-              {funnelSteps[0].metricValue!.toLocaleString('de-DE')} {getDefaultMetricLabel(funnelSteps[0])} → {funnelSteps[funnelSteps.length - 1].metricValue!.toLocaleString('de-DE')} {getDefaultMetricLabel(funnelSteps[funnelSteps.length - 1])}
+              {funnelSteps[0].metricValue!.toLocaleString(locale)} {getDefaultMetricLabel(funnelSteps[0])} → {funnelSteps[funnelSteps.length - 1].metricValue!.toLocaleString(locale)} {getDefaultMetricLabel(funnelSteps[funnelSteps.length - 1])}
             </span>
           </div>
         )}
@@ -2950,7 +2960,7 @@ export default function FunnelCanvas() {
         {/* Edit toggle — top-left corner */}
         <div className="absolute top-3 left-3 z-50">
           <label className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-black/50 backdrop-blur-xl border border-white/10 cursor-pointer select-none">
-            <span className="text-[10px] text-white/60 font-medium">Bearbeiten</span>
+            <span className="text-[10px] text-white/60 font-medium">{lang === 'en' ? 'Edit' : 'Bearbeiten'}</span>
             <button
               onClick={() => setPresEditEnabled(!presEditEnabled)}
               className={`relative w-8 h-4 rounded-full transition-colors ${presEditEnabled ? 'bg-purple-500' : 'bg-white/20'}`}
@@ -2970,12 +2980,12 @@ export default function FunnelCanvas() {
             className="flex items-center gap-3 px-5 py-2.5 bg-black/70 backdrop-blur-xl rounded-full shadow-2xl border border-white/10"
             style={{ opacity: presBarVisible ? 1 : 0, transition: 'opacity 0.6s ease' }}
           >
-            <span className="text-xs text-white/60 font-medium">Präsentationsmodus</span>
+            <span className="text-xs text-white/60 font-medium">{lang === 'en' ? 'Presentation Mode' : 'Präsentationsmodus'}</span>
             <div className="w-px h-4 bg-white/20" />
             <button
               onClick={() => fitToScreen()}
               className="p-1.5 rounded-full text-white/60 hover:text-white hover:bg-white/10 transition-colors"
-              title="Einpassen"
+              title={lang === 'en' ? 'Fit' : 'Einpassen'}
             >
               <Crosshair size={14} />
             </button>
@@ -2983,7 +2993,7 @@ export default function FunnelCanvas() {
               onClick={() => { setIsPresentationMode(false); setIsFullscreen(false); setPresEditEnabled(false); }}
               className="px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-medium transition-colors"
             >
-              Beenden
+              {lang === 'en' ? 'Exit' : 'Beenden'}
             </button>
           </div>
         </div>

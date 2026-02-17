@@ -1998,7 +1998,7 @@ const ContentItemModal = ({ item, lang, onClose, onSave, onDelete, onDuplicate, 
                   <div key={v.id} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
                     <div>
                       <p className="font-medium text-sm">{v.label}</p>
-                      <p className="text-xs text-gray-500">{new Date(v.createdAt).toLocaleDateString('de-DE')} – {v.title}</p>
+                      <p className="text-xs text-gray-500">{new Date(v.createdAt).toLocaleDateString(lang === 'en' ? 'en-US' : 'de-DE')} – {v.title}</p>
                     </div>
                     <button onClick={() => handleLoadVersion(v)} className="px-3 py-1.5 bg-sky-100 dark:bg-sky-500/20 text-sky-600 rounded-xl text-xs font-medium hover:bg-sky-200">{tx('Laden', 'Load')}</button>
                   </div>
@@ -2729,7 +2729,7 @@ const ContentDashboardContent = () => {
   });
 
   const weekDays = getWeekDays();
-  const weekLabel = `KW ${Math.ceil(((calendarWeek.getTime() - new Date(calendarWeek.getFullYear(), 0, 1).getTime()) / 86400000 + 1) / 7)} – ${weekDays[0].toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' })} - ${weekDays[6].toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })}`;
+  const weekLabel = `${lang === 'en' ? 'CW' : 'KW'} ${Math.ceil(((calendarWeek.getTime() - new Date(calendarWeek.getFullYear(), 0, 1).getTime()) / 86400000 + 1) / 7)} – ${weekDays[0].toLocaleDateString(lang === 'en' ? 'en-US' : 'de-DE', { day: '2-digit', month: '2-digit' })} - ${weekDays[6].toLocaleDateString(lang === 'en' ? 'en-US' : 'de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })}`;
 
   // Month calendar helpers
   const getMonthDays = () => {
@@ -2848,7 +2848,7 @@ const ContentDashboardContent = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-black">
+    <div className="min-h-screen bg-gray-50 dark:bg-black overflow-x-hidden">
       {/* Modals */}
       <ContentItemModal item={selectedItem} lang={lang} onClose={() => setSelectedItem(null)} onSave={handleSaveItem} onDelete={handleDeleteItem} onDuplicate={handleDuplicateItem} addToast={addToast} onSaveAsTemplate={(ci) => {
         const tpl: SavedTemplate = {
@@ -2870,7 +2870,7 @@ const ContentDashboardContent = () => {
       {mobileSidebarOpen && <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden" onClick={() => setMobileSidebarOpen(false)} />}
 
       {/* Sidebar */}
-      <aside className={`fixed left-0 top-0 bottom-0 w-64 bg-white dark:bg-gray-900 border-r border-gray-100 dark:border-gray-800 z-50 flex flex-col transition-transform duration-300 ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'} ${sidebarCollapsed ? 'lg:-translate-x-full' : 'lg:translate-x-0'}`}>
+      <aside className={`fixed left-0 top-0 bottom-0 w-64 bg-white dark:bg-zinc-900 border-r border-gray-200 dark:border-zinc-800 z-40 flex flex-col transition-transform duration-300 ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'} ${sidebarCollapsed ? 'lg:-translate-x-full' : 'lg:translate-x-0'}`}>
         <div className="p-6 flex items-center justify-between">
           <h1 className="text-xl font-bold flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-red-500 to-pink-600 flex items-center justify-center">
@@ -2879,33 +2879,33 @@ const ContentDashboardContent = () => {
             Content Hub
           </h1>
           <div className="flex items-center gap-1">
-            <button onClick={() => setTheme(darkMode ? 'light' : 'dark')} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors" title={tx('Design wechseln', 'Toggle theme')}>
+            <button onClick={() => setTheme(darkMode ? 'light' : 'dark')} className="p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-xl transition-colors" title={tx('Design wechseln', 'Toggle theme')}>
               {darkMode ? <Sun className="w-5 h-5 text-yellow-500" /> : <Moon className="w-5 h-5 text-gray-500" />}
             </button>
-            <button onClick={() => { setSidebarCollapsed(true); setMobileSidebarOpen(false); }} className="hidden lg:flex p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors" title="Sidebar einklappen">
+            <button onClick={() => { setSidebarCollapsed(true); setMobileSidebarOpen(false); }} className="hidden lg:flex p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-xl transition-colors" title={tx('Sidebar einklappen', 'Collapse sidebar')}>
               <ChevronLeft className="w-4 h-4 text-gray-400" />
             </button>
           </div>
         </div>
         <nav className="px-4 space-y-1 flex-1 overflow-y-auto">
-          <p className="text-xs text-gray-400 uppercase font-medium px-4 mb-2">{tx('Übersicht', 'Overview')}</p>
+          <p className="text-xs text-gray-400 dark:text-zinc-500 uppercase font-medium px-4 mb-2">{tx('Übersicht', 'Overview')}</p>
           {([
             { icon: <BarChart3 className="w-5 h-5" />, label: 'Dashboard', key: 'overview' as ActiveSection },
             { icon: <Lightbulb className="w-5 h-5" />, label: tx('Content-Ideen', 'Content Ideas'), key: 'ideas' as ActiveSection },
           ]).map(i => (
-            <button key={i.key} onClick={() => setSection(i.key)} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${section === i.key ? 'bg-sky-50 dark:bg-sky-500/10 text-sky-600 font-medium' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800'}`}>{i.icon}{i.label}</button>
+            <button key={i.key} onClick={() => setSection(i.key)} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${section === i.key ? 'bg-sky-50 dark:bg-sky-500/10 text-sky-600 font-medium' : 'text-gray-500 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-zinc-800'}`}>{i.icon}{i.label}</button>
           ))}
-          <p className="text-xs text-gray-400 uppercase font-medium px-4 mt-6 mb-2">{tx('Plattformen', 'Platforms')}</p>
+          <p className="text-xs text-gray-400 dark:text-zinc-500 uppercase font-medium px-4 mt-6 mb-2">{tx('Plattformen', 'Platforms')}</p>
           {([
             { icon: <Video className="w-5 h-5" />, label: 'YouTube', key: 'youtube' as ActiveSection, count: stats.youtube },
             { icon: <Camera className="w-5 h-5" />, label: 'Instagram', key: 'instagram' as ActiveSection, count: stats.instagram },
             { icon: <Share2 className="w-5 h-5" />, label: 'FB & LinkedIn', key: 'facebook-linkedin' as ActiveSection, count: stats.facebookLinkedin },
           ]).map(i => (
-            <button key={i.key} onClick={() => setSection(i.key)} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${section === i.key ? 'bg-sky-50 dark:bg-sky-500/10 text-sky-600 font-medium' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800'}`}>{i.icon}{i.label}
-              <span className="ml-auto text-xs bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-full">{i.count}</span>
+            <button key={i.key} onClick={() => setSection(i.key)} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${section === i.key ? 'bg-sky-50 dark:bg-sky-500/10 text-sky-600 font-medium' : 'text-gray-500 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-zinc-800'}`}>{i.icon}{i.label}
+              <span className="ml-auto text-xs bg-gray-100 dark:bg-zinc-800 px-2 py-0.5 rounded-full">{i.count}</span>
             </button>
           ))}
-          <p className="text-xs text-gray-400 uppercase font-medium px-4 mt-6 mb-2">{tx('Planung', 'Planning')}</p>
+          <p className="text-xs text-gray-400 dark:text-zinc-500 uppercase font-medium px-4 mt-6 mb-2">{tx('Planung', 'Planning')}</p>
           {([
             { icon: <Columns3 className="w-5 h-5" />, label: 'Pipeline', key: 'pipeline' as ActiveSection },
             { icon: <Calendar className="w-5 h-5" />, label: tx('Kalender', 'Calendar'), key: 'calendar' as ActiveSection },
@@ -2915,13 +2915,13 @@ const ContentDashboardContent = () => {
             { icon: <Layers className="w-5 h-5" />, label: tx('Vorlagen', 'Templates'), key: 'templates' as ActiveSection },
             { icon: <Search className="w-5 h-5" />, label: 'Research', key: 'research' as ActiveSection },
           ]).map(i => (
-            <button key={i.key} onClick={() => setSection(i.key)} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${section === i.key ? 'bg-sky-50 dark:bg-sky-500/10 text-sky-600 font-medium' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800'}`}>{i.icon}{i.label}</button>
+            <button key={i.key} onClick={() => setSection(i.key)} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${section === i.key ? 'bg-sky-50 dark:bg-sky-500/10 text-sky-600 font-medium' : 'text-gray-500 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-zinc-800'}`}>{i.icon}{i.label}</button>
           ))}
-          <p className="text-xs text-gray-400 uppercase font-medium px-4 mt-6 mb-2">Tools</p>
+          <p className="text-xs text-gray-400 dark:text-zinc-500 uppercase font-medium px-4 mt-6 mb-2">Tools</p>
           {([
             { icon: <Settings className="w-5 h-5" />, label: tx('Einstellungen', 'Settings'), key: 'settings' as ActiveSection },
           ]).map(i => (
-            <button key={i.key} onClick={() => setSection(i.key)} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${section === i.key ? 'bg-sky-50 dark:bg-sky-500/10 text-sky-600 font-medium' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800'}`}>{i.icon}{i.label}</button>
+            <button key={i.key} onClick={() => setSection(i.key)} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${section === i.key ? 'bg-sky-50 dark:bg-sky-500/10 text-sky-600 font-medium' : 'text-gray-500 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-zinc-800'}`}>{i.icon}{i.label}</button>
           ))}
         </nav>
         <div className="p-4">
@@ -2971,7 +2971,7 @@ const ContentDashboardContent = () => {
                         ) : notifications.map(n => (
                           <div key={n.id} className={`px-4 py-3 text-sm border-b border-gray-50 dark:border-gray-800 ${!n.read ? 'bg-sky-50/50 dark:bg-sky-500/5' : ''}`}>
                             <p className={!n.read ? 'font-medium' : 'text-gray-500'}>{n.message}</p>
-                            <p className="text-xs text-gray-400 mt-1">{new Date(n.createdAt).toLocaleDateString('de-DE')}</p>
+                            <p className="text-xs text-gray-400 mt-1">{new Date(n.createdAt).toLocaleDateString(lang === 'en' ? 'en-US' : 'de-DE')}</p>
                           </div>
                         ))}
                       </div>
@@ -3938,7 +3938,7 @@ const ContentDashboardContent = () => {
                             const dl = activePlan.deadline ? new Date(activePlan.deadline) : null;
                             const wks = dl ? Math.max(1, Math.ceil((dl.getTime() - Date.now()) / (7 * 24 * 60 * 60 * 1000))) : null;
                             const workdays = wks ? wks * 5 : null;
-                            const fmt = (n: number) => n.toLocaleString('de-DE');
+                            const fmt = (n: number) => n.toLocaleString(lang === 'en' ? 'en-US' : 'de-DE');
 
                             // Per-channel breakdown using funnel steps
                             const outreachChs = (activePlan.channels || []).filter(ch => ['cold-calls','cold-emails','pvc','dmc'].includes(ch));
@@ -5643,7 +5643,7 @@ const ContentDashboardContent = () => {
                         </div>
                         <div className="flex items-center gap-2 text-xs text-gray-400">
                           {note.links.length > 0 && <span className="flex items-center gap-1"><ExternalLink className="w-3 h-3" />{note.links.length}</span>}
-                          <span>{new Date(note.updatedAt).toLocaleDateString('de-DE')}</span>
+                          <span>{new Date(note.updatedAt).toLocaleDateString(lang === 'en' ? 'en-US' : 'de-DE')}</span>
                         </div>
                       </div>
                     </div>
@@ -5865,7 +5865,7 @@ const ContentDashboardContent = () => {
                       const totalCustomersInPeriod = workdays ? totalCustomersPerDay * workdays : null;
                       const reachesGoal = totalCustomersInPeriod !== null ? totalCustomersInPeriod >= customersNeeded : null;
                       const weeksNeeded = totalCustomersPerWeek > 0 ? Math.ceil(customersNeeded / totalCustomersPerWeek) : null;
-                      const fmt = (n: number) => n.toLocaleString('de-DE');
+                      const fmt = (n: number) => n.toLocaleString(lang === 'en' ? 'en-US' : 'de-DE');
 
                       return (
                         <div className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-500/5 dark:to-purple-500/5 rounded-xl p-4 space-y-3 border border-indigo-100 dark:border-indigo-500/20">

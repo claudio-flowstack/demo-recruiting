@@ -217,6 +217,10 @@ export function createMockEventSource(): WorkflowEventSource {
       };
     },
 
+    abort() {
+      clearAllTimeouts();
+    },
+
     dispose() {
       clearAllTimeouts();
       nodeStatusCallbacks.length = 0;

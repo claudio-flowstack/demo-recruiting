@@ -1064,45 +1064,45 @@ const ColdMailDashboardContent = () => {
       {mobileSidebarOpen && <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-30 lg:hidden" onClick={() => setMobileSidebarOpen(false)} />}
 
       {/* Sidebar */}
-      <aside className={`fixed left-0 top-0 bottom-0 w-64 bg-white dark:bg-gray-900 border-r border-gray-100 dark:border-gray-800 z-40 flex flex-col transition-transform duration-300 ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'} ${sidebarCollapsed ? 'lg:-translate-x-full' : 'lg:translate-x-0'}`}>
+      <aside className={`fixed left-0 top-0 bottom-0 w-64 bg-white dark:bg-zinc-900 border-r border-gray-200 dark:border-zinc-800 z-40 flex flex-col transition-transform duration-300 ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'} ${sidebarCollapsed ? 'lg:-translate-x-full' : 'lg:translate-x-0'}`}>
         <div className="p-6 flex items-center justify-between">
           <h1 className="text-xl font-bold flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-sky-500 to-indigo-600 flex items-center justify-center"><Mail className="w-4 h-4 text-white" /></div>
             Cold Mail
           </h1>
           <div className="flex items-center gap-1">
-            <button onClick={() => setDarkMode(!darkMode)} title={tx('Dunkelmodus umschalten', 'Toggle dark mode')} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors">
+            <button onClick={() => setDarkMode(!darkMode)} title={tx('Dunkelmodus umschalten', 'Toggle dark mode')} className="p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-xl transition-colors">
               {darkMode ? <Sun className="w-5 h-5 text-yellow-500" /> : <Moon className="w-5 h-5 text-gray-500" />}
             </button>
-            <button onClick={() => { setSidebarCollapsed(true); setMobileSidebarOpen(false); }} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors" title={tx('Sidebar einklappen', 'Collapse sidebar')}>
+            <button onClick={() => { setSidebarCollapsed(true); setMobileSidebarOpen(false); }} className="p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-xl transition-colors" title={tx('Sidebar einklappen', 'Collapse sidebar')}>
               <ChevronLeft className="w-4 h-4 text-gray-400" />
             </button>
           </div>
         </div>
         <nav className="px-4 space-y-1 flex-1 overflow-y-auto">
-          <p className="text-xs text-gray-400 uppercase font-medium px-4 mb-2">{tx('Übersicht', 'Overview')}</p>
+          <p className="text-xs text-gray-400 dark:text-zinc-500 uppercase font-medium px-4 mb-2">{tx('Übersicht', 'Overview')}</p>
           {([
             { icon: <BarChart3 className="w-5 h-5" />, label: 'Dashboard', key: 'overview' as ActiveSection },
             { icon: <Send className="w-5 h-5" />, label: tx('Kampagnen', 'Campaigns'), key: 'campaigns' as ActiveSection },
           ]).map(i => (
-            <button key={i.key} onClick={() => { setSection(i.key); setMobileSidebarOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${section === i.key ? 'bg-sky-50 dark:bg-sky-500/10 text-sky-600 font-medium' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800'}`}>{i.icon}{i.label}</button>
+            <button key={i.key} onClick={() => { setSection(i.key); setMobileSidebarOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${section === i.key ? 'bg-sky-50 dark:bg-sky-500/10 text-sky-600 font-medium' : 'text-gray-500 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-zinc-800'}`}>{i.icon}{i.label}</button>
           ))}
-          <p className="text-xs text-gray-400 uppercase font-medium px-4 mt-6 mb-2">{tx('Kontakte', 'Contacts')}</p>
+          <p className="text-xs text-gray-400 dark:text-zinc-500 uppercase font-medium px-4 mt-6 mb-2">{tx('Kontakte', 'Contacts')}</p>
           {([
             { icon: <Users className="w-5 h-5" />, label: 'Leads', key: 'leads' as ActiveSection, count: stats.totalLeads },
             { icon: <Inbox className="w-5 h-5" />, label: 'Inbox', key: 'inbox' as ActiveSection, count: stats.unreadInbox },
           ]).map(i => (
-            <button key={i.key} onClick={() => { setSection(i.key); setMobileSidebarOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${section === i.key ? 'bg-sky-50 dark:bg-sky-500/10 text-sky-600 font-medium' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800'}`}>{i.icon}{i.label}
+            <button key={i.key} onClick={() => { setSection(i.key); setMobileSidebarOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${section === i.key ? 'bg-sky-50 dark:bg-sky-500/10 text-sky-600 font-medium' : 'text-gray-500 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-zinc-800'}`}>{i.icon}{i.label}
               {i.count !== undefined && <span className={`ml-auto text-xs px-2 py-0.5 rounded-full ${i.key === 'inbox' && stats.unreadInbox > 0 ? 'bg-red-500 text-white' : 'bg-gray-100 dark:bg-gray-800'}`}>{i.count}</span>}
             </button>
           ))}
-          <p className="text-xs text-gray-400 uppercase font-medium px-4 mt-6 mb-2">Tools</p>
+          <p className="text-xs text-gray-400 dark:text-zinc-500 uppercase font-medium px-4 mt-6 mb-2">Tools</p>
           {([
             { icon: <FileText className="w-5 h-5" />, label: 'Templates', key: 'templates' as ActiveSection },
             { icon: <Activity className="w-5 h-5" />, label: 'Analytics', key: 'analytics' as ActiveSection },
             { icon: <Settings className="w-5 h-5" />, label: tx('Einstellungen', 'Settings'), key: 'settings' as ActiveSection },
           ]).map(i => (
-            <button key={i.key} onClick={() => { setSection(i.key); setMobileSidebarOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${section === i.key ? 'bg-sky-50 dark:bg-sky-500/10 text-sky-600 font-medium' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800'}`}>{i.icon}{i.label}</button>
+            <button key={i.key} onClick={() => { setSection(i.key); setMobileSidebarOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${section === i.key ? 'bg-sky-50 dark:bg-sky-500/10 text-sky-600 font-medium' : 'text-gray-500 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-zinc-800'}`}>{i.icon}{i.label}</button>
           ))}
         </nav>
         <div className="p-4">
@@ -1118,7 +1118,7 @@ const ColdMailDashboardContent = () => {
         <header className="sticky top-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-b border-gray-100 dark:border-gray-800 z-30">
           <div className="flex items-center justify-between px-4 sm:px-6 py-4">
             <div className="flex items-center gap-2">
-              <button onClick={() => setMobileSidebarOpen(true)} className="lg:hidden p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors" title={tx('Menu offnen', 'Open menu')}><Menu className="w-5 h-5 text-gray-500" /></button>
+              <button onClick={() => setMobileSidebarOpen(true)} className="lg:hidden p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors" title={tx('Menü öffnen', 'Open menu')}><Menu className="w-5 h-5 text-gray-500" /></button>
               {sidebarCollapsed && <button onClick={() => setSidebarCollapsed(false)} title={tx('Sidebar ausklappen', 'Expand sidebar')} className="hidden lg:flex p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors"><ChevronRight className="w-5 h-5 text-gray-500" /></button>}
               <div>
               <h1 className="text-xl sm:text-2xl font-bold">{sectionTitles[section]}</h1>

@@ -100,16 +100,16 @@ function getGreeting(lang: string): string {
   return tx('Guten Abend', 'Good Evening', lang);
 }
 
-function formatNumber(n: number): string {
+function formatNumber(n: number, lang = 'de'): string {
   if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
   if (n >= 1000) return (n / 1000).toFixed(n >= 10000 ? 0 : 1) + 'K';
-  return n.toLocaleString('de-DE');
+  return n.toLocaleString(lang === 'en' ? 'en-US' : 'de-DE');
 }
 
-function formatCurrency(n: number): string {
+function formatCurrency(n: number, lang = 'de'): string {
   if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M €';
   if (n >= 1000) return (n / 1000).toFixed(n >= 10000 ? 0 : 1) + 'K €';
-  return n.toLocaleString('de-DE') + ' €';
+  return n.toLocaleString(lang === 'en' ? 'en-US' : 'de-DE') + ' €';
 }
 
 // ============================================
@@ -638,8 +638,8 @@ function HubDashboardContent() {
     switch (cardId) {
       case 'marketing':
         return marketingKPIs.totalSpend > 0 ? [
-          { label: tx('Ausgaben', 'Spend', lang), value: formatCurrency(marketingKPIs.totalSpend) },
-          { label: tx('Umsatz', 'Revenue', lang), value: formatCurrency(marketingKPIs.totalRevenue) },
+          { label: tx('Ausgaben', 'Spend', lang), value: formatCurrency(marketingKPIs.totalSpend, lang) },
+          { label: tx('Umsatz', 'Revenue', lang), value: formatCurrency(marketingKPIs.totalRevenue, lang) },
           { label: 'ROAS', value: marketingKPIs.avgRoas + 'x' },
         ] : [
           { label: tx('Kampagnen', 'Campaigns', lang), value: marketingKPIs.activeCampaigns },
@@ -704,21 +704,21 @@ function HubDashboardContent() {
   const topKPIs = [
     {
       label: tx('Umsatz', 'Revenue', lang),
-      value: formatCurrency(marketingKPIs.totalRevenue),
+      value: formatCurrency(marketingKPIs.totalRevenue, lang),
       icon: DollarSign,
       gradient: 'from-blue-500 to-indigo-600',
       bgGlow: 'bg-blue-500/10',
     },
     {
       label: tx('Gesamt-Leads', 'Total Leads', lang),
-      value: formatNumber(totalLeads),
+      value: formatNumber(totalLeads, lang),
       icon: Users,
       gradient: 'from-emerald-500 to-green-600',
       bgGlow: 'bg-emerald-500/10',
     },
     {
       label: tx('Aktive Inhalte', 'Active Content', lang),
-      value: formatNumber(contentKPIs.active),
+      value: formatNumber(contentKPIs.active, lang),
       icon: Layers,
       gradient: 'from-red-500 to-pink-600',
       bgGlow: 'bg-red-500/10',
