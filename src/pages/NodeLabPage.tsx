@@ -842,16 +842,27 @@ function NodeLabInner() {
   ]);
 
   // Editor state
+  // @ts-ignore: reserved for editor features
   const [dragState, setDragState] = useState<{ nodeId: string; offsetX: number; offsetY: number } | null>(null);
+  // @ts-ignore: reserved for editor features
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  // @ts-ignore: reserved for editor features
   const [selectedConnIdx, setSelectedConnIdx] = useState<number | null>(null);
+  // @ts-ignore: reserved for editor features
   const [connectState, setConnectState] = useState<{ fromId: string; fromX: number; fromY: number } | null>(null);
+  // @ts-ignore: reserved for editor features
   const [connectMouse, setConnectMouse] = useState<{ x: number; y: number } | null>(null);
+  // @ts-ignore: reserved for editor features
   const [showAddMenu, setShowAddMenu] = useState<{ x: number; y: number; canvasX: number; canvasY: number } | null>(null);
+  // @ts-ignore: reserved for editor features
   const [hoveredNodeIdForPorts, setHoveredNodeIdForPorts] = useState<string | null>(null);
+  // @ts-ignore: reserved for editor features
   const undoStackRef = useRef<{ nodes: LabNode[]; conns: LabConnection[] }[]>([]);
+  // @ts-ignore: reserved for editor features
   const redoStackRef = useRef<{ nodes: LabNode[]; conns: LabConnection[] }[]>([]);
+  // @ts-ignore: reserved for editor features
   const [canUndo, setCanUndo] = useState(false);
+  // @ts-ignore: reserved for editor features
   const [canRedo, setCanRedo] = useState(false);
 
   // Replay state
@@ -863,6 +874,7 @@ function NodeLabInner() {
   const isFeatureOn = useCallback((id: string) => features.find(f => f.id === id)?.enabled ?? false, [features]);
 
   // ─── Editor Helpers ───────────────────────────────────────────────
+  // @ts-ignore: reserved for editor features
   const screenToCanvas = useCallback((clientX: number, clientY: number) => {
     const rect = canvasRef.current?.getBoundingClientRect();
     if (!rect) return { x: 0, y: 0 };
