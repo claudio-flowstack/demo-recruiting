@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>NOVACODE - Senior Engineers gesucht</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+        darkMode: "class",
+        theme: {
+            extend: {
+                colors: {
+                    "primary": "#136dec",
+                    "primary-dark": "#0b4a9f",
+                    "charcoal": "#0d131b",
+                    "charcoal-light": "#1a2433",
+                    "border-dark": "#2a3b55"
+                },
+                fontFamily: {
+                    "display": ["Space Grotesk", "sans-serif"],
+                    "sans": ["Space Grotesk", "sans-serif"]
+                },
+                borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+            },
+        },
+    }
+</script>
+<style>
+    body {
+        background-color: #0d131b;
+        color: white;
+        font-family: 'Space Grotesk', sans-serif;
+    }
+    .grid-bg {
+        background-image: linear-gradient(#2a3b55 1px, transparent 1px), linear-gradient(90deg, #2a3b55 1px, transparent 1px);
+        background-size: 40px 40px;
+        opacity: 0.1;
+    }
+    .text-gradient {
+        background: linear-gradient(90deg, #ffffff 0%, #94a3b8 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #0d131b; }
+    ::-webkit-scrollbar-thumb { background: #2a3b55; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #136dec; }
+    html { scroll-behavior: smooth; }
+</style>
+</head>
+<body class="antialiased min-h-screen flex flex-col font-display bg-[#0d131b] text-white">
+
+<!-- Navbar -->
+<header class="fixed top-0 w-full z-50 border-b border-white/10 bg-[#0d131b]/80 backdrop-blur-md">
+    <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 text-primary flex items-center justify-center">
+                <span class="material-symbols-outlined text-3xl">terminal</span>
+            </div>
+            <span class="text-xl font-bold tracking-tight text-white">NOVACODE</span>
+        </div>
+        <nav class="hidden md:flex items-center gap-8">
+            <a class="text-sm font-medium text-slate-300 hover:text-white transition-colors" href="#probleme">Kennst du das?</a>
+            <a class="text-sm font-medium text-slate-300 hover:text-white transition-colors" href="#vorteile">So arbeiten wir</a>
+            <a class="text-sm font-medium text-slate-300 hover:text-white transition-colors" href="#bewerbung">Bewerbung</a>
+        </nav>
+        <a href="formular.html" class="bg-primary hover:bg-primary-dark text-white text-sm font-bold px-5 py-2.5 rounded-lg transition-all flex items-center gap-2">
+            <span>Jetzt bewerben</span>
+            <span class="material-symbols-outlined text-sm">arrow_forward</span>
+        </a>
+    </div>
+</header>
+
+<main class="flex-grow pt-20">
+
+    <!-- Hero Section -->
+    <section class="relative min-h-[85vh] flex items-center justify-center px-6 overflow-hidden">
+        <div class="absolute inset-0 grid-bg pointer-events-none"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/20 rounded-full blur-[120px] pointer-events-none"></div>
+        <div class="relative z-10 max-w-5xl mx-auto text-center flex flex-col items-center gap-8">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/30 bg-primary/10 text-primary text-xs font-bold uppercase tracking-widest">
+                <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+                Wir suchen Senior Engineers
+            </div>
+            <h1 class="text-5xl md:text-7xl font-bold tracking-tight leading-tight md:leading-[1.1]">
+                Hör auf, Tickets zu schieben.<br/>
+                <span class="text-gradient">Fang wieder an, Software zu bauen.</span>
+            </h1>
+            <p class="text-lg md:text-xl text-slate-400 max-w-2xl leading-relaxed">
+                Du triffst Architekturentscheidungen statt Jira-Felder zu pflegen. Bewirb dich in 60 Sekunden – ohne Lebenslauf, ohne Anschreiben.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 w-full justify-center pt-4">
+                <a href="formular.html" class="bg-primary hover:bg-primary-dark text-white text-base font-bold h-14 px-8 rounded-lg transition-all flex items-center justify-center gap-2 group shadow-[0_0_20px_rgba(19,109,236,0.3)] hover:shadow-[0_0_30px_rgba(19,109,236,0.5)]">
+                    <span>In 60 Sek. bewerben</span>
+                    <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                </a>
+                <a href="#probleme" class="bg-white/5 hover:bg-white/10 border border-white/10 text-white text-base font-bold h-14 px-8 rounded-lg transition-all flex items-center justify-center">
+                    Mehr erfahren
+                </a>
+            </div>
+            <div class="mt-12 flex flex-wrap items-center justify-center gap-6 md:gap-8 text-slate-500 text-sm font-medium">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-lg text-primary/70">check_circle</span> Kein Lebenslauf nötig
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-lg text-primary/70">check_circle</span> 100% Remote
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-lg text-primary/70">check_circle</span> Rückmeldung in 48h
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-lg text-primary/70">check_circle</span> Direkt deployen ab Tag 1
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Problem Section (Pain Points aus dem Transkript) -->
+    <section id="probleme" class="py-24 px-6 bg-[#0d131b]">
+        <div class="max-w-6xl mx-auto">
+            <div class="mb-16 md:text-center max-w-3xl mx-auto">
+                <p class="text-primary text-sm font-bold uppercase tracking-widest mb-4">Kennst du das?</p>
+                <h2 class="text-3xl md:text-4xl font-bold mb-6">Du hast aufgehört, Entwickler zu sein.</h2>
+                <p class="text-slate-400 text-lg">Die meisten Seniors kündigen nicht wegen dem Gehalt – sondern weil sie sich fachlich zurückentwickeln.</p>
+            </div>
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="group bg-[#1a2433] border border-[#2a3b55] p-8 rounded-xl hover:border-primary/50 transition-colors duration-300">
+                    <div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center text-primary mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
+                        <span class="material-symbols-outlined text-2xl">view_kanban</span>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 text-white">Ticket-Schubser statt Engineer</h3>
+                    <p class="text-slate-400 leading-relaxed">
+                        Du programmierst nicht mehr – du verschiebst Tickets zwischen Boards. Den ganzen Tag Jira statt Code.
+                    </p>
+                </div>
+                <div class="group bg-[#1a2433] border border-[#2a3b55] p-8 rounded-xl hover:border-primary/50 transition-colors duration-300">
+                    <div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center text-primary mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
+                        <span class="material-symbols-outlined text-2xl">schedule</span>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 text-white">Meeting-Marathon</h3>
+                    <p class="text-slate-400 leading-relaxed">
+                        Dailys, Weeklys, Retros, Alignment-Calls. Dein Kalender sieht aus wie Tetris – coden darfst du nach Feierabend.
+                    </p>
+                </div>
+                <div class="group bg-[#1a2433] border border-[#2a3b55] p-8 rounded-xl hover:border-primary/50 transition-colors duration-300">
+                    <div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center text-primary mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
+                        <span class="material-symbols-outlined text-2xl">delete_forever</span>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 text-white">Feature-Friedhof</h3>
+                    <p class="text-slate-400 leading-relaxed">
+                        6 Wochen an einem Feature arbeiten, das nie online geht. Management ändert seine Meinung – dein Code landet in der Tonne.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Zusätzliche Pain-Punkte als kompakte Liste -->
+            <div class="mt-12 bg-[#1a2433] border border-[#2a3b55] rounded-xl p-8">
+                <h3 class="text-lg font-bold text-white mb-6">Wenn du abends den Laptop zuklappst und denkst:</h3>
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div class="flex items-center gap-3 text-slate-400">
+                        <span class="material-symbols-outlined text-red-400/60 text-lg">close</span>
+                        <span>„Heute wieder nichts geschafft."</span>
+                    </div>
+                    <div class="flex items-center gap-3 text-slate-400">
+                        <span class="material-symbols-outlined text-red-400/60 text-lg">close</span>
+                        <span>„Ich verstehe nicht mehr, warum wir das bauen."</span>
+                    </div>
+                    <div class="flex items-center gap-3 text-slate-400">
+                        <span class="material-symbols-outlined text-red-400/60 text-lg">close</span>
+                        <span>„Ich bin nur noch Umsetzer, kein Entwickler."</span>
+                    </div>
+                    <div class="flex items-center gap-3 text-slate-400">
+                        <span class="material-symbols-outlined text-red-400/60 text-lg">close</span>
+                        <span>„Mein Tech-Stack ist komplett veraltet."</span>
+                    </div>
+                    <div class="flex items-center gap-3 text-slate-400">
+                        <span class="material-symbols-outlined text-red-400/60 text-lg">close</span>
+                        <span>„Ich darf nichts entscheiden."</span>
+                    </div>
+                    <div class="flex items-center gap-3 text-slate-400">
+                        <span class="material-symbols-outlined text-red-400/60 text-lg">close</span>
+                        <span>„Ich merke, dass ich mich fachlich zurückentwickle."</span>
+                    </div>
+                </div>
+                <div class="mt-8 pt-6 border-t border-[#2a3b55]">
+                    <p class="text-slate-300 text-lg font-medium">Dann bist du hier richtig.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Narrative Split Section -->
+    <section id="vorteile" class="py-24 px-6 bg-[#10161f] border-y border-white/5 relative overflow-hidden">
+        <div class="absolute right-0 top-0 w-1/3 h-full bg-gradient-to-l from-primary/5 to-transparent pointer-events-none"></div>
+        <div class="max-w-6xl mx-auto flex flex-col lg:flex-row items-center gap-16">
+            <div class="flex-1 space-y-8">
+                <p class="text-primary text-sm font-bold uppercase tracking-widest">So arbeiten wir wirklich</p>
+                <h2 class="text-3xl md:text-5xl font-bold leading-tight">
+                    Hier triffst du Architektur&shy;entscheidungen.<br/>
+                    <span class="text-primary">Nicht Jira-Felder.</span>
+                </h2>
+                <div class="space-y-6 text-slate-300 text-lg leading-relaxed">
+                    <p>Bei NOVACODE baust du wirklich. Keine PowerPoint-Engineering. Kein „agiles" Micromanagement. Du bekommst echte Ownership über deine Systeme.</p>
+                    <p>Und ja – wir haben auch Legacy-Code. Aber wir sind ehrlich darüber, statt dir „Greenfield" zu verkaufen und dich dann 10 Jahre alten Spaghetti-Code fixen zu lassen.</p>
+                </div>
+                <div class="pt-4 flex flex-col gap-4">
+                    <div class="flex items-start gap-4">
+                        <div class="mt-1 w-6 h-6 rounded bg-primary/20 flex items-center justify-center text-primary shrink-0">
+                            <span class="material-symbols-outlined text-sm font-bold">check</span>
+                        </div>
+                        <div>
+                            <h4 class="text-white font-bold">Direkt deployen ab Tag 1</h4>
+                            <p class="text-slate-400 text-sm">Kein 3-monatiges Onboarding. Du baust, du deployest, du siehst den Impact.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-4">
+                        <div class="mt-1 w-6 h-6 rounded bg-primary/20 flex items-center justify-center text-primary shrink-0">
+                            <span class="material-symbols-outlined text-sm font-bold">check</span>
+                        </div>
+                        <div>
+                            <h4 class="text-white font-bold">Deine Meinung ist technisch relevant</h4>
+                            <p class="text-slate-400 text-sm">Du entscheidest über Architektur, nicht das Management. Echte Ownership.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-4">
+                        <div class="mt-1 w-6 h-6 rounded bg-primary/20 flex items-center justify-center text-primary shrink-0">
+                            <span class="material-symbols-outlined text-sm font-bold">check</span>
+                        </div>
+                        <div>
+                            <h4 class="text-white font-bold">Moderner Stack, wenige Meetings</h4>
+                            <p class="text-slate-400 text-sm">Rust, Go, Kubernetes. Async by Default. Deep-Work-Zeit ist heilig.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="pt-4">
+                    <a href="formular.html" class="inline-flex items-center gap-2 text-primary font-bold hover:underline group">
+                        Jetzt in 60 Sekunden bewerben
+                        <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                    </a>
+                </div>
+            </div>
+            <div class="flex-1 w-full relative">
+                <div class="relative w-full aspect-square max-w-md mx-auto rounded-2xl overflow-hidden border border-white/10 bg-[#0d131b]">
+                    <div class="absolute inset-0 bg-[linear-gradient(rgba(19,109,236,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(19,109,236,0.05)_1px,transparent_1px)] bg-[size:20px_20px]"></div>
+                    <div class="absolute top-[20%] left-[10%] right-[10%] bg-[#1a2433] border border-[#2a3b55] p-4 rounded-lg shadow-xl z-20">
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="w-2 h-2 rounded-full bg-red-500"></div>
+                            <div class="w-2 h-2 rounded-full bg-yellow-500"></div>
+                            <div class="w-2 h-2 rounded-full bg-green-500"></div>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="h-2 w-3/4 bg-slate-700 rounded animate-pulse"></div>
+                            <div class="h-2 w-1/2 bg-slate-700 rounded animate-pulse delay-75"></div>
+                            <div class="h-2 w-full bg-slate-700 rounded animate-pulse delay-150"></div>
+                        </div>
+                    </div>
+                    <div class="absolute bottom-[20%] right-[5%] w-[60%] bg-[#1a2433] border border-[#2a3b55] p-4 rounded-lg shadow-xl z-10 opacity-80 scale-95">
+                        <div class="flex items-center gap-3 mb-2">
+                            <span class="material-symbols-outlined text-green-400 text-sm">check_circle</span>
+                            <span class="text-xs text-white font-mono">Deploy Successful</span>
+                        </div>
+                        <div class="h-1 w-full bg-slate-800 rounded overflow-hidden">
+                            <div class="h-full bg-green-500 w-full"></div>
+                        </div>
+                    </div>
+                    <div class="absolute bottom-0 right-0 w-32 h-32 bg-primary/30 blur-[60px]"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Benefits Section -->
+    <section class="py-24 px-6 bg-[#0d131b]">
+        <div class="max-w-6xl mx-auto">
+            <div class="mb-16 md:text-center max-w-3xl mx-auto">
+                <p class="text-primary text-sm font-bold uppercase tracking-widest mb-4">Was du bekommst</p>
+                <h2 class="text-3xl md:text-4xl font-bold mb-6">Keine leeren Versprechen. Echte Benefits.</h2>
+                <p class="text-slate-400 text-lg">Wir wissen: „Flache Hierarchien" und „Startup-Mentalität" sind für dich Warnsignale. Deshalb hier Klartext.</p>
+            </div>
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="bg-[#1a2433] border border-[#2a3b55] p-6 rounded-xl text-center space-y-3">
+                    <div class="w-12 h-12 bg-green-500/10 rounded-xl flex items-center justify-center text-green-400 mx-auto">
+                        <span class="material-symbols-outlined text-2xl">payments</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-white">Top-Gehalt</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">Überdurchschnittliche Vergütung, transparent kommuniziert. Keine Verhandlungsspielchen.</p>
+                </div>
+                <div class="bg-[#1a2433] border border-[#2a3b55] p-6 rounded-xl text-center space-y-3">
+                    <div class="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center text-blue-400 mx-auto">
+                        <span class="material-symbols-outlined text-2xl">home</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-white">100% Remote</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">Arbeite von wo du willst. Kein Pflicht-Büro, keine „Hybrid"-Mogelpackung.</p>
+                </div>
+                <div class="bg-[#1a2433] border border-[#2a3b55] p-6 rounded-xl text-center space-y-3">
+                    <div class="w-12 h-12 bg-purple-500/10 rounded-xl flex items-center justify-center text-purple-400 mx-auto">
+                        <span class="material-symbols-outlined text-2xl">devices</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-white">Top-Hardware</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">MacBook Pro, 4K-Monitor, ergonomisches Setup. Du wählst, was du brauchst.</p>
+                </div>
+                <div class="bg-[#1a2433] border border-[#2a3b55] p-6 rounded-xl text-center space-y-3">
+                    <div class="w-12 h-12 bg-orange-500/10 rounded-xl flex items-center justify-center text-orange-400 mx-auto">
+                        <span class="material-symbols-outlined text-2xl">school</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-white">Weiterbildung</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">Konferenzen, Kurse, Bücher – alles bezahlt. Plus dedizierte Learning-Time.</p>
+                </div>
+            </div>
+            <div class="mt-8 grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="bg-[#1a2433] border border-[#2a3b55] p-6 rounded-xl text-center space-y-3">
+                    <div class="w-12 h-12 bg-cyan-500/10 rounded-xl flex items-center justify-center text-cyan-400 mx-auto">
+                        <span class="material-symbols-outlined text-2xl">calendar_month</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-white">30 Tage Urlaub</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">Plus flexible Arbeitszeiten. Keine Kernarbeitszeit, kein Stempeln.</p>
+                </div>
+                <div class="bg-[#1a2433] border border-[#2a3b55] p-6 rounded-xl text-center space-y-3">
+                    <div class="w-12 h-12 bg-rose-500/10 rounded-xl flex items-center justify-center text-rose-400 mx-auto">
+                        <span class="material-symbols-outlined text-2xl">rocket_launch</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-white">Moderner Stack</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">Rust, Go, Kubernetes, Terraform. Kein veralteter Tech-Stack, kein Legacy-Zwang.</p>
+                </div>
+                <div class="bg-[#1a2433] border border-[#2a3b55] p-6 rounded-xl text-center space-y-3">
+                    <div class="w-12 h-12 bg-amber-500/10 rounded-xl flex items-center justify-center text-amber-400 mx-auto">
+                        <span class="material-symbols-outlined text-2xl">group</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-white">Team aus Seniors</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">Arbeite mit Leuten, die mindestens so gut sind wie du. Echte Peer-Level-Zusammenarbeit.</p>
+                </div>
+                <div class="bg-[#1a2433] border border-[#2a3b55] p-6 rounded-xl text-center space-y-3">
+                    <div class="w-12 h-12 bg-emerald-500/10 rounded-xl flex items-center justify-center text-emerald-400 mx-auto">
+                        <span class="material-symbols-outlined text-2xl">shield</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-white">Sicherheit</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">Unbefristeter Vertrag, stabile Firma. Kein Chaos-Startup, keine Überstunden-Kultur.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Process Section -->
+    <section class="py-24 px-6 bg-[#10161f] border-y border-white/5">
+        <div class="max-w-4xl mx-auto text-center mb-16">
+            <p class="text-primary text-sm font-bold uppercase tracking-widest mb-4">Kein HR-Screening</p>
+            <h2 class="text-3xl md:text-4xl font-bold mb-6">In 3 Schritten zum neuen Job.</h2>
+            <p class="text-slate-400 text-lg">Kein Lebenslauf. Kein Anschreiben. Kein Assessment-Center.</p>
+        </div>
+        <div class="max-w-5xl mx-auto grid md:grid-cols-3 gap-8">
+            <div class="text-center space-y-4">
+                <div class="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center text-primary mx-auto border border-primary/20">
+                    <span class="text-2xl font-bold">1</span>
+                </div>
+                <h3 class="text-lg font-bold text-white">60-Sekunden-Profil</h3>
+                <p class="text-slate-400 text-sm leading-relaxed">Spezialisierung, Erfahrung, Kontaktdaten – das reicht uns. Kein CV-Upload, kein Motivationsschreiben.</p>
+            </div>
+            <div class="text-center space-y-4">
+                <div class="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center text-primary mx-auto border border-primary/20">
+                    <span class="text-2xl font-bold">2</span>
+                </div>
+                <h3 class="text-lg font-bold text-white">Gespräch unter Entwicklern</h3>
+                <p class="text-slate-400 text-sm leading-relaxed">Innerhalb von 48h meldet sich ein Engineer – auf Augenhöhe. Kein HR, kein Sales-Pitch.</p>
+            </div>
+            <div class="text-center space-y-4">
+                <div class="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center text-primary mx-auto border border-primary/20">
+                    <span class="text-2xl font-bold">3</span>
+                </div>
+                <h3 class="text-lg font-bold text-white">Tech-Talk & Angebot</h3>
+                <p class="text-slate-400 text-sm leading-relaxed">Ein lockerer Fachgespräch. Danach hast du innerhalb einer Woche dein Angebot auf dem Tisch.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section id="bewerbung" class="py-32 px-6 bg-[#10161f] border-y border-white/5 relative">
+        <div class="max-w-4xl mx-auto text-center relative z-10">
+            <h2 class="text-4xl md:text-6xl font-bold mb-8">Bereit, wieder Entwickler zu sein?</h2>
+            <p class="text-xl text-slate-400 mb-4 max-w-2xl mx-auto">
+                Wir suchen aktuell Senior Backend Engineers und Staff Engineers.
+            </p>
+            <p class="text-lg text-slate-500 mb-10 max-w-xl mx-auto">
+                60 Sekunden. Kein Lebenslauf. Kein Anschreiben. Nur du und dein Tech-Profil.
+            </p>
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <a href="formular.html" class="w-full sm:w-auto bg-primary hover:bg-primary-dark text-white text-lg font-bold h-16 px-10 rounded-lg transition-all shadow-[0_0_20px_rgba(19,109,236,0.3)] hover:shadow-[0_0_30px_rgba(19,109,236,0.5)] flex items-center justify-center gap-2 group">
+                    <span>Jetzt bewerben</span>
+                    <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                </a>
+            </div>
+            <p class="mt-6 text-sm text-slate-600 flex items-center justify-center gap-1">
+                <span class="material-symbols-outlined text-sm">lock</span>
+                Deine Daten werden verschlüsselt und vertraulich behandelt.
+            </p>
+        </div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[50%] h-[50%] bg-primary/5 rounded-full blur-[100px] pointer-events-none"></div>
+    </section>
+
+</main>
+
+<!-- Footer -->
+<footer class="bg-[#05090e] border-t border-white/5 py-12 px-6">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+        <div class="flex items-center gap-2">
+            <div class="w-6 h-6 text-slate-600 flex items-center justify-center">
+                <span class="material-symbols-outlined">terminal</span>
+            </div>
+            <span class="text-lg font-bold tracking-tight text-slate-600">NOVACODE</span>
+        </div>
+        <div class="flex flex-wrap justify-center gap-6 text-sm text-slate-600">
+            <a class="hover:text-primary transition-colors" href="#">Impressum</a>
+            <a class="hover:text-primary transition-colors" href="#">Datenschutz</a>
+            <a class="hover:text-primary transition-colors" href="#">AGB</a>
+        </div>
+        <div class="text-slate-600 text-sm">
+            &copy; 2026 NOVACODE Solutions GmbH
+        </div>
+    </div>
+</footer>
+
+</body>
+</html>

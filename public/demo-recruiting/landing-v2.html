@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>NOVACODE - Senior Engineers gesucht</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+        darkMode: "class",
+        theme: {
+            extend: {
+                colors: {
+                    "primary": "#136dec",
+                    "primary-dark": "#0b4a9f",
+                    "bg-premium": "#F9F9F9",
+                    "charcoal-dark": "#1A1A1A",
+                    "slate-custom": "#4A5568",
+                    "border-light": "#E2E8F0"
+                },
+                fontFamily: {
+                    "display": ["Space Grotesk", "sans-serif"],
+                    "sans": ["Space Grotesk", "sans-serif"]
+                },
+                borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+            },
+        },
+    }
+</script>
+<style type="text/tailwindcss">
+    @layer base {
+        body {
+            @apply bg-[#F9F9F9] text-[#1A1A1A] font-display antialiased;
+        }
+    }
+    .text-gradient {
+        background: linear-gradient(90deg, #1A1A1A 0%, #4A5568 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    .hero-mask {
+        mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
+    }
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #F9F9F9; }
+    ::-webkit-scrollbar-thumb { background: #CBD5E0; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #136dec; }
+    html { scroll-behavior: smooth; }
+</style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+<!-- Navbar -->
+<header class="fixed top-0 w-full z-50 border-b border-black/5 bg-[#F9F9F9]/80 backdrop-blur-md">
+    <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 text-primary flex items-center justify-center">
+                <span class="material-symbols-outlined text-3xl font-bold">terminal</span>
+            </div>
+            <span class="text-xl font-bold tracking-tight text-charcoal-dark uppercase">NOVACODE</span>
+        </div>
+        <nav class="hidden md:flex items-center gap-8">
+            <a class="text-sm font-semibold text-slate-custom hover:text-primary transition-colors" href="#probleme">Kennst du das?</a>
+            <a class="text-sm font-semibold text-slate-custom hover:text-primary transition-colors" href="#vorteile">So arbeiten wir</a>
+            <a class="text-sm font-semibold text-slate-custom hover:text-primary transition-colors" href="#benefits">Benefits</a>
+        </nav>
+        <a href="formular.html" class="bg-primary hover:bg-primary-dark text-white text-sm font-bold px-6 py-2.5 rounded-lg transition-all flex items-center gap-2 shadow-lg shadow-primary/20">
+            <span>Jetzt bewerben</span>
+            <span class="material-symbols-outlined text-sm">arrow_forward</span>
+        </a>
+    </div>
+</header>
+
+<main class="flex-grow pt-20">
+
+    <!-- Hero Section -->
+    <section class="relative min-h-[85vh] flex items-center justify-center px-6 overflow-hidden">
+        <div class="absolute inset-0 opacity-10 hero-mask">
+            <img alt="Developer workspace" class="w-full h-full object-cover grayscale" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDSA7i8DzC_spRZYta_Vmdb-Fd1GryMulukouMtMdw_c5MU4VxsS09oyNSv5cFex0Lvb7IW9HtezlGrCA42oU0gxlx90aWtg_vTrpyVZfx2qal2VHXseoFh8LWC0SbG-HHpQxf8Vkjqhw1cm0D3NjgJWHW3pzzBJBC13BjHIM758HsQBSrAQKIglvJHS0xVO0w2jsZNbg3ZREWDsbRKnAzjDME1kxJGLiTKzG201bTqbDilpdT6O5E6ZPqNFlnoZygUUzY-_vehWw"/>
+        </div>
+        <div class="absolute inset-0 bg-gradient-to-b from-transparent via-[#F9F9F9]/30 to-[#F9F9F9]"></div>
+        <div class="relative z-10 max-w-5xl mx-auto text-center flex flex-col items-center gap-8">
+            <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-primary/20 bg-primary/5 text-primary text-xs font-bold uppercase tracking-[0.2em]">
+                <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+                Wir suchen Senior Engineers
+            </div>
+            <h1 class="text-5xl md:text-8xl font-bold tracking-tight leading-[1.05] text-charcoal-dark">
+                Hör auf, Tickets zu schieben.<br/>
+                <span class="text-gradient">Fang wieder an, Software zu bauen.</span>
+            </h1>
+            <p class="text-lg md:text-2xl text-slate-custom max-w-3xl leading-relaxed font-light">
+                Du triffst Architekturentscheidungen statt Jira-Felder zu pflegen. Bewirb dich in 60 Sekunden – ohne Lebenslauf, ohne Anschreiben.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-5 w-full justify-center pt-6">
+                <a href="formular.html" class="bg-primary hover:bg-primary-dark text-white text-base font-bold h-16 px-10 rounded-lg transition-all flex items-center justify-center gap-2 group shadow-xl shadow-primary/20">
+                    <span>In 60 Sek. bewerben</span>
+                    <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                </a>
+                <a href="#probleme" class="bg-white hover:bg-gray-50 border border-border-light text-charcoal-dark text-base font-bold h-16 px-10 rounded-lg transition-all flex items-center justify-center shadow-sm">
+                    Mehr erfahren
+                </a>
+            </div>
+            <div class="mt-8 flex flex-wrap items-center justify-center gap-6 md:gap-8 text-slate-custom/60 text-sm font-medium">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-lg text-primary/50">check_circle</span> Kein Lebenslauf nötig
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-lg text-primary/50">check_circle</span> 100% Remote
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-lg text-primary/50">check_circle</span> Rückmeldung in 48h
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-lg text-primary/50">check_circle</span> Direkt deployen ab Tag 1
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pain Points Section -->
+    <section id="probleme" class="py-32 px-6 relative bg-bg-premium">
+        <div class="absolute inset-0 opacity-[0.03] pointer-events-none">
+            <img alt="Background" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAJPaxnyYquf3JKMmQdv0YJUouiXXwllmIOxZX1u4XthRbWQGUVPMaqCFCjmfN-JXWBdCX-VVpZfEcPBcm52tmFrnjlAaETO72jtPIy5zgd0zv4xfzZSAAJpVhnWByzsrvCaweXEqBWlcrgoKa_zNNcthZExppXo2aLeWFaTr3hPghnm3rYCyKKHWvE9fnlzV-848zDsreST0uKIKjMiLxZ1gVH4spPsUoeAYwn94N4t_5yUGxPR6iTsmx6EYRr4p7UWYxBth25Yg"/>
+        </div>
+        <div class="max-w-6xl mx-auto relative z-10">
+            <div class="mb-20 text-center max-w-2xl mx-auto">
+                <p class="text-primary text-sm font-bold uppercase tracking-[0.2em] mb-4">Kennst du das?</p>
+                <h2 class="text-3xl md:text-5xl font-bold mb-6 text-charcoal-dark">Du hast aufgehört, Entwickler zu sein.</h2>
+                <p class="text-slate-custom text-xl font-light">Die meisten Seniors kündigen nicht wegen dem Gehalt – sondern weil sie sich fachlich zurückentwickeln.</p>
+            </div>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="group bg-white border border-border-light p-10 rounded-2xl hover:border-primary/40 hover:shadow-2xl transition-all duration-500 shadow-sm">
+                    <div class="w-14 h-14 bg-primary/10 rounded-xl flex items-center justify-center text-primary mb-8 group-hover:bg-primary group-hover:text-white transition-all duration-500">
+                        <span class="material-symbols-outlined text-3xl">view_kanban</span>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4 text-charcoal-dark">Ticket-Schubser</h3>
+                    <p class="text-slate-custom leading-relaxed font-light">
+                        Du programmierst nicht mehr – du verschiebst Tickets zwischen Boards. Den ganzen Tag Jira statt Code.
+                    </p>
+                </div>
+                <div class="group bg-white border border-border-light p-10 rounded-2xl hover:border-primary/40 hover:shadow-2xl transition-all duration-500 shadow-sm">
+                    <div class="w-14 h-14 bg-primary/10 rounded-xl flex items-center justify-center text-primary mb-8 group-hover:bg-primary group-hover:text-white transition-all duration-500">
+                        <span class="material-symbols-outlined text-3xl">notifications_off</span>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4 text-charcoal-dark">Meeting-Marathon</h3>
+                    <p class="text-slate-custom leading-relaxed font-light">
+                        Dailys, Weeklys, Retros, Alignment-Calls. Dein Kalender sieht aus wie Tetris – coden darfst du nach Feierabend.
+                    </p>
+                </div>
+                <div class="group bg-white border border-border-light p-10 rounded-2xl hover:border-primary/40 hover:shadow-2xl transition-all duration-500 shadow-sm">
+                    <div class="w-14 h-14 bg-primary/10 rounded-xl flex items-center justify-center text-primary mb-8 group-hover:bg-primary group-hover:text-white transition-all duration-500">
+                        <span class="material-symbols-outlined text-3xl">delete_forever</span>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4 text-charcoal-dark">Feature-Friedhof</h3>
+                    <p class="text-slate-custom leading-relaxed font-light">
+                        6 Wochen an einem Feature arbeiten, das nie online geht. Management ändert seine Meinung – dein Code landet in der Tonne.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Quotes Box -->
+            <div class="mt-12 bg-white border border-border-light rounded-2xl p-10 shadow-sm">
+                <h3 class="text-lg font-bold text-charcoal-dark mb-6">Wenn du abends den Laptop zuklappst und denkst:</h3>
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div class="flex items-center gap-3 text-slate-custom">
+                        <span class="material-symbols-outlined text-red-400/60 text-lg">close</span>
+                        <span class="font-light italic">„Heute wieder nichts geschafft."</span>
+                    </div>
+                    <div class="flex items-center gap-3 text-slate-custom">
+                        <span class="material-symbols-outlined text-red-400/60 text-lg">close</span>
+                        <span class="font-light italic">„Ich verstehe nicht mehr, warum wir das bauen."</span>
+                    </div>
+                    <div class="flex items-center gap-3 text-slate-custom">
+                        <span class="material-symbols-outlined text-red-400/60 text-lg">close</span>
+                        <span class="font-light italic">„Ich bin nur noch Umsetzer, kein Entwickler."</span>
+                    </div>
+                    <div class="flex items-center gap-3 text-slate-custom">
+                        <span class="material-symbols-outlined text-red-400/60 text-lg">close</span>
+                        <span class="font-light italic">„Mein Tech-Stack ist komplett veraltet."</span>
+                    </div>
+                    <div class="flex items-center gap-3 text-slate-custom">
+                        <span class="material-symbols-outlined text-red-400/60 text-lg">close</span>
+                        <span class="font-light italic">„Ich darf nichts entscheiden."</span>
+                    </div>
+                    <div class="flex items-center gap-3 text-slate-custom">
+                        <span class="material-symbols-outlined text-red-400/60 text-lg">close</span>
+                        <span class="font-light italic">„Ich merke, dass ich mich fachlich zurückentwickle."</span>
+                    </div>
+                </div>
+                <div class="mt-8 pt-6 border-t border-border-light">
+                    <p class="text-charcoal-dark text-lg font-semibold">Dann bist du hier richtig.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonial 1 -->
+    <section class="py-24 px-6 bg-primary/5 border-y border-primary/10">
+        <div class="max-w-4xl mx-auto text-center">
+            <span class="material-symbols-outlined text-primary text-5xl mb-8 opacity-40">format_quote</span>
+            <blockquote class="text-2xl md:text-3xl font-light italic text-charcoal-dark leading-relaxed mb-10">
+                „Ich wurde angeschrieben mit dem Satz: Du kannst hier Architekturentscheidungen treffen statt Jira-Felder pflegen. Das hat mich zum Nachdenken gebracht – und letztendlich zum Wechsel."
+            </blockquote>
+            <div class="flex flex-col items-center gap-4">
+                <img alt="Marcus T." class="w-16 h-16 rounded-full object-cover border-2 border-primary shadow-xl" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD7FqNzp8fnHtYQGGh-TUN9WghzAatKy1ybqLyrZARuu02xZeR6n2CTsVlLirqSsQTsUm-zwzFNx_gDFYnOJfcrrhmm7Fp-KduPut0kRYN7Rp5ov5LDwpOW7kzE94hhnBoQBgGD6Z7DhKlbEClvSThSohJI3sjWMkfc95gTKvp7fdZuGxIgKBjjkTznr5o-kJ_kO1mXzp2AFELgLIF0pt2HKDq4a_VLibZDCDvRKHvlBDObMCuwClLKqoYaS49dMmhjl1_hOLWn-g"/>
+                <div>
+                    <div class="font-bold text-charcoal-dark text-lg tracking-tight">Marcus T.</div>
+                    <div class="text-primary text-sm font-bold uppercase tracking-widest">Staff Engineer @ NOVACODE</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Narrative / "So arbeiten wir" Section -->
+    <section id="vorteile" class="py-32 px-6 bg-white">
+        <div class="max-w-7xl mx-auto">
+            <div class="grid lg:grid-cols-2 gap-20 items-center">
+                <div class="relative group">
+                    <div class="absolute -inset-4 bg-primary/5 rounded-[2rem] blur-2xl group-hover:bg-primary/10 transition-all duration-700"></div>
+                    <div class="relative rounded-2xl overflow-hidden border border-black/5 aspect-[4/5] lg:aspect-auto lg:h-[700px] shadow-2xl">
+                        <img alt="Engineer bei der Arbeit" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDNx_pSGRzga_1RB9IvPd4BjM_q8DnaRJ_3Ar8KKT0-KTFJQyXdcpeqbmIgv7fs-4aVzKh6UQ1MZY7xsGEWevAmcDmwOFPh2cmoZkWh3n3AetL616-_UD7a0Im2ThanZoZysdAbJ7gXrNjtCE3BkxYzDffyp-CNRExipY3Y8sYKfpfdxsdR3b9fKEwN1cYeGleuiS98ToC-Pr5fCNPYUbcIk4Vditl3jqMzD7pezNC6roeTGJqexD_WGLvjD2Y3OZnM_VtOoKdsAw"/>
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60"></div>
+                        <div class="absolute bottom-8 left-8 right-8 p-6 bg-white/90 backdrop-blur-xl border border-white/20 rounded-xl shadow-lg">
+                            <p class="text-charcoal-dark italic mb-4 leading-relaxed font-medium">„Das Beste nach 2 Monaten? Dass ich direkt deployen durfte. Kein 3-monatiges Onboarding, kein Ticket-System für jede Kleinigkeit. Einfach bauen und shippen."</p>
+                            <div class="flex items-center gap-4">
+                                <img alt="Marcus T." class="w-12 h-12 rounded-full object-cover border-2 border-primary" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD7FqNzp8fnHtYQGGh-TUN9WghzAatKy1ybqLyrZARuu02xZeR6n2CTsVlLirqSsQTsUm-zwzFNx_gDFYnOJfcrrhmm7Fp-KduPut0kRYN7Rp5ov5LDwpOW7kzE94hhnBoQBgGD6Z7DhKlbEClvSThSohJI3sjWMkfc95gTKvp7fdZuGxIgKBjjkTznr5o-kJ_kO1mXzp2AFELgLIF0pt2HKDq4a_VLibZDCDvRKHvlBDObMCuwClLKqoYaS49dMmhjl1_hOLWn-g"/>
+                                <div>
+                                    <div class="font-bold text-charcoal-dark">Marcus T.</div>
+                                    <div class="text-xs text-primary font-bold uppercase tracking-wider">Staff Engineer @ NOVACODE</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="space-y-10">
+                    <div>
+                        <p class="text-primary text-sm font-bold uppercase tracking-[0.2em] mb-4">So arbeiten wir wirklich</p>
+                        <h2 class="text-4xl md:text-5xl font-bold mb-8 leading-tight text-charcoal-dark">
+                            Hier triffst du Architektur&shy;entscheidungen. <br/><span class="text-primary">Nicht Jira-Felder.</span>
+                        </h2>
+                        <p class="text-slate-custom text-lg leading-relaxed mb-4">
+                            Bei NOVACODE baust du wirklich. Keine PowerPoint-Engineering. Kein „agiles" Micromanagement. Du bekommst echte Ownership über deine Systeme.
+                        </p>
+                        <p class="text-slate-custom text-lg leading-relaxed mb-8">
+                            Und ja – wir haben auch Legacy-Code. Aber wir sind ehrlich darüber, statt dir „Greenfield" zu verkaufen und dich dann alten Spaghetti-Code fixen zu lassen.
+                        </p>
+                        <ul class="space-y-8">
+                            <li class="flex items-start gap-4 group">
+                                <div class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0 transition-colors group-hover:bg-primary group-hover:text-white">
+                                    <span class="material-symbols-outlined">rocket_launch</span>
+                                </div>
+                                <div>
+                                    <span class="block font-bold text-charcoal-dark text-lg">Direkt deployen ab Tag 1</span>
+                                    <span class="text-slate-custom font-light">Kein 3-monatiges Onboarding. Du baust, du deployest, du siehst den Impact.</span>
+                                </div>
+                            </li>
+                            <li class="flex items-start gap-4 group">
+                                <div class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0 transition-colors group-hover:bg-primary group-hover:text-white">
+                                    <span class="material-symbols-outlined">psychology</span>
+                                </div>
+                                <div>
+                                    <span class="block font-bold text-charcoal-dark text-lg">Deine Meinung ist technisch relevant</span>
+                                    <span class="text-slate-custom font-light">Du entscheidest über Architektur, nicht das Management. Echte Ownership.</span>
+                                </div>
+                            </li>
+                            <li class="flex items-start gap-4 group">
+                                <div class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0 transition-colors group-hover:bg-primary group-hover:text-white">
+                                    <span class="material-symbols-outlined">notifications_off</span>
+                                </div>
+                                <div>
+                                    <span class="block font-bold text-charcoal-dark text-lg">Moderner Stack, wenige Meetings</span>
+                                    <span class="text-slate-custom font-light">Rust, Go, Kubernetes. Async by Default. Deep-Work-Zeit ist heilig.</span>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Benefits Section -->
+    <section id="benefits" class="py-32 px-6 bg-bg-premium">
+        <div class="max-w-6xl mx-auto">
+            <div class="mb-20 text-center max-w-3xl mx-auto">
+                <p class="text-primary text-sm font-bold uppercase tracking-[0.2em] mb-4">Was du bekommst</p>
+                <h2 class="text-3xl md:text-5xl font-bold mb-6 text-charcoal-dark">Keine leeren Versprechen. Echte Benefits.</h2>
+                <p class="text-slate-custom text-xl font-light">Wir wissen: „Flache Hierarchien" und „Startup-Mentalität" sind für dich Warnsignale. Deshalb hier Klartext.</p>
+            </div>
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="bg-white border border-border-light p-8 rounded-2xl shadow-sm hover:shadow-xl hover:border-primary/30 transition-all duration-500 text-center space-y-4">
+                    <div class="w-14 h-14 bg-green-500/10 rounded-xl flex items-center justify-center text-green-600 mx-auto">
+                        <span class="material-symbols-outlined text-3xl">payments</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-charcoal-dark">Top-Gehalt</h3>
+                    <p class="text-slate-custom text-sm leading-relaxed font-light">Überdurchschnittliche Vergütung, transparent kommuniziert. Keine Verhandlungsspielchen.</p>
+                </div>
+                <div class="bg-white border border-border-light p-8 rounded-2xl shadow-sm hover:shadow-xl hover:border-primary/30 transition-all duration-500 text-center space-y-4">
+                    <div class="w-14 h-14 bg-blue-500/10 rounded-xl flex items-center justify-center text-blue-600 mx-auto">
+                        <span class="material-symbols-outlined text-3xl">home</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-charcoal-dark">100% Remote</h3>
+                    <p class="text-slate-custom text-sm leading-relaxed font-light">Arbeite von wo du willst. Kein Pflicht-Büro, keine „Hybrid"-Mogelpackung.</p>
+                </div>
+                <div class="bg-white border border-border-light p-8 rounded-2xl shadow-sm hover:shadow-xl hover:border-primary/30 transition-all duration-500 text-center space-y-4">
+                    <div class="w-14 h-14 bg-purple-500/10 rounded-xl flex items-center justify-center text-purple-600 mx-auto">
+                        <span class="material-symbols-outlined text-3xl">devices</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-charcoal-dark">Top-Hardware</h3>
+                    <p class="text-slate-custom text-sm leading-relaxed font-light">MacBook Pro, 4K-Monitor, ergonomisches Setup. Du wählst, was du brauchst.</p>
+                </div>
+                <div class="bg-white border border-border-light p-8 rounded-2xl shadow-sm hover:shadow-xl hover:border-primary/30 transition-all duration-500 text-center space-y-4">
+                    <div class="w-14 h-14 bg-orange-500/10 rounded-xl flex items-center justify-center text-orange-600 mx-auto">
+                        <span class="material-symbols-outlined text-3xl">school</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-charcoal-dark">Weiterbildung</h3>
+                    <p class="text-slate-custom text-sm leading-relaxed font-light">Konferenzen, Kurse, Bücher – alles bezahlt. Plus dedizierte Learning-Time.</p>
+                </div>
+            </div>
+            <div class="mt-6 grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="bg-white border border-border-light p-8 rounded-2xl shadow-sm hover:shadow-xl hover:border-primary/30 transition-all duration-500 text-center space-y-4">
+                    <div class="w-14 h-14 bg-cyan-500/10 rounded-xl flex items-center justify-center text-cyan-600 mx-auto">
+                        <span class="material-symbols-outlined text-3xl">calendar_month</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-charcoal-dark">30 Tage Urlaub</h3>
+                    <p class="text-slate-custom text-sm leading-relaxed font-light">Plus flexible Arbeitszeiten. Keine Kernarbeitszeit, kein Stempeln.</p>
+                </div>
+                <div class="bg-white border border-border-light p-8 rounded-2xl shadow-sm hover:shadow-xl hover:border-primary/30 transition-all duration-500 text-center space-y-4">
+                    <div class="w-14 h-14 bg-rose-500/10 rounded-xl flex items-center justify-center text-rose-600 mx-auto">
+                        <span class="material-symbols-outlined text-3xl">terminal</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-charcoal-dark">Moderner Stack</h3>
+                    <p class="text-slate-custom text-sm leading-relaxed font-light">Rust, Go, Kubernetes, Terraform. Kein veralteter Tech-Stack, kein Legacy-Zwang.</p>
+                </div>
+                <div class="bg-white border border-border-light p-8 rounded-2xl shadow-sm hover:shadow-xl hover:border-primary/30 transition-all duration-500 text-center space-y-4">
+                    <div class="w-14 h-14 bg-amber-500/10 rounded-xl flex items-center justify-center text-amber-600 mx-auto">
+                        <span class="material-symbols-outlined text-3xl">group</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-charcoal-dark">Team aus Seniors</h3>
+                    <p class="text-slate-custom text-sm leading-relaxed font-light">Arbeite mit Leuten, die mindestens so gut sind wie du. Echte Peer-Level-Zusammenarbeit.</p>
+                </div>
+                <div class="bg-white border border-border-light p-8 rounded-2xl shadow-sm hover:shadow-xl hover:border-primary/30 transition-all duration-500 text-center space-y-4">
+                    <div class="w-14 h-14 bg-emerald-500/10 rounded-xl flex items-center justify-center text-emerald-600 mx-auto">
+                        <span class="material-symbols-outlined text-3xl">shield</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-charcoal-dark">Sicherheit</h3>
+                    <p class="text-slate-custom text-sm leading-relaxed font-light">Unbefristeter Vertrag, stabile Firma. Kein Chaos-Startup, keine Überstunden-Kultur.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonial 2 -->
+    <section class="py-24 px-6 bg-primary/5 border-y border-primary/10">
+        <div class="max-w-4xl mx-auto text-center">
+            <span class="material-symbols-outlined text-primary text-5xl mb-8 opacity-40">format_quote</span>
+            <blockquote class="text-2xl md:text-3xl font-light italic text-charcoal-dark leading-relaxed mb-10">
+                „NOVACODE ist der erste Ort, an dem meine Zeit wirklich wertgeschätzt wird. Wir reden nicht nur über Qualität – wir haben die Autonomie, sie auf jeder Ebene des Stacks durchzusetzen."
+            </blockquote>
+            <div class="flex flex-col items-center gap-4">
+                <img alt="Sarah J." class="w-16 h-16 rounded-full object-cover border-2 border-primary shadow-xl" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDDd_XxoKaRdEYSnc9DDbdvm7AEOnq4u7Ey0_FKhb48rzeq_XJjYoFEVTKZZPJo-m7sQiCUfsLQ8pyp8EO0TjyhyLkEYKQPHIdprr3Mury2ZJgyMYJ2fpkxoZvQwsAkFYExCBV9COUPHovG-87UwpQFcB6jdGCWhQs2va9G8ennA-hgKSnqOzCpZ4eCwpbI-bPI2lWxetyA7-g8ZedYM6zazAdJtnp67ozYTS2n33xSzz7ydUJbaqNLzW_yBSBYg9ar0SSog0S5sA"/>
+                <div>
+                    <div class="font-bold text-charcoal-dark text-lg tracking-tight">Sarah J.</div>
+                    <div class="text-primary text-sm font-bold uppercase tracking-widest">Senior Backend Architect</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Process Section -->
+    <section class="py-32 px-6 bg-white">
+        <div class="max-w-4xl mx-auto text-center mb-16">
+            <p class="text-primary text-sm font-bold uppercase tracking-[0.2em] mb-4">Kein HR-Screening</p>
+            <h2 class="text-3xl md:text-5xl font-bold mb-6 text-charcoal-dark">In 3 Schritten zum neuen Job.</h2>
+            <p class="text-slate-custom text-xl font-light">Kein Lebenslauf. Kein Anschreiben. Kein Assessment-Center.</p>
+        </div>
+        <div class="max-w-5xl mx-auto grid md:grid-cols-3 gap-8">
+            <div class="text-center space-y-5 bg-white border border-border-light p-8 rounded-2xl shadow-sm">
+                <div class="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center text-primary mx-auto border border-primary/20">
+                    <span class="text-2xl font-bold">1</span>
+                </div>
+                <h3 class="text-lg font-bold text-charcoal-dark">60-Sekunden-Profil</h3>
+                <p class="text-slate-custom text-sm leading-relaxed font-light">Spezialisierung, Erfahrung, Kontaktdaten – das reicht uns. Kein CV-Upload, kein Motivationsschreiben.</p>
+            </div>
+            <div class="text-center space-y-5 bg-white border border-border-light p-8 rounded-2xl shadow-sm">
+                <div class="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center text-primary mx-auto border border-primary/20">
+                    <span class="text-2xl font-bold">2</span>
+                </div>
+                <h3 class="text-lg font-bold text-charcoal-dark">Gespräch unter Entwicklern</h3>
+                <p class="text-slate-custom text-sm leading-relaxed font-light">Innerhalb von 48h meldet sich ein Engineer – auf Augenhöhe. Kein HR, kein Sales-Pitch.</p>
+            </div>
+            <div class="text-center space-y-5 bg-white border border-border-light p-8 rounded-2xl shadow-sm">
+                <div class="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center text-primary mx-auto border border-primary/20">
+                    <span class="text-2xl font-bold">3</span>
+                </div>
+                <h3 class="text-lg font-bold text-charcoal-dark">Tech-Talk & Angebot</h3>
+                <p class="text-slate-custom text-sm leading-relaxed font-light">Ein lockeres Fachgespräch. Danach hast du innerhalb einer Woche dein Angebot auf dem Tisch.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-40 px-6 bg-white relative overflow-hidden">
+        <div class="absolute inset-0 opacity-[0.07]">
+            <img alt="Office architecture" class="w-full h-full object-cover grayscale" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAMtqt0KGL2O1oKmYmO90fEwOJnIfo-DO_k3-SFELEdZtaxNZ9pIVRrdyrcSI1Is11nLpQ8i6fsW1MphcrpEtf9ZCZESfE3rGLUojKLlbFmcSuvCfbu9xeI2nvRcULwDCakXNAHlTm-fqSdg6jJtbWdegtecd6zYehKciE4igAphc2jZxnzUa6U_tajCOJh1zlkdT210UzOi-LR6zFyvSUH2MQMH_XjpnU1u5qbTh0gqRSZoI6D2RItnKvV2i_scnmoKk14HCbZEw"/>
+        </div>
+        <div class="max-w-4xl mx-auto text-center relative z-10">
+            <h2 class="text-5xl md:text-7xl font-bold mb-10 tracking-tight text-charcoal-dark">Bereit, wieder Entwickler zu sein?</h2>
+            <p class="text-xl md:text-2xl text-slate-custom mb-6 max-w-2xl mx-auto font-light">
+                Wir suchen aktuell Senior Backend Engineers und Staff Engineers.
+            </p>
+            <p class="text-lg text-slate-custom/60 mb-12 max-w-xl mx-auto font-light">
+                60 Sekunden. Kein Lebenslauf. Kein Anschreiben. Nur du und dein Tech-Profil.
+            </p>
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-6">
+                <a href="formular.html" class="w-full sm:w-auto bg-primary hover:bg-primary-dark text-white text-xl font-bold h-20 px-12 rounded-xl transition-all shadow-2xl shadow-primary/40 flex items-center justify-center gap-2 group">
+                    <span>Jetzt bewerben</span>
+                    <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                </a>
+            </div>
+            <p class="mt-8 text-sm text-slate-custom/40 flex items-center justify-center gap-1">
+                <span class="material-symbols-outlined text-sm">lock</span>
+                Deine Daten werden verschlüsselt und vertraulich behandelt.
+            </p>
+        </div>
+        <div class="absolute -bottom-24 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-primary/5 rounded-full blur-[120px] pointer-events-none"></div>
+    </section>
+
+</main>
+
+<!-- Footer -->
+<footer class="bg-charcoal-dark py-16 px-6">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-12">
+        <div class="flex flex-col gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-6 h-6 text-white/50 flex items-center justify-center">
+                    <span class="material-symbols-outlined">terminal</span>
+                </div>
+                <span class="text-xl font-bold tracking-tight text-white uppercase">NOVACODE</span>
+            </div>
+            <div class="text-white/40 text-sm">
+                &copy; 2026 NOVACODE Solutions GmbH
+            </div>
+        </div>
+        <div class="flex gap-12">
+            <div class="flex flex-col gap-3">
+                <span class="text-xs font-bold text-white uppercase tracking-widest">Folge uns</span>
+                <a class="text-white/40 hover:text-primary transition-colors text-sm" href="#">LinkedIn</a>
+                <a class="text-white/40 hover:text-primary transition-colors text-sm" href="#">GitHub</a>
+            </div>
+            <div class="flex flex-col gap-3">
+                <span class="text-xs font-bold text-white uppercase tracking-widest">Rechtliches</span>
+                <a class="text-white/40 hover:text-primary transition-colors text-sm" href="#">Datenschutz</a>
+                <a class="text-white/40 hover:text-primary transition-colors text-sm" href="#">Impressum</a>
+                <a class="text-white/40 hover:text-primary transition-colors text-sm" href="#">AGB</a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+</body>
+</html>

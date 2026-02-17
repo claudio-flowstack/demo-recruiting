@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>NOVACODE - Schnellbewerbung</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script>
+    tailwind.config = {
+        darkMode: "class",
+        theme: {
+            extend: {
+                colors: {
+                    "primary": "#136dec",
+                    "primary-dark": "#0b4a9f",
+                    "charcoal": "#0d131b",
+                    "charcoal-light": "#1a2433",
+                    "border-dark": "#2a3b55"
+                },
+                fontFamily: {
+                    "display": ["Space Grotesk", "sans-serif"],
+                    "sans": ["Space Grotesk", "sans-serif"]
+                },
+                borderRadius: {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "2xl": "1rem",
+                    "full": "9999px"
+                },
+            },
+        },
+    }
+</script>
+<style>
+    body {
+        font-family: 'Space Grotesk', sans-serif;
+        background-color: #0d131b;
+        color: white;
+    }
+    .custom-radio:checked + div {
+        border-color: #136dec;
+        background-color: rgba(19, 109, 236, 0.1);
+    }
+    .custom-radio:checked + div .check-icon {
+        opacity: 1;
+        transform: scale(1);
+    }
+    .custom-radio:focus + div {
+        box-shadow: 0 0 0 2px rgba(19, 109, 236, 0.3);
+    }
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #0d131b; }
+    ::-webkit-scrollbar-thumb { background: #2a3b55; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #136dec; }
+</style>
+</head>
+<body class="antialiased min-h-screen flex flex-col font-display bg-[#0d131b] text-white">
+
+<!-- Header -->
+<header class="sticky top-0 z-50 border-b border-white/10 bg-[#0d131b]/80 backdrop-blur-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <a href="landing.html" class="flex items-center gap-3">
+            <div class="w-8 h-8 text-primary flex items-center justify-center">
+                <span class="material-symbols-outlined text-2xl">terminal</span>
+            </div>
+            <span class="text-lg font-bold tracking-tight text-white">NOVACODE</span>
+        </a>
+        <div class="hidden md:flex items-center gap-4 text-sm">
+            <span class="text-slate-500">Schnellbewerbung</span>
+            <span class="text-slate-700">|</span>
+            <span class="text-slate-400">Kein Lebenslauf nötig</span>
+        </div>
+    </div>
+</header>
+
+<!-- Main Content -->
+<main class="flex-grow flex flex-col items-center justify-start py-10 px-4 sm:px-6">
+    <div class="w-full max-w-3xl space-y-8">
+
+        <!-- Progress Section -->
+        <div class="flex flex-col gap-3">
+            <div class="flex justify-between items-end">
+                <div>
+                    <p class="text-sm font-medium text-slate-500 uppercase tracking-wider">Bewerbung</p>
+                    <h2 class="text-3xl font-bold text-white mt-1">Dein Tech-Profil</h2>
+                </div>
+                <div class="text-right flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary text-lg">timer</span>
+                    <span class="text-sm text-slate-400">ca. 60 Sekunden</span>
+                </div>
+            </div>
+            <div class="h-2 w-full bg-[#1a2433] rounded-full overflow-hidden">
+                <div class="h-full bg-primary w-1/2 rounded-full transition-all duration-500 ease-out"></div>
+            </div>
+        </div>
+
+        <!-- Form Card -->
+        <div class="bg-[#1a2433] rounded-2xl border border-[#2a3b55] p-8 md:p-10 space-y-10">
+
+            <!-- Intro -->
+            <div class="space-y-2">
+                <h3 class="text-2xl font-bold text-white">Erzähl uns, was du drauf hast.</h3>
+                <p class="text-slate-400 text-lg">Kein Lebenslauf, kein Anschreiben. Wähle deine Spezialisierung – wir melden uns innerhalb von 48h persönlich bei dir.</p>
+            </div>
+
+            <form class="space-y-10" onsubmit="event.preventDefault(); window.location.href='danke.html';">
+
+                <!-- Domain Selection -->
+                <div class="space-y-4">
+                    <label class="block text-sm font-bold text-slate-300">
+                        Deine Spezialisierung <span class="text-red-400">*</span>
+                    </label>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <label class="cursor-pointer group relative">
+                            <input class="custom-radio sr-only" name="specialization" type="radio" value="frontend"/>
+                            <div class="border border-[#2a3b55] rounded-xl p-4 hover:border-primary/50 transition-all bg-[#0d131b] flex items-center gap-4 h-full">
+                                <div class="bg-blue-500/10 p-2.5 rounded-lg text-blue-400">
+                                    <span class="material-symbols-outlined">html</span>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="font-bold text-white">Frontend Engineering</div>
+                                    <div class="text-sm text-slate-500 mt-0.5">React, Vue, Angular, Svelte</div>
+                                </div>
+                                <span class="material-symbols-outlined check-icon text-primary opacity-0 transform scale-75 transition-all">check_circle</span>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer group relative">
+                            <input class="custom-radio sr-only" name="specialization" type="radio" value="backend"/>
+                            <div class="border border-[#2a3b55] rounded-xl p-4 hover:border-primary/50 transition-all bg-[#0d131b] flex items-center gap-4 h-full">
+                                <div class="bg-purple-500/10 p-2.5 rounded-lg text-purple-400">
+                                    <span class="material-symbols-outlined">dns</span>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="font-bold text-white">Backend Systems</div>
+                                    <div class="text-sm text-slate-500 mt-0.5">Node, Java, Go, Python, Rust</div>
+                                </div>
+                                <span class="material-symbols-outlined check-icon text-primary opacity-0 transform scale-75 transition-all">check_circle</span>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer group relative">
+                            <input class="custom-radio sr-only" name="specialization" type="radio" value="fullstack"/>
+                            <div class="border border-[#2a3b55] rounded-xl p-4 hover:border-primary/50 transition-all bg-[#0d131b] flex items-center gap-4 h-full">
+                                <div class="bg-green-500/10 p-2.5 rounded-lg text-green-400">
+                                    <span class="material-symbols-outlined">layers</span>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="font-bold text-white">Full Stack</div>
+                                    <div class="text-sm text-slate-500 mt-0.5">End-to-End Architektur</div>
+                                </div>
+                                <span class="material-symbols-outlined check-icon text-primary opacity-0 transform scale-75 transition-all">check_circle</span>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer group relative">
+                            <input class="custom-radio sr-only" name="specialization" type="radio" value="devops"/>
+                            <div class="border border-[#2a3b55] rounded-xl p-4 hover:border-primary/50 transition-all bg-[#0d131b] flex items-center gap-4 h-full">
+                                <div class="bg-orange-500/10 p-2.5 rounded-lg text-orange-400">
+                                    <span class="material-symbols-outlined">cloud_sync</span>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="font-bold text-white">DevOps / SRE</div>
+                                    <div class="text-sm text-slate-500 mt-0.5">CI/CD, K8s, Terraform, AWS</div>
+                                </div>
+                                <span class="material-symbols-outlined check-icon text-primary opacity-0 transform scale-75 transition-all">check_circle</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Experience Level -->
+                <div class="space-y-4">
+                    <label class="block text-sm font-bold text-slate-300">
+                        Berufserfahrung <span class="text-red-400">*</span>
+                    </label>
+                    <div class="flex flex-wrap gap-3">
+                        <label class="cursor-pointer flex-1 min-w-[120px]">
+                            <input class="custom-radio sr-only" name="experience" type="radio"/>
+                            <div class="border border-[#2a3b55] rounded-lg py-3 px-4 text-center font-medium hover:border-primary/50 transition-all text-slate-300 bg-[#0d131b]">
+                                3–5 Jahre
+                            </div>
+                        </label>
+                        <label class="cursor-pointer flex-1 min-w-[120px]">
+                            <input class="custom-radio sr-only" name="experience" type="radio"/>
+                            <div class="border border-[#2a3b55] rounded-lg py-3 px-4 text-center font-medium hover:border-primary/50 transition-all text-slate-300 bg-[#0d131b]">
+                                5–8 Jahre
+                            </div>
+                        </label>
+                        <label class="cursor-pointer flex-1 min-w-[120px]">
+                            <input class="custom-radio sr-only" name="experience" type="radio"/>
+                            <div class="border border-[#2a3b55] rounded-lg py-3 px-4 text-center font-medium hover:border-primary/50 transition-all text-slate-300 bg-[#0d131b]">
+                                8–12 Jahre
+                            </div>
+                        </label>
+                        <label class="cursor-pointer flex-1 min-w-[120px]">
+                            <input class="custom-radio sr-only" name="experience" type="radio"/>
+                            <div class="border border-[#2a3b55] rounded-lg py-3 px-4 text-center font-medium hover:border-primary/50 transition-all text-slate-300 bg-[#0d131b]">
+                                12+ Jahre
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Motivation Text Area -->
+                <div class="space-y-4">
+                    <div class="flex justify-between items-baseline">
+                        <label class="block text-sm font-bold text-slate-300" for="motivation">
+                            Was nervt dich am meisten in deinem aktuellen Job?
+                        </label>
+                        <span class="text-xs text-slate-600">Optional</span>
+                    </div>
+                    <div class="relative">
+                        <textarea class="w-full rounded-xl border border-[#2a3b55] bg-[#0d131b] p-4 text-white placeholder-slate-600 focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all resize-none" id="motivation" placeholder="z.B. Ticket-Schubserei, Meeting-Marathon, Feature-Friedhof, veralteter Stack..." rows="3"></textarea>
+                    </div>
+                </div>
+
+                <!-- Divider -->
+                <div class="relative py-2">
+                    <div aria-hidden="true" class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-[#2a3b55]"></div>
+                    </div>
+                    <div class="relative flex justify-center">
+                        <span class="bg-[#1a2433] px-3 text-sm text-slate-500">Wie erreichen wir dich?</span>
+                    </div>
+                </div>
+
+                <!-- Contact Details -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-2 col-span-1 md:col-span-2">
+                        <label class="block text-sm font-bold text-slate-300" for="full-name">Vollständiger Name <span class="text-red-400">*</span></label>
+                        <input class="w-full rounded-lg border border-[#2a3b55] bg-[#0d131b] px-4 py-3 text-white placeholder-slate-600 focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all" id="full-name" placeholder="z.B. Max Mustermann" type="text"/>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="block text-sm font-bold text-slate-300" for="email">E-Mail-Adresse <span class="text-red-400">*</span></label>
+                        <div class="relative">
+                            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                <span class="material-symbols-outlined text-slate-600 text-lg">mail</span>
+                            </div>
+                            <input class="w-full rounded-lg border border-[#2a3b55] bg-[#0d131b] pl-10 pr-4 py-3 text-white placeholder-slate-600 focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all" id="email" placeholder="max@example.com" type="email"/>
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="block text-sm font-bold text-slate-300" for="phone">Telefonnummer</label>
+                        <div class="relative">
+                            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                <span class="material-symbols-outlined text-slate-600 text-lg">call</span>
+                            </div>
+                            <input class="w-full rounded-lg border border-[#2a3b55] bg-[#0d131b] pl-10 pr-4 py-3 text-white placeholder-slate-600 focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all" id="phone" placeholder="+49 170 1234567" type="tel"/>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Area -->
+                <div class="pt-4 flex flex-col gap-4">
+                    <button class="w-full bg-primary hover:bg-primary-dark text-white font-bold py-4 rounded-xl shadow-lg shadow-primary/30 transition-all transform active:scale-[0.99] flex items-center justify-center gap-2 group text-lg" type="submit">
+                        <span>Bewerbung absenden</span>
+                        <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">send</span>
+                    </button>
+                    <p class="text-center text-xs text-slate-600 flex items-center justify-center gap-1">
+                        <span class="material-symbols-outlined text-sm">lock</span>
+                        Deine Daten werden verschlüsselt und vertraulich behandelt.
+                    </p>
+                </div>
+
+            </form>
+        </div>
+
+        <!-- Footer Links -->
+        <div class="flex justify-center gap-6 text-sm text-slate-600">
+            <a class="hover:text-primary transition-colors" href="#">Datenschutz</a>
+            <a class="hover:text-primary transition-colors" href="#">Impressum</a>
+            <a class="hover:text-primary transition-colors" href="#">AGB</a>
+        </div>
+
+    </div>
+</main>
+
+</body>
+</html>
